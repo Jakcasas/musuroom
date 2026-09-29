@@ -21,7 +21,7 @@ function calculateBatch() {
   const initial = Number(fields.initial.value);
   const final = Number(fields.final.value);
   const loss = Number(fields.loss.value);
-  const valid = fields.mass.value !== '' && mass > 0 && mass <= 100000 &&
+  const valid = Object.values(fields).every(field => field.value !== '') && mass > 0 && mass <= 100000 &&
     [reject, initial, final, loss].every(Number.isFinite) &&
     reject >= 0 && reject < 100 && initial > 0 && initial < 100 &&
     final >= 0 && final < 100 && final < initial && loss >= 0 && loss < 100;
