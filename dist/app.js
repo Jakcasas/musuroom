@@ -10,6 +10,7 @@ const output = {
   accepted: document.getElementById('accepted-output'),
   powder: document.getElementById('powder-output'),
   rejected: document.getElementById('rejected-output'),
+  yield: document.getElementById('yield-output'),
   error: document.getElementById('form-error')
 };
 
@@ -21,7 +22,7 @@ function calculateBatch() {
   const initial = Number(fields.initial.value);
   const final = Number(fields.final.value);
   const loss = Number(fields.loss.value);
-  const valid = Object.values(fields).every(field => field.value !== '') && mass > 0 && mass <= 100000 &&
+  const valid = Object.values(fields).every(field => field.value !== '' && field.validity.valid) && mass > 0 && mass <= 100000 &&
     [reject, initial, final, loss].every(Number.isFinite) &&
     reject >= 0 && reject < 100 && initial > 0 && initial < 100 &&
     final >= 0 && final < 100 && final < initial && loss >= 0 && loss < 100;
@@ -32,6 +33,7 @@ function calculateBatch() {
     output.accepted.textContent = '—';
     output.powder.textContent = '—';
     output.rejected.textContent = '—';
+    output.yield.textContent = '—';
     return;
   }
 
@@ -42,6 +44,7 @@ function calculateBatch() {
   output.accepted.textContent = formatKg(accepted);
   output.powder.textContent = formatKg(powder);
   output.rejected.textContent = formatKg(mass - accepted);
+  output.yield.textContent = new Intl.NumberFormat('vi-VN', { style: 'percent', maximumFractionDigits: 1 }).format(powder / mass);
 }
 
 Object.values(fields).forEach(field => field.addEventListener('input', calculateBatch));

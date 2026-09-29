@@ -1,6 +1,6 @@
 # Bột gia vị từ phụ phẩm nấm ăn
 
-Website giới thiệu ý tưởng dự thi FID 2026 và công cụ ước tính cân bằng vật chất cho một mẻ thử nghiệm. Đây là bản trình bày ý tưởng, không phải công thức công nghệ đã thẩm định hoặc công bố sản phẩm thương mại.
+Website phát triển ý tưởng bột gia vị từ phụ phẩm nấm ăn nhằm giảm lãng phí thực phẩm. Nội dung tập trung vào nguyên liệu, cải tiến hương vị và bảo quản, quy trình chế biến, cách đo hiệu quả và công cụ tính sản lượng bột nấm nền trước phối trộn. Đây là bản trình bày ý tưởng, không phải công thức công nghệ đã thẩm định hoặc công bố sản phẩm thương mại.
 
 ## Chạy tại máy
 
@@ -10,8 +10,6 @@ Không cần API key, MongoDB hay dịch vụ AI. Công cụ tính chạy trong 
 
 ## Nguồn tham khảo
 
-- [FID 2026](https://fid.huit.edu.vn/)
-- [Trang thể lệ FID](https://fid.huit.edu.vn/bai-viet/the-le/the-le-17)
 - [FAO: an toàn thực phẩm trong kinh tế tuần hoàn](https://www.fao.org/food-safety/scientific-advice/food-safety-in-a-circular-economy/en)
 - [FAO AGRIS: tổng quan sử dụng phụ phẩm nấm](https://agris.fao.org/search/en/providers/122535/records/65de373663b8185d9ca7957b)
 

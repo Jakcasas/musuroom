@@ -1,0 +1,18 @@
+.improvements{background:#f2f2e9;border-top:1px solid var(--line)}
+.improvement-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.improvement-grid article{background:var(--paper);border-top:3px solid #668145;padding:30px;display:flex;flex-direction:column}
+.improvement-number{font-size:12px;font-weight:800;letter-spacing:.12em;color:#668145;margin-bottom:26px}
+.improvement-grid h3{font-size:24px;margin-bottom:16px}
+.improvement-grid article>p{color:#506155;font-size:16px;line-height:1.75;margin-bottom:26px}
+.measure{margin-top:auto;border-top:1px solid var(--line);padding-top:20px}
+.measure span{font-size:11px;font-weight:800;letter-spacing:.12em;color:#668145}
+.measure p{font-size:14px;color:#566b59;line-height:1.7;margin:6px 0 0}
+.impact-note{margin-top:32px;border-left:3px solid #91ad5e;padding:5px 0 5px 22px;max-width:940px}
+.impact-note strong{font-family:Manrope,Arial,sans-serif;font-size:19px;letter-spacing:-.02em}
+.impact-note p{color:#506155;margin:8px 0 0;font-size:16px;line-height:1.8}
+.site-header nav{gap:22px}
+.intro-grid{grid-template-columns:minmax(0,42fr) minmax(0,58fr)}
+.calculator-grid{grid-template-columns:minmax(0,43fr) minmax(0,52fr)}
+.validation-grid{grid-template-columns:minmax(0,43fr) minmax(0,50fr)}
+@media(max-width:1040px){.header-link{display:none}.improvement-grid{gap:15px}.improvement-grid article{padding:24px}}
+@media(max-width:720px){.header-link{display:inline-block}.improvement-grid{grid-template-columns:1fr;gap:18px}.improvement-grid article{padding:25px}.improvement-number{margin-bottom:16px}.improvement-grid article>p{margin-bottom:20px}.impact-note{margin-top:25px}.site-header nav{display:none}}
