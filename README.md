@@ -2,6 +2,8 @@
 
 **[Repository công khai](https://github.com/Jakcasas/musuroom)** · **[Mục lục hướng dẫn](docs/README.md)** · **[GitHub và Supabase hiện tại](docs/GITHUB_SUPABASE.md)**
 
+[![Musuroom checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
+
 Musuroom phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm. Website có khảo sát cảm quan, đăng ký mẫu thử, kho tri thức có tìm kiếm và cổng giám khảo FID 2026. Toàn bộ giao diện dùng Roboto được lưu cùng mã nguồn, hỗ trợ tiếng Việt.
 
 ![Giao diện Musuroom 1](docs/musuroom-1-preview.png)
@@ -22,7 +24,9 @@ Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và se
 
 **Trạng thái ngày 30.09.2026:** bản local hoạt động; Supabase Singapore đã có schema, 6 bài tri thức và bucket hồ sơ riêng tư. Website Railway và QR công khai còn chờ kết nối database của server và deploy. Jev có tích hợp tùy chọn, chưa bật khi chưa có API key.
 
-Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.4.1`. Local vẫn chạy SQLite; cấu hình cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
+Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.4.2`. Local chạy SQLite; cấu hình cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
+
+Bản này sửa xung đột khi gửi/reset biểu mẫu, giữ mã đợt/mẫu từ QR khi tạo phiếu mới, chuẩn hóa số điện thoại Việt Nam để tránh đăng ký trùng và cải thiện tìm kiếm nhiều từ. Mẫu đo chỉ công bố khi minh chứng COA/REPORT vẫn ở trạng thái FINAL. Database kiểm tra cấu trúc/chỉ tiêu đo; API và CLI kiểm tra thêm giá trị và phạm vi. Jev có thời hạn xử lý toàn bộ phản hồi và giới hạn 64 KiB. GitHub tự kiểm tra trên Windows và Linux.
 
 - [Triển khai Railway + Supabase, vùng Singapore và QR](docs/DEPLOY_RAILWAY_SUPABASE.md)
 - [Đối chiếu kế hoạch và phần còn cần dữ liệu](docs/PLAN_REVIEW.md)
@@ -160,21 +164,25 @@ API thống kê và nhận xét đọc phân bố tổng hợp ngay tại databa
 - [Migration tài khoản, phiên và hồ sơ](backend/db/migrations/003_judge_portal.sql)
 - [Vận hành cổng giám khảo, cấp mã và Jev](docs/JUDGE_PORTAL.md)
 - [Mẫu môi trường](.env.example)
-- [Ghi chú bản 1.4.1](docs/RELEASE_NOTES.md)
+- [Ghi chú bản 1.4.2](docs/RELEASE_NOTES.md)
 
 Repository công khai dùng nhánh `main`. Checkout trên máy này dùng nhánh `codex/musuroom-backend`, theo dõi `origin/main`. Các thay đổi mới nên được thực hiện trên nhánh riêng rồi review trước khi đưa vào `main`.
 
 ## Mẫu đo và số liệu công bố
 
-`GET /api/v1/project/overview`, `/api/v1/product/batches`, `/api/v1/product/nutrition` đọc nội dung công bố. `POST /api/v1/admin/product-samples` cần ADMIN/CSRF và tài liệu FINAL. Có thể nhập JSON dữ liệu đo thực bằng `node scripts/add-sample.mjs data/ACTUAL_SAMPLE.json`; mặc định PRIVATE. Schema chỉ tiêu/phạm vi nằm trong `backend/routes/project.mjs`. Dinh dưỡng trên 100 g, không tự tạo đối chứng. Nếu chưa có hồ sơ đo, trang minh bạch hiển thị trạng thái chưa công bố.
+`GET /api/v1/project/overview`, `/api/v1/product/batches`, `/api/v1/product/nutrition` đọc nội dung công bố. `POST /api/v1/admin/product-samples` cần ADMIN/CSRF, ít nhất một chỉ tiêu đo hợp lệ và minh chứng COA/REPORT ở trạng thái FINAL. Có thể nhập JSON dữ liệu đo thực bằng `node scripts/add-sample.mjs data/ACTUAL_SAMPLE.json`; mặc định PRIVATE. Nếu minh chứng bị chuyển về DRAFT hoặc đổi sang loại khác, API công khai ngừng hiển thị mẫu liên quan. FINAL là nhãn do người vận hành chọn, không tự xác nhận chất lượng của minh chứng. Schema chỉ tiêu/phạm vi nằm trong `backend/routes/project.mjs`. Dinh dưỡng trên 100 g, không tự tạo đối chứng. Nếu chưa có hồ sơ đo, trang minh bạch hiển thị trạng thái chưa công bố.
 
 ## Kiểm tra
 
 ```powershell
-node --test --test-isolation=none tests/*.test.mjs
+pnpm check
+pnpm test
+pnpm audit --prod --audit-level=moderate
 ```
 
-Kiểm tra tìm kiếm tiếng Việt, nguồn, cân bằng vật chất, CSV, HTTP, migration/seed, lưu mẻ, xác thực, payload, origin, giới hạn chat và AI fallback bằng mock. Database kiểm thử backend dùng bộ nhớ hoặc thư mục tạm.
+`pnpm check` kiểm tra cú pháp JavaScript và đường dẫn tài nguyên HTML. `pnpm test` hiện có **37 bài kiểm thử**: tìm kiếm tiếng Việt, nguồn, cân bằng vật chất, CSV, HTTP, migration/seed SQLite/PostgreSQL, xác thực, CSRF, đăng ký trùng, minh chứng và phản hồi mô hình bằng mock. Database kiểm thử dùng bộ nhớ hoặc thư mục tạm. GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; audit dependencies sản xuất chạy trên Linux.
+
+Trước khi công bố từ máy người vận hành, chạy `node scripts/check-publish.mjs` sau commit để kiểm tra lịch sử Git đối chiếu bí mật cục bộ. Script không in giá trị bí mật. Tạo ZIP mã nguồn bằng `git archive` từ commit đã kiểm tra để chỉ đóng gói tệp được theo dõi.
 
 ## Phạm vi nội dung
 

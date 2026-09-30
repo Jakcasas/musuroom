@@ -10,7 +10,7 @@ if (library) {
     if (!response.ok) throw new Error('unavailable');
     const status = await response.json();
     mode.textContent = status.aiEnabled ? 'Trợ lý có kết nối OpenRouter: câu hỏi và nội dung tối đa ba bài liên quan sẽ được gửi để tổng hợp câu trả lời. Vui lòng tránh nhập thông tin cá nhân và đối chiếu với nguồn. Musuroom không lưu lịch sử hỏi đáp vào database.' : 'Tra cứu từ kho tri thức: hiển thị nội dung liên quan và nguồn để bạn đọc lại.';
-  } catch { mode.textContent = 'Trợ lý cần máy chủ Musuroom. Khởi động bằng MO_MUSUROOM.cmd để sử dụng.'; }
+  } catch { mode.textContent = 'Trợ lý tạm thời chưa sẵn sàng. Bạn vẫn có thể tìm kiếm và đọc kho tri thức bên dưới.'; }
   const form = document.getElementById('assistant-form');
   const answer = document.getElementById('assistant-answer');
   const sources = document.getElementById('assistant-sources');

@@ -1,4 +1,4 @@
-# REST API — Musuroom 1 (mã nguồn 1.4.1)
+# REST API — Musuroom 1 (mã nguồn 1.4.2)
 
 Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `Content-Type: application/json`, giới hạn 16 KB. Server không bật CORS; request từ origin khác bị từ chối. Database và `.env` không được phục vụ qua HTTP.
 
@@ -38,7 +38,7 @@ Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` t
 
 Login trả `Set-Cookie` HttpOnly/SameSite=Strict và JSON `{user:{id,name,role},expires_at,csrf_token}`. Gửi cookie cùng request; đặt `X-CSRF-Token` khi thay đổi dữ liệu. Không trả lại mã truy cập. Mã hết hạn/vô hiệu hoặc phiên hết hạn/idle trả 401; sai quyền hoặc CSRF trả 403. Tạo và thu hồi tài khoản qua CLI, không có API tự cấp quyền. Danh sách hồ sơ chứa `id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at,download_url`; file tải là attachment. Không trả đường dẫn tệp hệ thống.
 
-Jev body `{"comment":"Mùi nấm rõ","allow_remote":true}`. Góp ý 3–1.000 ký tự. Khi bật Jev và kết quả hợp lệ, trả `mode:jev,key,label,confidence,probabilities,message`; lỗi hoặc chưa bật trả `mode:manual,reason,label:null,message`. API không dùng Jev để cấp quyền hoặc sửa điểm. Hướng dẫn vận hành trong [JUDGE_PORTAL.md](JUDGE_PORTAL.md).
+Jev body `{"comment":"Mùi nấm rõ","allow_remote":true}`. Góp ý 3–1.000 ký tự. Khi bật Jev và kết quả hợp lệ, trả `mode:jev,key,label,confidence,probabilities,message`; lỗi hoặc chưa bật trả `mode:manual,reason,label:null,message`. Giới hạn theo IP sau xác thực dùng `CHAT_REQUESTS_PER_MINUTE`; vượt hạn mức trả 429 và `Retry-After`. Toàn bộ lời gọi/đọc phản hồi cùng một deadline; phản hồi tối đa 64 KiB, chặn redirect. Chỉ retry một lần với lỗi tạm thời trong thời gian còn lại. API không dùng Jev để cấp quyền hoặc sửa điểm. Hướng dẫn vận hành trong [JUDGE_PORTAL.md](JUDGE_PORTAL.md).
 
 ## Khảo sát cảm quan
 
@@ -90,6 +90,23 @@ Invoke-RestMethod -Uri 'http://127.0.0.1:8766/api/v1/sensory/submit' -Method Pos
 ```
 
 `organization_type`: `INDIVIDUAL`, `RESTAURANT`, `FOOD_BUSINESS`, `OTHER`; mặc định `INDIVIDUAL`. `dietary_preference`: `NONE`, `VEGAN`, `LOW_SODIUM`, `FAMILY`, `OTHER`; mặc định `NONE`. `shipping_address` tùy chọn tối đa 300 ký tự; nên chỉ bổ sung khi thực sự cần gửi mẫu. `consent:true` là bắt buộc để lưu liên hệ. Response không lặp lại tên hay địa chỉ, và chỉ xác nhận **đã nhận đăng ký**, không hứa gửi mẫu. Email không phân biệt hoa/thường; đăng ký trùng trả cùng ID và trạng thái.
+
+Số điện thoại phải có 8–15 chữ số; cho phép dấu `+` đầu chuỗi và dấu cách/chấm/gạch nối làm phân cách. Số Việt Nam dạng `0...`, `84...` và `+84...` được chuẩn hóa để đối chiếu trùng; dữ liệu đã lưu theo định dạng cũ vẫn được nhận diện, không tự ghi đè. Kiểm tra này kiểm tra hình thức, không xác minh số đang hoạt động hoặc thuộc về người đăng ký.
+
+## Mẫu đo và công bố
+
+`POST /api/v1/admin/product-samples` yêu cầu ADMIN và CSRF. Body có `sample_code`, `label`, `origin`, `measured_at` (ngày YYYY-MM-DD), `evidence_document_id`, `metrics`, `nutrition`, `publication_status` (`PRIVATE` mặc định hoặc `PUBLIC`). Minh chứng phải là COA hoặc REPORT ở trạng thái FINAL. Mã mẫu trùng trả 409; dữ liệu không hợp lệ trả 422 với lỗi theo trường.
+
+`metrics` và `nutrition` phải là object; cần ít nhất một chỉ tiêu đo. Giá trị là số JSON hữu hạn, không phải chuỗi. Chỉ chấp nhận các trường sau:
+
+| Nhóm | Trường và phạm vi |
+|---|---|
+| `metrics` | `moisture_percent`: 0–100; `water_activity`: 0–1; `cielab_l`: 0–100; `cielab_a`, `cielab_b`: −128–127; `solubility_percent`: 0–100 |
+| `nutrition` (trên 100 g) | `energy_kcal`: 0–1.000; `protein_g`, `fat_g`, `carbohydrate_g`: 0–100; `sodium_mg`: 0–100.000 |
+
+API và CLI kiểm tra tên chỉ tiêu, kiểu số và phạm vi; SQLite triggers/PostgreSQL CHECK constraints kiểm tra object, trường hợp rỗng và tập tên được hỗ trợ. Phạm vi là giới hạn kỹ thuật đầu vào, không chứng minh an toàn, tính hợp lý của công thức hay độ chính xác của báo cáo đo.
+
+`GET /api/v1/product/batches` và `/api/v1/product/nutrition` chỉ trả mẫu PUBLIC có minh chứng vẫn là FINAL COA/REPORT tại thời điểm đọc. Hạ trạng thái minh chứng hoặc đổi loại sẽ ẩn mẫu khỏi API công khai. File minh chứng tiếp tục tải qua cổng giám khảo có xác thực. `GET /api/v1/project/overview` trả phạm vi và trạng thái nghiên cứu của dự án.
 
 Danh sách có thông tin cá nhân chỉ đọc được bằng phiên ADMIN hoặc bearer token quản trị. `status`: `PENDING`, `SENT`, `FEEDBACK_RECEIVED`, `CANCELLED`; có thể lọc danh sách theo trạng thái. `PATCH` cập nhật trạng thái, `DELETE` xóa đăng ký. Khi nhận yêu cầu xóa dữ liệu, người vận hành dùng API quản trị; tránh đưa file SQLite vào nơi chia sẻ.
 

@@ -1,37 +1,5 @@
+import { readProviderJson } from './provider-response.mjs';
 const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-const maxResponseBytes = 65536;
-
-async function boundedJson(response, signal) {
-  signal.throwIfAborted();
-  const length = Number(response.headers?.get('content-length'));
-  if (length > maxResponseBytes) throw new Error('response_too_large');
-  if (!response.body?.getReader) {
-    const data = await response.json();
-    if (Buffer.byteLength(JSON.stringify(data)) > maxResponseBytes) throw new Error('response_too_large');
-    return data;
-  }
-  const reader = response.body.getReader();
-  const abort = () => { reader.cancel().catch(() => {}); };
-  signal.addEventListener('abort', abort, { once: true });
-  const chunks = [];
-  let size = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      signal.throwIfAborted();
-      if (done) break;
-      size += value.byteLength;
-      if (size > maxResponseBytes) throw new Error('response_too_large');
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } finally {
-    signal.removeEventListener('abort', abort);
-    reader.cancel().catch(() => {});
-    reader.releaseLock();
-  }
-}
-
 // One gateway per application: chat and sensory interpretation share the same budget.
 // Only counters/timestamps are retained; requests and answers are never cached.
 export function createModelGateway(config, fetchImpl = fetch, { now = Date.now } = {}) {
@@ -66,7 +34,7 @@ export function createModelGateway(config, fetchImpl = fetch, { now = Date.now }
           const requestedWait = raw == null ? 0 : /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw) * 1000 : Date.parse(raw) - now();
           return failure('provider_unavailable', Math.max(cooldown, Math.min(120000, Number.isFinite(requestedWait) ? Math.max(0, requestedWait) : 0)));
         }
-        const data = await boundedJson(response, controller.signal);
+        const data = await readProviderJson(response, controller.signal);
         // HTTP 200 can still contain a provider error or a truncated completion.
         const choice = data?.choices?.[0];
         if (data?.error || choice?.error || (choice?.finish_reason != null && choice.finish_reason !== 'stop') || typeof choice?.message?.content !== 'string' || !choice.message.content.trim()) {

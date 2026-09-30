@@ -1,8 +1,10 @@
-import { readdirSync,readFileSync,writeFileSync,mkdirSync } from 'node:fs';
+import { readFileSync,writeFileSync,mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const stamp=`to_char(now() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`;
-let sql=readdirSync(resolve(root,'backend/db/migrations')).filter(x=>x.endsWith('.sql')).sort().map(name=>readFileSync(resolve(root,'backend/db/migrations',name),'utf8')).join('\n');
+// The initial cloud schema is immutable; later dialect-specific changes have separate migrations.
+const initialFiles=['001_initial.sql','002_sensory_samples.sql','003_judge_portal.sql','004_product_samples.sql'];
+let sql=initialFiles.map(name=>readFileSync(resolve(root,'backend/db/migrations',name),'utf8')).join('\n');
 sql=sql.replaceAll(') STRICT;',');').replaceAll("strftime('%Y-%m-%dT%H:%M:%fZ','now')",stamp).replace(/json_valid\((\w+)\)/g,"jsonb_typeof($1::jsonb) IS NOT NULL");
 sql=sql.replace('id INTEGER PRIMARY KEY, account_id TEXT','id BIGSERIAL PRIMARY KEY, account_id TEXT');
 sql=sql.replace(/\b(expires_at|created_at|last_seen) INTEGER/g,'$1 BIGINT');

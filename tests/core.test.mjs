@@ -14,6 +14,9 @@ test('Vietnamese accents, capital Đ, combined category and empty search', () =>
   assert.equal(searchArticles(articles, '').length, articles.length);
   assert.equal(searchArticles(articles, 'umami', 'Phương pháp dự án').length, 0);
   assert.equal(searchArticles(articles, '<img src=x onerror=alert(1)>').length, 0);
+  assert.deepEqual(searchArticles(articles, 'do am').map(a => a.id), ['hoat-do-nuoc','can-bang']);
+  assert.deepEqual(searchArticles(articles, 'ĐỘ ẨM'), searchArticles(articles, 'do am'));
+  assert.ok(searchArticles(articles, 'umam').some(a => a.id === 'umami'));
 });
 test('Each article carries provenance and stable identity', () => {
   assert.equal(new Set(articles.map(a => a.id)).size, articles.length);

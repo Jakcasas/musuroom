@@ -43,7 +43,7 @@ CLI Railway cần phiên đăng nhập riêng: `pnpm exec railway login --browse
 
 ## Xác minh trước khi in
 
-1. Deployment Healthy và `/healthz` trả `version: 1.4.1`, `database: ok`.
+1. Chạy `pnpm check`, `pnpm test`, `pnpm audit --prod --audit-level=moderate`; kiểm tra GitHub Actions cho commit triển khai. Deployment Healthy và `/healthz` trả `version: 1.4.2`, `database: ok`.
 2. Mở trang chủ, khảo sát, kho tri thức và minh bạch mẫu qua HTTPS. API hồ sơ và danh sách đăng ký phải trả 401 nếu chưa đăng nhập.
 3. Đăng nhập bằng **mã cloud**, kiểm tra role JUDGE; tài khoản giám khảo không được xem danh sách liên hệ ADMIN. Đăng xuất sau khi kiểm tra.
 4. Kiểm tra vùng chạy thực tế bằng deployment settings hoặc response header `X-Railway-Upstream-Zone` khi gửi `X-Railway-Debug: 1`.

@@ -1,4 +1,4 @@
-# Cổng Ban Giám Khảo FID 2026 — Musuroom 1.3
+# Cổng Ban Giám Khảo FID 2026 — Musuroom 1 (mã nguồn 1.4.2)
 
 ## Mở và đăng nhập
 
@@ -63,6 +63,8 @@ Jev phân loại **một góp ý được người xem chủ động nhập và 
 
 Mean/Median/SD, quyền truy cập và xác thực được tính/kiểm tra bằng code. Jev không quyết định điểm hoặc quyền. Tài liệu triển khai: [TypeSafe API](https://docs.typesafe.ai/api), [Choice primitive](https://docs.typesafe.ai/primitives/choice), đối chiếu bản tài liệu người dùng cung cấp trong `../docs/typesafe-ai/` của workspace.
 
+API Jev giới hạn yêu cầu theo IP sau đăng nhập, dùng `CHAT_REQUESTS_PER_MINUTE`. Phản hồi tối đa 64 KiB, thời gian chờ bao gồm nhận/đọc body; chặn redirect. Lỗi 429/529 chỉ retry một lần trong deadline còn lại. Khi hết hạn hoặc phản hồi không hợp lệ, giao diện dùng chế độ tự phân loại.
+
 ## Bảo vệ và phạm vi vận hành
 
 - Mã truy cập được băm bằng scrypt có salt; database chỉ lưu hash mã và hash token phiên. Token ngẫu nhiên được lưu bằng cookie `HttpOnly`, `SameSite=Strict`; không dùng localStorage.
@@ -73,6 +75,6 @@ Mean/Median/SD, quyền truy cập và xác thực được tính/kiểm tra b�
 
 Biến: `AUTH_SESSION_MINUTES=120` (15–480), `AUTH_IDLE_MINUTES=20` (5–120), `AUTH_LOGIN_LIMIT=8` (3–20 lần sai trong 10 phút/IP). Mã sai trả thông báo chung; giới hạn đăng nhập lưu trong bộ nhớ và đặt lại khi khởi động.
 
-## Xác minh bản 1.3
+## Xác minh bản 1.4.2
 
-20 bài kiểm tra logic/API đã đạt: migration, dữ liệu cảm quan, đăng ký, cookie/CSRF, quyền JUDGE/ADMIN, xoay phiên, hết hạn/idle, thu hồi, giới hạn mã sai, file riêng tư và Jev mock. Đã thử UI đăng nhập/đăng xuất, radar/bảng, nhận xét, cập nhật trạng thái và gửi hai form trên viewport nhỏ; dữ liệu UI dùng server bộ nhớ tại cổng 8767. Server thật ở 8766 không chứa các phiếu kiểm thử đó. Kết nối Jev thật cần key và đánh giá chất lượng phân loại riêng.
+37 bài kiểm tra logic/API đã đạt: migration SQLite/PostgreSQL, dữ liệu cảm quan, đăng ký, cookie/CSRF, quyền JUDGE/ADMIN, xoay phiên, hết hạn/idle, thu hồi, giới hạn mã sai, file riêng tư, minh chứng mẫu đo và provider mock. Đã thử UI đăng nhập/đăng xuất, radar/bảng, nhận xét và gửi hai form, gồm khóa thao tác khi yêu cầu chậm và tạo phiếu mới giữ mã QR; dữ liệu UI dùng server bộ nhớ tại cổng 8767. Server thật ở 8766 không chứa các phiếu kiểm thử đó. Kết nối Jev thật cần key và đánh giá chất lượng phân loại riêng.

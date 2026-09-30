@@ -1,4 +1,36 @@
-# Musuroom 1 — bản mã nguồn 1.4.1
+# Musuroom 1 — bản mã nguồn 1.4.2
+
+Ngày cập nhật: **30.09.2026**.
+
+## Hoàn thiện bản 1.4.2
+
+| Phần | Lỗi đã sửa / cải tiến |
+|---|---|
+| Khảo sát | Khóa input/submit/reset khi đang gửi; ngăn gửi lặp; phiếu đã lưu chỉ mở qua “Phiếu mới”; giữ mã đợt/mẫu từ QR sau reset |
+| Đăng ký mẫu | Kiểm tra số điện thoại 8–15 chữ số, chuẩn hóa số Việt Nam; nhận diện cả định dạng cũ mà không sửa đăng ký đã lưu |
+| Kho tri thức | Tìm nhiều từ khớp từ đầy đủ, tránh “ẩm” khớp một phần của “phẩm”; tìm một từ vẫn hỗ trợ tiền tố |
+| Minh chứng mẫu đo | Loại tên chỉ tiêu thuộc prototype, yêu cầu số đo thực; minh chứng FINAL COA/REPORT; tự ẩn mẫu công khai khi minh chứng thay đổi |
+| Database | SQLite triggers và 5 PostgreSQL CHECK constraints bảo vệ object, chỉ tiêu rỗng và tên không được hỗ trợ |
+| Jev | Giới hạn theo IP sau đăng nhập; deadline gồm đọc body, tối đa 64 KiB, chặn redirect; fallback khi treo/lỗi/quá lớn |
+| Tệp và HTTP | Kiểm tra kích thước hồ sơ local trước khi đọc; CSP chỉ dùng font/style cùng server; vô hiệu quyền camera/microphone/vị trí |
+| Vận hành | Phiên bản health/status đọc từ package; cố định phiên bản dependencies/pnpm; kiểm tra cú pháp và tài nguyên; GitHub Actions Windows/Linux |
+| Tài liệu | README, API, kiến trúc, cổng giám khảo, hướng dẫn cloud và đối chiếu kế hoạch cập nhật cùng bản mã nguồn |
+
+## Kiểm chứng bản 1.4.2
+
+- **37/37 bài kiểm thử thành công** trên Node.js 24; database bộ nhớ/tạm, provider bằng mock. Không tạo phiếu giả vào database dự án.
+- Kiểm tra cú pháp JavaScript và liên kết tài nguyên HTML bằng `pnpm check`; audit dependencies sản xuất không phát hiện lỗ hổng đã công bố ở thời điểm kiểm tra.
+- Kiểm tra giao diện thực tế: gửi phiếu/đăng ký với request chậm, khóa/reset, giữ mã QR, đăng nhập/đăng xuất, Mean/SD/radar, nhận xét mô tả và hỏi đáp có nguồn. Kiểm tra màn hình nhỏ cho các trang chính.
+- Migration pg-004 đã áp dụng lên Supabase thực, 5 constraints được validate; 11 bảng bật RLS, 6 bài tri thức. Security/Performance Advisors sau migration không có WARN/ERROR; INFO RLS không policy là chủ ý chặn role trình duyệt, index chưa dùng trên database mới.
+- GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; xem trạng thái của commit tại [Actions](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml).
+
+Chưa gọi OpenRouter/Jev thật khi chưa có key/model. Website Railway và QR để in vẫn chờ hoàn tất xác thực kết nối PostgreSQL của server; cập nhật Supabase không đồng nghĩa website cloud đã deploy. FINAL là nhãn của người vận hành, không tự xác nhận giá trị khoa học/chứng nhận của báo cáo.
+
+Hướng dẫn ở [README](../README.md), hợp đồng request/response ở [API](API.md), trạng thái cloud ở [GitHub + Supabase](GITHUB_SUPABASE.md).
+
+---
+
+## Lịch sử: bản mã nguồn 1.4.1
 
 Ngày cập nhật: **30.09.2026**.
 

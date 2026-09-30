@@ -1,8 +1,9 @@
 {
   "name": "musuroom",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.19.0",
   "description": "Musuroom 1: Express, SQLite/PostgreSQL, private Supabase dossier and optional Jev",
   "scripts": {
     "start": "node server.mjs",
@@ -15,20 +16,21 @@
     "docs:search": "node scripts/search-typesafe.mjs",
     "qr:generate": "node scripts/generate-qr.mjs",
     "schema:postgres": "node scripts/build-postgres-schema.mjs",
+    "check": "node scripts/check-project.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "pg": "^8.23.0",
-    "qrcode": "^1.5.4"
+    "express": "5.2.1",
+    "pg": "8.23.0",
+    "qrcode": "1.5.4"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
-    "@railway/cli": "^5.63.1",
-    "jsqr": "^1.4.0",
-    "pngjs": "^7.0.0"
+    "@electric-sql/pglite": "0.5.8",
+    "@railway/cli": "5.63.1",
+    "jsqr": "1.4.0",
+    "pngjs": "7.0.0"
   }
 }

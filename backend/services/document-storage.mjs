@@ -1,5 +1,5 @@
 import { resolve, sep } from 'node:path';
-import { readFile, realpath, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, realpath, mkdir, writeFile, stat } from 'node:fs/promises';
 export function documentStorage(config,fetchImpl=fetch){
  const valid=name=>/^[0-9a-f-]{36}\.(pdf|txt|csv|docx|xlsx|png|jpg|webp|mp4)$/.test(name);
  const headers={apikey:config.storageKey,Authorization:`Bearer ${config.storageKey}`};
@@ -13,7 +13,7 @@ export function documentStorage(config,fetchImpl=fetch){
     const declared=Number(response.headers.get('content-length')||0);if(declared>50*1024*1024)throw new Error('document_too_large');
     const chunks=[];let length=0;for await(const chunk of response.body){length+=chunk.length;if(length>50*1024*1024)throw new Error('document_too_large');chunks.push(chunk);}return Buffer.concat(chunks);
    }
-   const root=await realpath(config.documentRoot);const path=await realpath(resolve(root,name));if(!path.startsWith(root+sep))throw new Error('invalid_document_path');return readFile(path);
+   const root=await realpath(config.documentRoot);const path=await realpath(resolve(root,name));if(!path.startsWith(root+sep))throw new Error('invalid_document_path');const info=await stat(path);if(!info.isFile()||info.size>50*1024*1024)throw new Error('document_too_large');return readFile(path);
   },
   async write(name,bytes,mime){
    if(!valid(name))throw new Error('invalid_document_path');

@@ -5,6 +5,7 @@
 - Repository công khai: **https://github.com/Jakcasas/musuroom**.
 - Nhánh mặc định: `main`.
 - Có hướng dẫn khởi động, ảnh giao diện Roboto và [mục lục tài liệu](README.md).
+- Bản mã nguồn `1.4.2`; [GitHub Actions](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml) kiểm tra cú pháp/tài nguyên, toàn bộ tests trên Windows/Linux và audit dependencies sản xuất trên Linux. Dependencies và phiên bản pnpm được cố định; actions dùng commit SHA.
 - Lịch sử Git được kiểm tra đối chiếu bí mật thực tế trước khi push bằng `scripts/check-publish.mjs`.
 - Mã nguồn có thể được tải ở **Code > Download ZIP** hoặc clone bằng Git. Mật khẩu database, khóa API, mã giám khảo và dữ liệu thực tế nằm ngoài repository.
 
@@ -18,8 +19,9 @@
 - Bucket `musuroom-dossier`: `public=false`, giới hạn file 50 MB.
 - Migration bổ sung tạo index cho khóa ngoại hồ sơ mẫu và thu hồi quyền gọi `public.rls_auto_enable()` của các role trình duyệt. Function/event trigger hệ thống vẫn được giữ.
 - Migration `pg-003-sensory-distribution` đã áp dụng ngày 30.09.2026: hàm tổng hợp điểm trả tối đa 49 dòng/đợt/mẫu, không có nội dung góp ý hoặc ID người thử; dùng `SECURITY INVOKER`, search path cố định, không cấp EXECUTE cho PUBLIC/anon/authenticated. Server/service_role được dùng theo phân quyền ứng dụng.
+- Migration `pg-004-product-integrity` đã áp dụng ngày 30.09.2026: 5 CHECK constraints cho hai object chỉ tiêu, ít nhất một chỉ tiêu và các tên được hỗ trợ. Đã xác minh 5 constraints được validate trên project thực. Không xóa dữ liệu hoặc mở quyền trình duyệt.
 
-Kiểm tra bảo mật Supabase Advisors ngày 30.09.2026 sau migration không có WARN/ERROR. Thông báo INFO [RLS không có policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) là chủ ý chặn Data API của role trình duyệt. Kiểm tra hiệu năng trước đó có INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) do database mới. Kết quả kiểm thử bản 1.4.1 xem [ghi chú phát hành](RELEASE_NOTES.md).
+Kiểm tra bảo mật và hiệu năng Supabase Advisors ngày 30.09.2026 sau migration pg-004 không có WARN/ERROR. Có 11 INFO [RLS không có policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), là chủ ý chặn Data API của role trình duyệt, và 7 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) trên database mới. Kết quả kiểm thử bản 1.4.2 xem [ghi chú phát hành](RELEASE_NOTES.md).
 
 Ứng dụng Express kiểm tra phiên, vai trò và CSRF trước khi đọc dữ liệu riêng. Backend kết nối PostgreSQL bằng Session pooler, xác minh CA và hostname; Storage sử dụng khóa phía server. Frontend không nhận khóa server.
 

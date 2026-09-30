@@ -3,6 +3,7 @@ import { extname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { createJevClassifier } from '../services/jev.mjs';
 import { documentStorage } from '../services/document-storage.mjs';
+import { rateLimit } from '../security/rate-limit.mjs';
 export function judgeRouter(db, security, config, fetchImpl) {
   const router = Router(); const classify = createJevClassifier(config, fetchImpl);const storage=documentStorage(config,fetchImpl);
   router.post('/auth/login', security.login);
@@ -25,12 +26,9 @@ export function judgeRouter(db, security, config, fetchImpl) {
       res.set({ 'Content-Type':doc.mime, 'Content-Disposition':`attachment; filename="musuroom-${doc.id}${extname(doc.file_name)}"`, 'Cache-Control':'no-store' }).send(body);
     } catch { res.status(404).json({error:'document_file_unavailable'}); }
   });
-  let windowStart=Date.now(); let count=0;
-  router.post('/judge/classify', security.requireReviewer, async (req,res) => {
+  router.post('/judge/classify', security.requireReviewer, rateLimit(config.chatLimit,'rate_limit_exceeded'), async (req,res) => {
     const comment=req.body?.comment;
     if (typeof comment !== 'string' || comment.trim().length<3 || comment.length>1000) return res.status(422).json({error:'comment_must_be_3_to_1000_characters'});
-    if (Date.now()-windowStart>60000) {windowStart=Date.now();count=0;}
-    if (++count>config.chatLimit) return res.status(429).set('Retry-After','60').json({error:'rate_limit_exceeded'});
     res.json(await classify(comment.trim(),req.body.allow_remote===true));
   });
   return router;

@@ -3,7 +3,12 @@ export function normalize(value) {
 }
 export function searchArticles(articles, query = '', category = '') {
   const words = normalize(query).split(' ').filter(Boolean);
-  return articles.filter(a => (!category || a.category === category) && words.every(w => normalize([a.title, a.summary, a.body, a.application, a.limitation, a.source, a.year, a.category, ...a.tags].join(' ')).includes(w)));
+  return articles.filter(a => {
+    if (category && a.category !== category) return false;
+    const textWords = normalize([a.title, a.summary, a.body, a.application, a.limitation, a.source, a.year, a.category, ...a.tags].join(' ')).split(' ');
+    // Multiword queries match complete words: "am" must not match "pham".
+    return words.every(word => words.length === 1 ? textWords.some(value => value.startsWith(word)) : textWords.includes(word));
+  });
 }
 export const defaults = { mass: 100, reject: 10, initial: 88, final: 8, loss: 5 };
 export function calculate(values) {

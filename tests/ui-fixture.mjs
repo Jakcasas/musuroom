@@ -13,5 +13,7 @@ db.prepare('INSERT INTO quality_documents(id,title,doc_type,file_name,mime,size_
 const insert=db.prepare('INSERT INTO sensory_evaluations(id,session_code,sample_code,tester_type,color_score,aroma_score,umami_taste_score,aftertaste_score,overall_acceptance,comments) VALUES(?,?,?,?,?,?,?,?,?,?)');
 for(const score of [5,7,9])insert.run('fixture-'+score,'TEST-ONLY','NAM-01','CONSUMER',score,score,score,score,score,'Dữ liệu kiểm thử');
 db.prepare('INSERT INTO sample_requests(id,full_name,contact,contact_normalized,organization_type,dietary_preference,consent_at) VALUES(?,?,?,?,?,?,?)').run('fixture-lead','Người dùng kiểm thử','test@example.invalid','test@example.invalid','INDIVIDUAL','NONE',new Date().toISOString());
-const server=createApp({database:db,config:{...loadConfig({DATABASE_PATH:':memory:'}),documentRoot:resolve(projectRoot,'tests/fixtures')}});
+const delay=Math.min(5000,Math.max(0,Number(process.env.UI_FIXTURE_DELAY_MS)||0));
+const fixtureDb=delay?{prepare(sql){const statement=db.prepare(sql);return{all:statement.all.bind(statement),get:statement.get.bind(statement),async run(...values){if(/^INSERT INTO (?:sensory_evaluations|sample_requests)/.test(sql))await new Promise(resolve=>setTimeout(resolve,delay));return statement.run(...values);}};},close:()=>db.close()}:db;
+const server=createApp({database:fixtureDb,config:{...loadConfig({DATABASE_PATH:':memory:'}),documentRoot:resolve(projectRoot,'tests/fixtures')}});
 server.listen(8767,'127.0.0.1',()=>console.log('Disposable UI fixture at http://127.0.0.1:8767'));

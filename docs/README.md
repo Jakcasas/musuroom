@@ -3,7 +3,7 @@
 | Bạn muốn làm gì? | Tài liệu |
 |---|---|
 | Chạy website và xem các trang | [README dự án](../README.md) |
-| Xem cải tiến trợ lý và thống kê ở bản 1.4.1 | [Ghi chú phát hành](RELEASE_NOTES.md) |
+| Xem các lỗi đã sửa và cải tiến ở bản 1.4.2 | [Ghi chú phát hành](RELEASE_NOTES.md) |
 | Xem repository và trạng thái Supabase | [GitHub + Supabase](GITHUB_SUPABASE.md) |
 | Deploy Railway và in QR | [Triển khai cloud](DEPLOY_RAILWAY_SUPABASE.md) |
 | Xem API khảo sát, thống kê và đăng ký mẫu | [REST API](API.md) |

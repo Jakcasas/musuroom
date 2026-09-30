@@ -23,6 +23,7 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  assert.equal((await engine.query("SELECT relrowsecurity FROM pg_class WHERE relname='sample_requests'")).rows[0].relrowsecurity,true);
  assert.equal((await engine.query("SELECT has_function_privilege('anon','public.musuroom_sensory_distribution(text,text)','EXECUTE') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_function_privilege('authenticated','public.musuroom_sensory_distribution(text,text)','EXECUTE') AS allowed")).rows[0].allowed,false);
+ assert.equal((await engine.query("SELECT count(*)::int n FROM pg_constraint WHERE conrelid='product_samples'::regclass AND conname IN ('product_metrics_object','product_nutrition_object','product_measurements_required','product_metrics_supported','product_nutrition_supported')")).rows[0].n,5);
  const judge=await createAccount(db,{name:'Cloud test judge'});const admin=await createAccount(db,{name:'Cloud test admin',role:'ADMIN'});
  const server=createApp({config:loadConfig(production),database:db});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(async()=>{await new Promise(r=>server.close(r));await server.databaseClosed;});
  const base=`http://127.0.0.1:${server.address().port}`;
@@ -46,9 +47,15 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  const evidence='22222222-2222-4222-8222-222222222222';await db.prepare('INSERT INTO quality_documents(id,title,doc_type,file_name,mime,size_bytes,sha256,evidence_status) VALUES(?,?,?,?,?,?,?,?)').run(evidence,'Fixture report','COA',evidence+'.txt','text/plain',1,'fixture','DRAFT');
  const sample={sample_code:'PG-MUSH',label:'Measured fixture',origin:'Test supplier',measured_at:'2026-09-30',evidence_document_id:evidence,metrics:{water_activity:0.4,moisture_percent:8},nutrition:{protein_g:12}};
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,422);await db.prepare("UPDATE quality_documents SET evidence_status='FINAL' WHERE id=?").run(evidence);
+ await db.prepare("UPDATE quality_documents SET doc_type='BRIEF' WHERE id=?").run(evidence);assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,422);
+ await db.prepare("UPDATE quality_documents SET doc_type='COA' WHERE id=?").run(evidence);
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,201);assert.equal((await(await call('/api/v1/product/batches')).json()).count,0);
  await db.prepare("UPDATE product_samples SET publication_status='PUBLIC' WHERE sample_code=?").run(sample.sample_code);
  const published=await(await call('/api/v1/product/batches')).json();assert.equal(published.count,1);assert.equal(published.items[0].metrics.water_activity,0.4);assert.equal((await(await call('/api/v1/product/nutrition')).json()).available,true);
+ await assert.rejects(db.prepare('UPDATE product_samples SET metrics_json=? WHERE sample_code=?').run('[]',sample.sample_code));
+ await assert.rejects(db.prepare('UPDATE product_samples SET metrics_json=? WHERE sample_code=?').run('{"constructor":1}',sample.sample_code));
+ await db.prepare("UPDATE quality_documents SET evidence_status='DRAFT' WHERE id=?").run(evidence);assert.equal((await(await call('/api/v1/product/batches')).json()).count,0);
+ await db.prepare("UPDATE quality_documents SET evidence_status='FINAL' WHERE id=?").run(evidence);
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,409);assert.equal((await call('/api/v1/admin/product-samples','POST',{...sample,sample_code:'OTHER',metrics:{water_activity:2}},operator)).status,422);
  assert.equal((await call('/api/v1/auth/logout','POST',{},signed)).status,204);assert.equal((await call('/api/v1/judge/dossier','GET',undefined,signed)).status,401);
 });

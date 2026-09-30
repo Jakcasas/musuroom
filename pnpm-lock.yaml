@@ -9,26 +9,26 @@ importers:
   .:
     dependencies:
       express:
-        specifier: ^5.1.0
+        specifier: 5.2.1
         version: 5.2.1
       pg:
-        specifier: ^8.23.0
+        specifier: 8.23.0
         version: 8.23.0
       qrcode:
-        specifier: ^1.5.4
+        specifier: 1.5.4
         version: 1.5.4
     devDependencies:
       '@electric-sql/pglite':
-        specifier: ^0.5.8
+        specifier: 0.5.8
         version: 0.5.8
       '@railway/cli':
-        specifier: ^5.63.1
+        specifier: 5.63.1
         version: 5.63.1
       jsqr:
-        specifier: ^1.4.0
+        specifier: 1.4.0
         version: 1.4.0
       pngjs:
-        specifier: ^7.0.0
+        specifier: 7.0.0
         version: 7.0.0
 
 packages:

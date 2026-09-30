@@ -1,16 +1,18 @@
-# Kiến trúc Musuroom 1.3
+# Kiến trúc Musuroom 1 (mã nguồn 1.4.2)
 
 ## Luồng ứng dụng
 
 ```mermaid
 flowchart LR
   UI[Website Musuroom] --> API[Express API]
-  API --> DB[(SQLite)]
+  API --> DB[(SQLite local / PostgreSQL cloud)]
+  API --> Auth[Phiên / vai trò / CSRF]
+  Auth --> Files[Hồ sơ: local / private Supabase Storage]
   API --> S[Sensory Metrics]
   S --> DB
   API --> R[Chọn bài liên quan]
   R --> E[Trích đoạn có nguồn]
-  R -. Khi bật AI .-> AI[OpenRouter]
+  R -. Khi kết nối mô hình .-> AI[Gateway OpenRouter]
   AI --> V[Kiểm tra số trích dẫn]
   V --> UI
   E --> UI
@@ -18,15 +20,21 @@ flowchart LR
 
 Frontend vẫn chạy bằng HTML/CSS/JavaScript. Kho tri thức tải dữ liệu từ `/api/knowledge`; nếu API không sẵn sàng, dùng bản dữ liệu đi kèm và hiển thị trạng thái. Tìm kiếm hiện chạy trên tập bài đã tải, chuẩn hóa tiếng Việt có/không dấu. API cũng hỗ trợ `q` và `category` để các ứng dụng khác sử dụng.
 
+Tìm nhiều từ yêu cầu khớp từng từ đầy đủ để tránh “ẩm” khớp một phần của “phẩm”. Tìm một từ hỗ trợ tiền tố khi đang gõ. Form cảm quan/đăng ký khóa các điều khiển trong lúc gửi; dữ liệu được chụp trước khi khóa. Phiếu đã gửi chỉ mở lại qua “Phiếu mới”; reset giữ mã đợt/mẫu mặc định từ QR.
+
 ## Cấu trúc thư mục
 
 ```text
 backend/
   app.mjs                  Express, middleware, REST routes
   config.mjs               Kiểm tra và ánh xạ biến môi trường
-  db/database.mjs          Kết nối, migration và seed
+  db/configured.mjs        Chọn database theo cấu hình
+  db/database.mjs          SQLite: migration và seed
+  db/postgres.mjs          PostgreSQL: TLS, session lock và migration
   db/migrations/*.sql      Schema SQL có phiên bản
-  repositories/            Đọc/ghi SQLite bằng prepared statement
+  repositories/            Prepared statements bất đồng bộ cho hai dialect
+  services/model-gateway.mjs Giới hạn đồng thời/cooldown OpenRouter
+  services/provider-response.mjs Deadline và giới hạn body provider
   services/assistant.mjs   Truy xuất tài liệu và AI tùy chọn
   security/auth.mjs        Mã scrypt, cookie phiên và phân quyền
   routes/judge.mjs         Hồ sơ riêng tư và Jev có đồng ý
@@ -158,6 +166,19 @@ erDiagram
     TEXT sha256
     TEXT evidence_status
   }
+  quality_documents ||--o{ product_samples : evidence
+  product_samples {
+    TEXT id PK
+    TEXT sample_code UK
+    TEXT label
+    TEXT origin
+    TEXT process_notes
+    TEXT metrics_json
+    TEXT nutrition_json
+    TEXT measured_at
+    TEXT evidence_document_id FK
+    TEXT publication_status
+  }
   access_audit {
     INTEGER id PK
     TEXT account_id
@@ -169,15 +190,23 @@ erDiagram
 
 Tệp ở `data/dossier/`, ngoài static root `dist/`. API kiểm tra quyền trước khi đọc metadata hoặc file, xác minh containment bằng realpath và đối chiếu hash/size. Trang đăng nhập static có thể mở, nội dung hồ sơ được tải riêng sau xác thực. JUDGE đọc tài liệu/cảm quan; ADMIN thêm quyền dữ liệu đăng ký và mẻ thử. Nhật ký không chứa mã truy cập. SQLite lưu hash token phiên; frontend giữ CSRF trong bộ nhớ.
 
+Cloud dùng bucket Supabase riêng tư và đường tải qua API có xác thực, chặn redirect, giới hạn 50 MB rồi kiểm tra hash/size. Backend giữ khóa Storage; không tạo public object URL. Local kiểm tra kích thước file trước khi đọc vào bộ nhớ.
+
+`product_samples` lưu số đo thực và FK minh chứng. API/CLI chỉ nhận COA/REPORT ở trạng thái FINAL, ít nhất một chỉ tiêu đo có số hữu hạn trong phạm vi. Migration SQLite 005 và PostgreSQL pg-004 kiểm tra object, trường hợp rỗng và tập tên chỉ tiêu. API công khai kiểm tra lại trạng thái/loại minh chứng mỗi lần đọc; đổi về DRAFT sẽ ẩn mẫu liên quan.
+
 Jev chỉ nhận một góp ý người dùng nhập và đồng ý gửi, qua TypeSafe System One với câu hỏi `choice`. Server kiểm tra cấu trúc, loại nhãn và xác suất trước khi trả gợi ý. Nhận xét cảm quan bằng OpenRouter vẫn là cấu hình riêng; số liệu tính bằng code. Xem [hướng dẫn cổng giám khảo](JUDGE_PORTAL.md).
 
 ## Giới hạn triển khai
 
-Bản này phục vụ một máy trên `127.0.0.1`. SQLite phù hợp quy mô hiện tại; đã có tài khoản JUDGE/ADMIN và phiên có thời hạn. Chưa có quản trị bài viết, đồng bộ nhiều máy hay tìm kiếm vector. API mẻ thử chỉ cho ADMIN hoặc bearer token riêng của người vận hành. Triển khai công cộng cần thiết kế HTTPS, cookie Secure, giới hạn theo người dùng và quy trình quản lý tài khoản.
+Bản local phục vụ tại `127.0.0.1` bằng SQLite. Cấu hình production yêu cầu HTTPS public origin, PostgreSQL với TLS xác minh CA/hostname và private Supabase Storage; thiếu cấu hình thì server từ chối khởi động. Cookie production dùng Secure và tiền tố `__Host-`. Schema Supabase có RLS và thu hồi quyền bảng/hàm của role trình duyệt; dữ liệu riêng đi qua Express kiểm tra phiên/quyền. Supabase đã nhận migration/seed nhưng website Railway vẫn chờ hoàn tất xác thực kết nối database của server.
+
+Một replica; rate limit và gateway giữ trạng thái trong bộ nhớ của tiến trình. Trước khi tăng replica cần kho điều phối chung. Chưa có quản trị bài viết, đồng bộ local/cloud hay tìm kiếm vector. API mẻ thử chỉ cho ADMIN hoặc bearer token riêng của người vận hành. Cấp và thu hồi tài khoản qua CLI.
 
 AI kho tri thức lấy tối đa 3 bài bằng đối sánh từ khóa. Server kiểm tra mã nguồn trích dẫn có thuộc các bài đã truy xuất; phép kiểm tra này không chứng minh mọi câu AI sinh ra đều đúng. Giao diện dẫn về bài gốc để đối chiếu. Khi thiếu nguồn, lỗi provider hoặc trích dẫn không hợp lệ, trả nội dung tra cứu từ thư viện. AI mock đã được kiểm tra; gọi provider thật cần API key/model hợp lệ.
 
 AI cho thống kê cảm quan chỉ nhận số lượng phiếu, trung bình và độ lệch chuẩn theo tiêu chí, không nhận phiếu cá nhân, nhận xét hay liên hệ. Với dưới 3 phiếu hoặc AI chưa bật, server trả nhận xét mô tả. Không nên dùng AI để tuyên bố mức độ tin cậy hoặc sự khác biệt có ý nghĩa thống kê.
+
+Thống kê đọc tối đa 49 dòng phân bố từ SQLite query hoặc PostgreSQL `musuroom_sensory_distribution`, không tải góp ý/ID người thử. Mean/median/SD mẫu tính từ histogram; CSV vẫn đọc phiếu thô theo phân quyền. Gateway OpenRouter dùng chung cho hỏi đáp/nhận xét; Jev phân loại có opt-in riêng. Cả hai chặn redirect và giới hạn body 64 KiB; lỗi provider dùng kết quả dự phòng.
 
 ## Tài liệu kỹ thuật sử dụng
 

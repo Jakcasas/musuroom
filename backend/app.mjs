@@ -7,6 +7,7 @@ import { knowledgeRepository } from './repositories/knowledge.mjs';
 import { batchRepository } from './repositories/batches.mjs';
 import { createAssistant } from './services/assistant.mjs';
 import { createModelGateway } from './services/model-gateway.mjs';
+import { releaseInfo } from './version.mjs';
 import { v1Router } from './routes/v1.mjs';
 import { createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
@@ -26,7 +27,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.locals.db = db;
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
-    res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'X-Frame-Options':'DENY', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'" });
+    res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'X-Frame-Options':'DENY', 'Permissions-Policy':'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'" });
     let path;
     try { path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { return res.status(400).json({ error: 'invalid_url' }); }
     if (path.includes('\0') || path.includes('\\') || path.split('/').some(part => part.startsWith('.'))) return res.status(403).json({ error: 'forbidden_path' });
@@ -48,8 +49,8 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
     next();
   });
   app.use(express.json({ limit: '16kb', strict: true }));
-  app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.1', database: 'ok' }); });
-  app.get('/api/status', async (req, res) => res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.1', aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
+  app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ ...releaseInfo, database: 'ok' }); });
+  app.get('/api/status', async (req, res) => res.json({ ...releaseInfo, aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
   app.get('/api/knowledge', async (req, res) => {
     const q = req.query.q ?? ''; const category = req.query.category ?? '';
     if (typeof q !== 'string' || q.length > 200 || typeof category !== 'string' || category.length > 100) return res.status(400).json({ error: 'invalid_query' });
