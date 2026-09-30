@@ -5,7 +5,7 @@
 - Railway project `Musuroom 1`: `2fb171d1-803d-4f5e-93cc-94837e2f42d4`.
 - Service `musuroom-web`: `1bb6900a-64d2-47c9-be06-648f6139ff6e`.
 - Tên miền đã cấp: `https://musuroom-web-production.up.railway.app`. **Chưa phải xác nhận website hoạt động**; cần hoàn tất kết nối, deploy và health check.
-- Supabase project `hlkzngyuoqzcfhrfkuub`, schema public chưa có bảng khi kiểm tra.
+- Supabase project `hlkzngyuoqzcfhrfkuub`: đã áp dụng schema và migration hardening qua plugin; 11 bảng, 6 nguồn và 6 bài tri thức đã được kiểm tra trên database thực.
 - Supabase Singapore `ap-southeast-1`. Railway cấu hình Singapore `asia-southeast1-eqsg3a`, một replica.
 - Hai nhà cung cấp chưa có deployment region Việt Nam theo [Supabase regions](https://supabase.com/docs/guides/platform/regions) và [Railway regions](https://docs.railway.com/deployments/regions). Singapore được chọn theo vị trí và khoảng cách API–database, chưa phải kết quả đo độ trễ thực tế.
 
@@ -21,7 +21,7 @@ Không dùng transaction pooler cổng 6543: migration sử dụng khóa Postgre
 
 Đã tải CA từ nút **Database Settings > SSL configuration > Download certificate** trong Supabase Dashboard: [Supabase Root 2021 CA](https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt). Bản cục bộ nằm trong `data/supabase-ca.crt`; `DATABASE_CA_CERT` đã lưu riêng trong `data/cloud.env` và được chuyển sang Railway bằng stdin. SHA-256 fingerprint: `80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA`.
 
-Kết nối đã vượt qua xác minh chứng chỉ và hostname của pooler với `rejectUnauthorized=true`. PostgreSQL hiện trả `28P01` (chưa chấp nhận mật khẩu đã chọn); chưa chạy migration hoặc deploy. Người dùng cần tự hoàn tất thao tác Reset database password trong Supabase rồi kiểm tra lại.
+Kết nối đã vượt qua xác minh chứng chỉ và hostname của pooler với `rejectUnauthorized=true`. Lần kiểm tra kết nối của server gần nhất trả `28P01` (chưa chấp nhận mật khẩu đã chọn). Migration đã được áp dụng qua plugin Supabase OAuth; chưa xác nhận website Railway hoạt động. Người dùng cần tự hoàn tất thao tác Reset database password trong Supabase rồi kiểm tra lại kết nối của server.
 
 Trên máy mới, lấy CA từ Dashboard của project. Nếu lưu PEM trên một dòng trong `.env`, thay mỗi xuống dòng bằng ký tự `\n` và bọc giá trị bằng **dấu nháy đơn**; không JSON-escape thêm lần nữa. Hướng dẫn nhà cung cấp: [kết nối có xác minh TLS](https://supabase.com/docs/guides/database/connecting-to-postgres).
 

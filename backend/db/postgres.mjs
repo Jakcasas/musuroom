@@ -18,11 +18,16 @@ export function postgresAdapter(client){
 }
 export async function initializePostgres(db){
  await db.exec('CREATE TABLE IF NOT EXISTS schema_migrations(version TEXT PRIMARY KEY,applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text)');
- const name='pg-001-musuroom-1';
+ const migrations=[
+  ['pg-001-musuroom-1','001_musuroom.sql'],
+  ['pg-002-access-hardening','20260930101047_musuroom_access_hardening.sql'],
+ ];
+ for(const [name,file] of migrations){
  if(!await db.prepare('SELECT version FROM schema_migrations WHERE version=?').get(name)){
   await db.exec('BEGIN');
-  try{await db.exec(readFileSync(resolve(import.meta.dirname,'../../supabase/migrations/001_musuroom.sql'),'utf8'));await db.prepare('INSERT INTO schema_migrations(version) VALUES(?)').run(name);await db.exec('COMMIT');}
+  try{await db.exec(readFileSync(resolve(import.meta.dirname,'../../supabase/migrations',file),'utf8'));await db.prepare('INSERT INTO schema_migrations(version) VALUES(?)').run(name);await db.exec('COMMIT');}
   catch(error){await db.exec('ROLLBACK');throw error;}
+ }
  }
  for(const a of articles){
   await db.prepare('INSERT INTO sources(id,citation,url,publication_year,evidence_type,access_scope,reviewed_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING').run(a.ref,a.source,a.url,Number(a.year),a.type,a.access,'2026-09-30');

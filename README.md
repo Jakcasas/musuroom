@@ -1,5 +1,27 @@
 # Musuroom 1 — Website + Express + PostgreSQL/Supabase
 
+**[Repository công khai](https://github.com/Jakcasas/musuroom)** · **[Mục lục hướng dẫn](docs/README.md)** · **[GitHub và Supabase hiện tại](docs/GITHUB_SUPABASE.md)**
+
+Musuroom phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm. Website có khảo sát cảm quan, đăng ký mẫu thử, kho tri thức có tìm kiếm và cổng giám khảo FID 2026. Toàn bộ giao diện dùng Roboto được lưu cùng mã nguồn, hỗ trợ tiếng Việt.
+
+![Giao diện Musuroom 1](docs/musuroom-1-preview.png)
+
+## Bắt đầu nhanh
+
+Cài Node.js **24+** và pnpm **11.19.0**, rồi chạy:
+
+```sh
+git clone https://github.com/Jakcasas/musuroom.git
+cd musuroom
+pnpm install --frozen-lockfile
+node scripts/setup.mjs
+node server.mjs
+```
+
+Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và setup, có thể dùng `MO_MUSUROOM.cmd` để chạy nền. Setup tạo cấu hình riêng tư; server tự tạo database local và nạp kho tri thức.
+
+**Trạng thái ngày 30.09.2026:** bản local hoạt động; Supabase Singapore đã có schema, 6 bài tri thức và bucket hồ sơ riêng tư. Website Railway và QR công khai còn chờ kết nối database của server và deploy. Jev có tích hợp tùy chọn, chưa bật khi chưa có API key.
+
 Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.4.0`. Local vẫn chạy SQLite; cấu hình cloud Railway + Supabase sử dụng PostgreSQL và private Storage.
 
 - [Triển khai Railway + Supabase, vùng Singapore và QR](docs/DEPLOY_RAILWAY_SUPABASE.md)

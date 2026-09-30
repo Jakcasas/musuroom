@@ -7,3 +7,6 @@ node_modules/
 data/
 coverage/
 .pnpm-store/
+cloud.env
+supabase/.temp/
+supabase/.branches/
