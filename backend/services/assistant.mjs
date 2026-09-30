@@ -12,7 +12,7 @@ export function retrieve(question, articles) {
 export function createAssistant(config, repository, fetchImpl = fetch) {
   let active = 0;
   return async question => {
-    const documents = retrieve(question, repository.all());
+    const documents = retrieve(question, await repository.all());
     const sources = documents.map(a => ({ ref: a.ref, id: a.id, title: a.title, citation: a.source, url: a.url, year: a.year, libraryUrl: `tri-thuc.html?doc=${encodeURIComponent(a.id)}` }));
     const fallback = reason => ({ mode: 'retrieval', reason, answer: documents.length ? documents.map(a => `${a.summary} [${a.ref}]\nGiới hạn: ${a.limitation}`).join('\n\n') : 'Kho tri thức hiện chưa có nội dung phù hợp. Bạn có thể hỏi về phụ phẩm nấm, umami, hoạt độ nước hoặc cách tính mẻ.', sources });
     if (!documents.length) return fallback('no_matches');

@@ -1,0 +1,661 @@
+# Client SDKs
+Source: https://docs.typesafe.ai/sdk
+Install a TypeSafe client SDK and use typed questions and answers in your application.
+Our client SDKs provide typed questions and answers for the TypeSafe API and handle retries automatically with their default retry policy.
+Choose a client SDK for installation instructions, examples, and API details.
+ Install the Python client SDK and make your first request.
+ Install the JavaScript client SDK and make your first typed request.
+You can also call the [HTTP API] directly from any language.
+# JavaScript SDK
+Source: https://docs.typesafe.ai/sdk/javascript
+JavaScript and TypeScript SDK for [TypeSafe AI].
+## Quickstart
+Install the SDK (Node.js 20 or newer):
+Set `TYPESAFE_API_KEY` in your environment, then create and use the client:
+Answer types are inferred from your questions. The package includes ESM, CommonJS, and TypeScript declarations.
+## Documentation
+Learn what TypeSafe can do in the [TypeSafe docs].
+See the SDK's [client] and [types] for API options and defaults.
+# API reference
+Source: https://docs.typesafe.ai/sdk/javascript/api
+## Classes
+* [APIConnectionError]
+* [APIError]
+* [APIPromise]
+* [APITimeoutError]
+* [APIUserAbortError]
+* [AuthenticationError]
+* [BadRequestError]
+* [InternalServerError]
+* [NotFoundError]
+* [PermissionDeniedError]
+* [RateLimitError]
+* [TypeSafeClient]
+* [TypeSafeError]
+* [UnprocessableEntityError]
+## Interfaces
+* [ChoiceQuestion]
+* [ChoiceResponse]
+* [Logger]
+* [ModelCard]
+* [Models]
+* [NoulQuestion]
+* [NoulResponse]
+* [Questions]
+* [RequestOptions]
+* [RetryPolicy]
+* [ScoreQuestion]
+* [ScoreResponse]
+* [SystemOneRequest]
+* [SystemOneRequestPayload]
+* [SystemOneResult]
+* [TypeSafeClientConfig]
+* [Usage]
+* [WithResponse]
+## Type Aliases
+* [ChoiceCriteria]
+* [Description]
+* [EntryType]
+* [EnvVar]
+* [Fetch]
+* [JsonValue]
+* [LogLevel]
+* [Question]
+* [ResultFor]
+* [ScoreCriteria]
+* [ScoreLegend]
+* [ScoreOf]
+## Variables
+* [ENV]
+* [LOG\_LEVELS]
+* [VERSION]
+## Functions
+* [choice]
+* [noul]
+* [score]
+# Class: APIConnectionError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIConnectionError
+The request or response-body delivery failed (DNS, TLS, connection closed, etc.).
+## Extends
+* [`TypeSafeError`]
+## Extended by
+* [`APITimeoutError`]
+## Constructors
+### Constructor
+#### Parameters
+##### message?
+`string` = `"Connection error."`
+##### options?
+`ErrorOptions`
+#### Returns
+`APIConnectionError`
+#### Overrides
+[`TypeSafeError`].[`constructor`]
+# Class: APIError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIError
+An unsuccessful HTTP response from the API.
+## Extends
+* [`TypeSafeError`]
+## Extended by
+* [`AuthenticationError`]
+* [`BadRequestError`]
+* [`InternalServerError`]
+* [`NotFoundError`]
+* [`PermissionDeniedError`]
+* [`RateLimitError`]
+* [`UnprocessableEntityError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`APIError`
+#### Overrides
+[`TypeSafeError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+***
+### headers
+HTTP response headers.
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+***
+### status
+HTTP response status code.
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+`APIError`
+# Class: APIPromise
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIPromise
+A promise for the parsed result with access to the HTTP response.
+Non-2xx responses reject with an `APIError`, including through `asResponse()`.
+## Extends
+* `Promise`\
+## Type Parameters
+### T
+`T`
+## Constructors
+### Constructor
+#### Parameters
+##### responsePromise
+`Promise`\
+##### parseResponse
+(`response`) => `Promise`\
+#### Returns
+`APIPromise`\
+#### Overrides
+## Methods
+### asResponse()
+Resolves to the raw `Response` without parsing the body. SDK requests buffer the full
+body under the request timeout before handoff; reading it afterwards is caller-owned.
+The caller owns the body; don't also `await` the parsed result on the same promise.
+#### Returns
+`Promise`\
+***
+### catch()
+Attaches a callback for only the rejection of the Promise.
+#### Type Parameters
+##### TResult
+`TResult` = `never`
+#### Parameters
+##### onrejected?
+((`reason`) => `TResult` | `PromiseLike`\) | `null`
+The callback to execute when the Promise is rejected.
+#### Returns
+`Promise`\
+A Promise for the completion of the callback.
+#### Overrides
+***
+### finally()
+Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+resolved value cannot be modified from the callback.
+#### Parameters
+##### onfinally?
+(() => `void`) | `null`
+The callback to execute when the Promise is settled (fulfilled or rejected).
+#### Returns
+`Promise`\
+A Promise for the completion of the callback.
+#### Overrides
+***
+### map()
+Transform the parsed result, sharing the HTTP response and a single body parse.
+#### Type Parameters
+##### U
+`U`
+#### Parameters
+##### fn
+(`data`) => `U`
+#### Returns
+`APIPromise`\
+***
+### then()
+Attaches callbacks for the resolution and/or rejection of the Promise.
+#### Type Parameters
+##### TResult1
+`TResult1` = `T`
+##### TResult2
+`TResult2` = `never`
+#### Parameters
+##### onfulfilled?
+((`value`) => `TResult1` | `PromiseLike`\) | `null`
+The callback to execute when the Promise is resolved.
+##### onrejected?
+((`reason`) => `TResult2` | `PromiseLike`\) | `null`
+The callback to execute when the Promise is rejected.
+#### Returns
+`Promise`\
+A Promise for the completion of which ever callback is executed.
+#### Overrides
+***
+### withResponse()
+Return the parsed result, HTTP response, and request ID.
+#### Returns
+`Promise`\>
+# Class: APITimeoutError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APITimeoutError
+The full response did not arrive within the timeout. A kind of `APIConnectionError`.
+## Extends
+* [`APIConnectionError`]
+## Constructors
+### Constructor
+#### Parameters
+##### timeoutMs
+`number`
+##### options?
+`ErrorOptions`
+#### Returns
+`APITimeoutError`
+#### Overrides
+[`APIConnectionError`].[`constructor`]
+## Properties
+### timeoutMs
+Configured timeout in milliseconds.
+# Class: APIUserAbortError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/APIUserAbortError
+The caller cancelled the request through an `AbortSignal`.
+## Extends
+* [`TypeSafeError`]
+## Constructors
+### Constructor
+#### Parameters
+##### message?
+`string` = `"Request was aborted."`
+##### options?
+`ErrorOptions`
+#### Returns
+`APIUserAbortError`
+#### Overrides
+[`TypeSafeError`].[`constructor`]
+# Class: AuthenticationError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/AuthenticationError
+HTTP 401: authentication failed.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`AuthenticationError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: BadRequestError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/BadRequestError
+HTTP 400: the request is invalid.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`BadRequestError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: InternalServerError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/InternalServerError
+HTTP 5xx: the server failed to handle the request.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`InternalServerError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: NotFoundError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/NotFoundError
+HTTP 404: the resource was not found.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`NotFoundError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: PermissionDeniedError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/PermissionDeniedError
+HTTP 403: access is denied.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`PermissionDeniedError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: RateLimitError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/RateLimitError
+HTTP 429: the rate limit was exceeded.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`RateLimitError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### retryAfterMs
+Server retry delay in milliseconds, or `undefined` when absent or invalid.
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Class: TypeSafeClient
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeClient
+Client for the TypeSafe AI API.
+## Constructors
+### Constructor
+Create a client for the TypeSafe AI API.
+Explicit options take precedence over environment variables, then SDK defaults.
+Empty or whitespace-only environment values are ignored.
+#### Parameters
+##### config?
+[`TypeSafeClientConfig`] = `{}`
+#### Returns
+`TypeSafeClient`
+#### Throws
+The API key is missing, configuration is invalid, or the runtime is unsupported.
+## Properties
+### baseURL
+API root with trailing slashes removed.
+***
+### defaultHeaders
+Additional headers sent with each request.
+***
+### defaultModel
+Model used when a request omits `model`.
+***
+### fetch
+HTTP fetch implementation.
+***
+### logger
+The configured logger, filtered to `logLevel`.
+***
+### logLevel
+Configured log verbosity.
+***
+### models
+The models available to the account.
+***
+### retry
+Retry settings with constructor overrides applied.
+***
+### timeout
+Timeout per attempt in milliseconds.
+## Methods
+### systemOne()
+Answer named questions about text or structured state.
+#### Type Parameters
+##### Q
+`Q` *extends* [`Questions`]
+#### Parameters
+##### request
+[`SystemOneRequest`]\
+State, questions, and an optional model override.
+##### options?
+[`RequestOptions`] = `{}`
+Per-call timeout, retry, headers, and cancellation settings.
+#### Returns
+[`APIPromise`]\>
+Answers typed by question name and criteria, with model and token usage.
+#### Throws
+Questions are empty, or score criteria are not a list of at least two entries.
+#### Throws
+The server returns a non-2xx response after retries.
+#### Throws
+The request cannot connect or times out after retries.
+#### Throws
+The caller aborts the request.
+#### Example

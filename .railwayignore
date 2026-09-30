@@ -1,0 +1,14 @@
+.git
+.openai
+.env
+.env.*
+data
+node_modules
+.pnpm-store
+docs
+tests
+*.zip
+*.log
+*.pid
+*.png
+!dist/assets/*

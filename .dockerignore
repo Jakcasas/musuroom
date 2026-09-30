@@ -1,0 +1,11 @@
+*
+!Dockerfile
+!package.json
+!pnpm-lock.yaml
+!server.mjs
+!backend
+!backend/**
+!dist
+!dist/**
+!supabase
+!supabase/**

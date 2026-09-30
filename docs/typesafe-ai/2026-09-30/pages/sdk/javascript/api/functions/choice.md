@@ -1,0 +1,36 @@
+# Function: choice()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/choice
+
+
+
+```ts theme={null}
+function choice<T>(instructions, criteria): ChoiceQuestion<T>;
+```
+
+Create a question that selects between named alternatives.
+
+## Type Parameters
+
+### T
+
+`T` *extends* [`ChoiceCriteria`](/sdk/javascript/api/type-aliases/ChoiceCriteria)
+
+## Parameters
+
+### instructions
+
+[`EntryType`](/sdk/javascript/api/type-aliases/EntryType)
+
+The question as text, a JSON object or array, or `null`.
+
+### criteria
+
+`T`
+
+Labels mapped to descriptions, or `null` for undescribed labels.
+
+## Returns
+
+[`ChoiceQuestion`](/sdk/javascript/api/interfaces/ChoiceQuestion)\<`T`>
+
+

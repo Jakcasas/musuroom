@@ -1,4 +1,10 @@
-# Musuroom 1.3 — Website + Express API + SQLite
+# Musuroom 1 — Website + Express + PostgreSQL/Supabase
+
+Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.4.0`. Local vẫn chạy SQLite; cấu hình cloud Railway + Supabase sử dụng PostgreSQL và private Storage.
+
+- [Triển khai Railway + Supabase, vùng Singapore và QR](docs/DEPLOY_RAILWAY_SUPABASE.md)
+- [Đối chiếu kế hoạch và phần còn cần dữ liệu](docs/PLAN_REVIEW.md)
+- [Tài liệu TypeSafe lưu cục bộ và quy ước tích hợp Jev](docs/typesafe-ai/README.md)
 
 Website dự án bột gia vị từ phụ phẩm nấm ăn, gồm kho tri thức có trích dẫn, mô hình mẻ thử, API khảo sát cảm quan, đăng ký mẫu thử và AI tùy chọn.
 
@@ -12,6 +18,7 @@ Kho tri thức và trợ lý: **http://127.0.0.1:8766/tri-thuc.html**. Mở mụ
 
 - Giám khảo: **http://127.0.0.1:8766/giam-khao.html**. Mã truy cập riêng có thời hạn, cookie HttpOnly, phân quyền và CSRF.
 - Khảo sát và đăng ký: **http://127.0.0.1:8766/trai-nghiem.html**.
+- Minh bạch mẫu thử: **http://127.0.0.1:8766/minh-bach.html**.
 - [Hướng dẫn cấp/thu hồi mã, thêm hồ sơ và bật Jev](docs/JUDGE_PORTAL.md). Tài khoản máy này được lưu riêng trong `data/`, không nằm trong mã nguồn.
 
 ## Cài trên máy mới
@@ -44,7 +51,7 @@ Chạy nền bằng nút CMD hoặc `powershell -NoProfile -ExecutionPolicy Bypa
 | AI_MODEL | Trống | Mã model cụ thể trong tài khoản OpenRouter |
 | AI_TIMEOUT_MS | 20000 | Thời gian chờ AI, 1.000–60.000 ms |
 | AI_MAX_TOKENS | 700 | Giới hạn output, 100–2.000 tokens |
-| CHAT_REQUESTS_PER_MINUTE | 10 | Số câu hỏi/phút trên server local |
+| CHAT_REQUESTS_PER_MINUTE | 10 | Số câu hỏi/phút cho mỗi IP |
 
 Các biến môi trường của tiến trình có ưu tiên hơn `.env`.
 
@@ -77,6 +84,10 @@ API nhận xét cảm quan chỉ gửi dữ liệu **tổng hợp** đến OpenR
 - [Mẫu môi trường](.env.example)
 
 Repository Git hiện tại được giữ nguyên; nhánh triển khai backend là `codex/musuroom-backend`. Không tự đẩy nguồn lên remote.
+
+## Mẫu đo và số liệu công bố
+
+`GET /api/v1/project/overview`, `/api/v1/product/batches`, `/api/v1/product/nutrition` đọc nội dung công bố. `POST /api/v1/admin/product-samples` cần ADMIN/CSRF và tài liệu FINAL. Có thể nhập JSON dữ liệu đo thực bằng `node scripts/add-sample.mjs data/ACTUAL_SAMPLE.json`; mặc định PRIVATE. Schema chỉ tiêu/phạm vi nằm trong `backend/routes/project.mjs`. Dinh dưỡng trên 100 g, không tự tạo đối chứng. Nếu chưa có hồ sơ đo, trang minh bạch hiển thị trạng thái chưa công bố.
 
 ## Kiểm tra
 

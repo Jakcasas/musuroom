@@ -1,0 +1,299 @@
+# Class: TypeSafeError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/TypeSafeError
+Base class for SDK errors.
+## Extends
+* `Error`
+## Extended by
+* [`APIConnectionError`]
+* [`APIError`]
+* [`APIUserAbortError`]
+## Constructors
+### Constructor
+#### Parameters
+##### message
+`string`
+##### options?
+`ErrorOptions`
+#### Returns
+`TypeSafeError`
+#### Overrides
+# Class: UnprocessableEntityError
+Source: https://docs.typesafe.ai/sdk/javascript/api/classes/UnprocessableEntityError
+HTTP 422: request validation failed.
+## Extends
+* [`APIError`]
+## Constructors
+### Constructor
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+##### message?
+`string`
+#### Returns
+`UnprocessableEntityError`
+#### Inherited from
+[`APIError`].[`constructor`]
+## Properties
+### body
+Parsed JSON, response text, or `undefined` for an empty body.
+#### Inherited from
+[`APIError`].[`body`]
+***
+### headers
+HTTP response headers.
+#### Inherited from
+[`APIError`].[`headers`]
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+#### Inherited from
+[`APIError`].[`requestId`]
+***
+### status
+HTTP response status code.
+#### Inherited from
+[`APIError`].[`status`]
+## Methods
+### fromResponse()
+Create the error subclass for an HTTP status code.
+#### Parameters
+##### status
+`number`
+##### body
+`unknown`
+##### headers
+`Headers`
+#### Returns
+[`APIError`]
+#### Inherited from
+[`APIError`].[`fromResponse`]
+# Function: choice()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/choice
+Create a question that selects between named alternatives.
+## Type Parameters
+### T
+`T` *extends* [`ChoiceCriteria`]
+## Parameters
+### instructions
+[`EntryType`]
+The question as text, a JSON object or array, or `null`.
+### criteria
+`T`
+Labels mapped to descriptions, or `null` for undescribed labels.
+## Returns
+[`ChoiceQuestion`]\
+# Function: noul()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/noul
+Create a yes/no question with optional descriptions for either outcome.
+## Parameters
+### instructions?
+[`EntryType`] = `null`
+The question as text, a JSON object or array; defaults to `null`.
+### criteria?
+\| \{
+`false?`: [`EntryType`];
+`true?`: [`EntryType`];
+}
+\| `null`
+Optional descriptions of the yes and no outcomes.
+#### Type Literal
+\{
+`false?`: [`EntryType`];
+`true?`: [`EntryType`];
+}
+Optional descriptions of the yes and no outcomes.
+##### false?
+[`EntryType`]
+Description of the no outcome.
+##### true?
+[`EntryType`]
+Description of the yes outcome.
+***
+`null`
+## Returns
+[`NoulQuestion`]
+# Function: score()
+Source: https://docs.typesafe.ai/sdk/javascript/api/functions/score
+Create a score question using an ordered rubric.
+## Type Parameters
+### T
+`T` *extends* [`ScoreCriteria`]
+## Parameters
+### instructions
+[`EntryType`]
+The question as text, a JSON object or array, or `null`.
+### criteria
+`T`
+At least two descriptions indexed by score from zero; entries may be `null`.
+## Returns
+[`ScoreQuestion`]\
+# Interface: ChoiceQuestion
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceQuestion
+A question that selects between named alternatives.
+## Type Parameters
+### T
+`T` *extends* [`ChoiceCriteria`] = [`ChoiceCriteria`]
+## Properties
+### criteria
+Descriptions of the available outcomes.
+***
+### instructions?
+The question as text, a JSON object, or an array; optional or `null`.
+***
+### type
+# Interface: ChoiceResponse
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ChoiceResponse
+A selected label and its probabilities.
+## Type Parameters
+### T
+`T` *extends* [`ChoiceCriteria`] = [`ChoiceCriteria`]
+## Properties
+### choice
+The selected label.
+***
+### confidence
+Reported confidence in the selected label.
+***
+### probabilities
+Probabilities keyed by label.
+***
+### type
+# Interface: Logger
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Logger
+Log methods accepting a message and structured values; compatible with `console`.
+## Methods
+### debug()
+#### Parameters
+##### message
+`string`
+##### args
+...`unknown`\[]
+#### Returns
+`void`
+***
+### error()
+#### Parameters
+##### message
+`string`
+##### args
+...`unknown`\[]
+#### Returns
+`void`
+***
+### info()
+#### Parameters
+##### message
+`string`
+##### args
+...`unknown`\[]
+#### Returns
+`void`
+***
+### warn()
+#### Parameters
+##### message
+`string`
+##### args
+...`unknown`\[]
+#### Returns
+`void`
+# Interface: ModelCard
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ModelCard
+Metadata for an available model.
+## Properties
+### description
+***
+### name
+***
+### release\_date
+# Interface: Models
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Models
+Access to the Models API resource.
+## Methods
+### list()
+List the models available to the account.
+#### Parameters
+##### options?
+[`RequestOptions`] = `{}`
+#### Returns
+[`APIPromise`]\
+# Interface: NoulQuestion
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulQuestion
+A yes/no question with optional descriptions for either outcome.
+## Properties
+### criteria?
+Optional descriptions of the yes and no outcomes.
+#### Union Members
+##### Type Literal
+##### false?
+Description of the no outcome.
+##### true?
+Description of the yes outcome.
+***
+`null`
+***
+### instructions?
+The question as text, a JSON object, or an array; optional or `null`.
+***
+### type
+# Interface: NoulResponse
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/NoulResponse
+A yes/no answer.
+## Properties
+### noul
+Probability of a yes answer, from zero to one.
+***
+### type
+# Interface: Questions
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Questions
+Questions keyed by the names used to identify their answers.
+## Indexable
+# Interface: RequestOptions
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/RequestOptions
+Per-call options that override client settings.
+## Properties
+### headers?
+Additional headers, merged over `defaultHeaders`.
+***
+### retry?
+Retry overrides for this call; omitted fields inherit client settings.
+***
+### signal?
+Cancellation signal for the request and pending retries.
+***
+### timeout?
+Timeout per attempt in milliseconds; there is no total retry budget.
+# Interface: RetryPolicy
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/RetryPolicy
+Retry configuration. Partial overrides inherit unset fields from the client or SDK defaults.
+## Properties
+### apiConnectionError
+Retry connection failures, including interrupted response bodies (`APIConnectionError`). Default: true.
+***
+### apiTimeoutError
+Whether to retry `APITimeoutError`. Default: true.
+***
+### backoffInitialMs
+First backoff delay in milliseconds, doubled up to `backoffMaxMs`. Default: 500.
+***
+### backoffJitter
+Fraction of each backoff delay randomly subtracted, from 0 to 1. Default: 0.25.
+***
+### backoffMaxMs
+Maximum backoff delay in milliseconds. Default: 5000.
+***
+### httpStatuses
+HTTP status codes to retry. Default: 408, 429, and 500–599.
+***
+### maxRetries
+Maximum retries after the initial attempt; `0` disables retries. Default: 2.
+***
+### maxRetryAfterMs
+Maximum server retry delay in milliseconds; longer delays use backoff. Default: 60000.
+***
+### respectRetryAfter
+Honor `Retry-After` and `retry-after-ms` up to `maxRetryAfterMs`. Default: true.

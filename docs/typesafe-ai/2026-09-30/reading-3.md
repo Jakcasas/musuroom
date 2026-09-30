@@ -1,0 +1,1235 @@
+# AI primer
+Source: https://docs.typesafe.ai/introduction/machine-learning-primer
+
+Why TypeSafe trains decision models with calibrated probabilities instead of optimizing for generated text.
+
+Most AI products are built around a conversation between a model and a person. TypeSafe starts from a different bet: large-scale automation will be dominated by AI-to-AI and AI-to-software interactions, so the machine interface matters more than the chat interface.
+
+> **We call this Machine Native Intelligence:**
+>
+> AI with software-like properties such as structure, reliability, observability, testability, speed, consistency, and low cost.
+
+## Building prod, not God
+
+TypeSafe is not trying to build a model that does everything. It is designed for production systems where code needs a narrow decision it can inspect and act on.
+
+Our expectation is that large-scale AI automation will be closer to 99% machine-to-machine interactions and 1% human interaction. That shifts the design target from responses that feel good to read toward outputs that behave predictably inside software.
+
+Read the [TypeSafe manifesto](https://typesafe.ai/manifesto).
+
+## Three post-training approaches
+
+Pretrained language models have been adapted in two major ways. TypeSafe adds a third. RLHF and RLVR are shown here for context; TypeSafe's training path is RLCD.
+
+<Columns>
+  <Card title="RLHF" icon="messages-square" type="note">
+    **Reinforcement learning from human feedback** turned pretrained models into chatbots. It trains models to produce responses people prefer.
+  </Card>
+
+  <Card title="RLVR" icon="brain-circuit" type="note">
+    **Reinforcement learning with verifiable rewards** created reasoning models that are strong at tasks such as mathematics, but slower and more expensive.
+  </Card>
+
+  <Card title="RLCD" icon="binary" type="tip">
+    **Reinforcement learning for calibrated decisions** trains TypeSafe to return decisions and calibrated probabilities instead of generated text.
+  </Card>
+</Columns>
+
+RLHF was used to train InstructGPT and ChatGPT and was [co-invented by Diogo Almeida](https://scholar.google.com/citations?user=0T4y07QAAAAJ\&hl=en), cofounder of TypeSafe.
+
+<Frame>
+  <img alt="Pretrained language models branch into muted RLHF and RLVR paths and an emphasized RLCD decision-model path." />
+
+  <img alt="Pretrained language models branch into muted RLHF and RLVR paths and an emphasized RLCD decision-model path." />
+</Frame>
+
+## RLCD and calibrated decisions
+
+RLCD optimizes for a different output contract:
+
+* The model does not generate text.
+* It returns decisions and probabilities.
+* Higher probability should correspond to a greater chance that the answer is correct.
+
+Calibration makes uncertainty usable by software. Across many predictions from a well-calibrated model:
+
+* Outcomes assigned a probability of `0.2` should occur about 20% of the time.
+* Outcomes assigned a probability of `0.8` should occur about 80% of the time.
+* Outcomes assigned a probability of `1.0` should occur 100% of the time.
+
+These rates describe groups of predictions, not a guarantee about any single answer. See [Confidence](/confidence) for guidance on deciding when software should act or escalate.
+
+## The problems with RLHF
+
+RLHF teaches a model to say things that people prefer. That objective works well for chatbots, but it can also reward sycophancy and confident-sounding hallucinations.
+
+Preference optimization also causes **mode dropping**: the model learns to favor a particular style, such as instruction following, while reducing the probability of other possible outputs.
+
+<Frame>
+  <img alt="The probability distribution of a base model compared with a narrowed, mode-dropped distribution after RLHF." />
+
+  <img alt="The probability distribution of a base model compared with a narrowed, mode-dropped distribution after RLHF." />
+</Frame>
+
+<Warning>
+  An output can be compelling to a person without being reliable enough for unattended automation. Human preference and machine trustworthiness are different optimization targets.
+</Warning>
+
+Mode dropping is a milder version of **mode collapse**. In the classic generative-adversarial-network failure mode, a generator learns to produce the same kind of output repeatedly because that output continues to fool the discriminator.
+
+<Accordion title="Mode collapse analogy">
+  <Frame>
+    <img alt="Repeated characters illustrate a GAN suffering from mode collapse." />
+
+    <img alt="Repeated characters illustrate a GAN suffering from mode collapse." />
+  </Frame>
+</Accordion>
+
+RLHF remains a good fit for conversational models. TypeSafe's position is that production automation needs a different training objective—one centered on constrained decisions and calibrated uncertainty.
+
+
+
+
+# Quick start
+Source: https://docs.typesafe.ai/introduction/quickstart
+
+Prefer to just dive in? Here's everything you need to get started immediately.
+
+## Try it: the Playground
+
+1. **Open the [Playground](https://console.typesafe.ai/playground)** and log in.
+2. **Paste any text** as the state.
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+3. **Add a question.** Try a Noul question: `"Does this message express urgency?"`
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+4. **Add more questions.** Mix Noul, Choice, and Score in one call and see all results at once.
+
+## Call it: the API
+
+1. **Get your API key** from the [dashboard](https://console.typesafe.ai/keys)
+2. **Make a POST request** to the API endpoint
+3. **Review the [API Reference](/api)** for all the details.
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+### Sample cURL command
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+### Request body
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+### Response body
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+See the [API Reference](/api) for all the details.
+
+## Code it: the Python SDK
+
+1. **Install the SDK** (requires Python >= 3.10).
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+2. **Use the SDK.** The client reads `TYPESAFE_API_KEY` from the environment and calls `jev-latest` by default.
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+See [client SDKs](/sdk) for installation options and detailed usage.
+
+## Vibe it: the agent skill
+
+1. **[Install the TypeSafe skill](/agent-skill#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
+
+<Tabs>
+  <Tab title="Claude Code">
+    Run these two commands in your terminal:
+
+[Code example: see complete pages/introduction/quickstart.md]
+  </Tab>
+
+  <Tab title="Other agents">
+[Code example: see complete pages/introduction/quickstart.md]
+
+    Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
+  </Tab>
+
+  <Tab title="Copy to your agent">
+    Paste this prompt into your coding agent:
+
+[Code example: see complete pages/introduction/quickstart.md]
+  </Tab>
+</Tabs>
+
+2. **Tell your coding agent** to use the TypeSafe skill as you build!
+
+[Code example: see complete pages/introduction/quickstart.md]
+
+See the [Agent Skill](/agent-skill) page for more details.
+
+
+
+
+# Legal
+Source: https://docs.typesafe.ai/legal
+
+Legal documents and policies for TypeSafe.
+
+These documents cover how TypeSafe handles your data when you have an account with us, including data retention, our commitment not to train models on user data, and the general customer agreements that govern your use of TypeSafe.
+
+## Legal documents
+
+* [Data Processing Agreement](https://typesafe.ai/legal/data-processing) — how we process customer data on your behalf, including data retention.
+* [Master Customer Agreement](https://typesafe.ai/legal/mca) — the general terms that apply to your TypeSafe account.
+* [Privacy Policy](https://typesafe.ai/legal/privacy-policy) — what data we collect and how we use it, including our commitment not to train models on user data.
+
+We also offer zero data retention (ZDR) for enterprise customers. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai) to learn more.
+
+
+
+
+# Jev 1.13 jaggedness
+Source: https://docs.typesafe.ai/model-jaggedness/jev-1.13
+
+Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
+
+<Note>
+  **Applies to `jev-1.13`.** Last reviewed 2026-09-17.
+</Note>
+
+`jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](/concepts/system-one) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
+
+## The failure modes in detail
+
+| # | Failure mode                                                                        | Do this instead                                                |
+| - | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 1 | [Literal reading](#literal-reading)                                                 | Write the exact condition, criteria for each available options |
+| 2 | [Math and Numbers](#math-and-numbers)                                               | Keep the arithmetic in code                                    |
+| 3 | [Date and time comparison](#date-and-time-comparison)                               | Extract components; compare in code                            |
+| 4 | [Indirection](#indirection)                                                         | Reduce hops; point to the relevant state                       |
+| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail)     | Filter first; send only what the question needs                |
+| 6 | [Adversarial content](#adversarial-content)                                         | Write precise prompts, and test edge cases before deploying    |
+| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction                             |
+| 8 | [Common-sense structural invariants](#common-sense-structural-invariants)           | Ask each decision one way; enforce identities in code          |
+| 9 | [Generation](#generation)                                                           | Use a generative model                                         |
+
+## Literal reading
+
+`jev-1.13` answers the question you wrote, not the one you meant. Scoping words, negations, and implied conditions are read at face value. A question will be answered based on the words written in the instruction, whereas a person might have read the intent behind the instructions.
+
+**Instead:** state the exact condition in the `instructions`. Be specific. Put boundary cases in the criteria. When you look at a wrong answer and find yourself explaining what you really meant, that explanation is the missing half of the instruction. Where interpretation is unavoidable, split it into two literal questions and combine them in code.
+
+## Math and Numbers
+
+Jev is not a calculator. We strongly recommend implementing any mathematical logic in code. Jev will perform better on semantic questions than mathematical ones.
+
+### Counting
+
+`jev-1.13` does not count reliably. This covers characters in a word, occurrences of a term in a passage, and items in a long list. The model recognizes the shape of an answer rather than tallying, and the error grows with the size of the thing being counted.
+
+Before asking a counting question, ask why the count needs a model at all. If the unit is something a regular expression or a parser can find, the count belongs in code and the model has nothing to add.
+
+**Instead:** count in code. When you want to count items matching some criteria, iterate in code over the candidates and ask one question for each, then add up the answers yourself.
+
+[Code example: see complete pages/model-jaggedness/jev-1.13.md]
+
+### Numeric representations
+
+`jev-1.13` will perform better on semantic representations than numeric. For example, questions about colors using hex values will underperform compared to those using the English names. Given RGB triples or hex values it cannot reliably judge whether two values are near each other.
+
+Similarly, questions about high-level programming languages will perform better than questions about low level assembly, or binary encoded instructions.
+
+**Instead:** do the conversion in code and pass in either the computed number or a named bucket. Keep the model for the part that is genuinely a judgment, such as whether a color reads as a warning.
+
+### Math using score
+
+Please do not use score outputs (e.g., expectations and probability) to compute the exact magnitude of a number between two levels of a criterion. You can use the expectation to check if it passes a particular threshold, but `jev-1.13`'s score levels are weak in numerical calibration. It will not be able to help you reconstruct the exact number by interpolating between the nearest two levels.
+
+## Date and time comparison
+
+`jev-1.13` reads dates as text, not as ordered quantities. Asking which of two dates comes first, how far apart they are, or whether one falls inside a window is unreliable. It gets worse with mixed formats, relative references and domain boundaries such as quarters, settlement windows, and accrual periods.
+
+**Instead:** split the work. Extraction is a judgment, so give it to the model. Arithmetic is not, so keep it in code.
+
+Every part of a date is a small closed set: twelve months, thirty-one possible days, a bounded range of years. That turns extraction into a [Choice](/primitives/choice) over enumerated options rather than free-form parsing, and it gives you somewhere to put an explicit "not stated" option so a missing part is reported rather than guessed. Code assembles the parts into a real date and owns everything after that, including ordering, duration, offset, and weekday.
+
+The [date extraction cookbook](/cookbooks/date_extraction_cookbook) has the worked version, including relative dates and confidence gating.
+
+## Indirection
+
+Instructions carrying double negatives or complex indirection are answered less reliably. A question about a property of a property or something that requires multiple hops of reasoning costs accuracy.
+
+**Instead:** write your instructions as directly as possible. When possible, identify the relevant parts of state by name.
+
+## Large state full of irrelevant detail
+
+Accuracy falls as the state grows with content unrelated to the decision. Unrelated detail acts as a distractor, and a large state makes it harder to tell which part of the input produced a wrong answer.
+
+**Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](/primitives/noul) to filter for relevance. The [classifying RAG passages cookbook](/cookbooks/classifying_rag_passages) has a worked example.
+
+<Note>
+  **Context length limit.** `jev-1.13` has a bounded context window. See the [Models](/models) page for the exact token limits.
+</Note>
+
+## Adversarial content
+
+State is data, and `jev-1.13` does not treat it as hostile by default. Content written to adversarially steer the model, whether that is an injected instruction, a deliberately misleading framing, or text that argues for its own classification, can move the answer. We expect to improve on this in the future.
+
+**Instead:** be explicit in the criteria. Test your integration thoroughly before deploying it to many users.
+
+## Contradictory instructions and criteria
+
+When the `instructions` and the `criteria` ask for different things, `jev-1.13` might get confused. The best performance comes from clear phrasing. For example, a Noul where `true` maps to no and `false` maps to yes will perform worse. Aim for instructions which are easy for the average person to read and understand.
+
+**Instead:** treat the criteria as an extension of the instruction. Align the two using clear and precise language.
+
+## Common-sense structural invariants
+
+`jev-1.13` is extremely consistent, meaning you should expect quantitatively similar outputs for semantically similar inputs.
+However there are many structural invariants one might imagine to hold that simply aren't guaranteed by the model.
+
+For example, "Is the customer asking for a refund?", asked as a [Noul](/primitives/noul) and as a yes/no [Choice](/primitives/choice) on the ticket "I'm not happy with the fit. What are my options here?":
+
+| Noul `noul` | Choice `yes` | Choice `no` | Choice `confidence` |
+| ----------- | ------------ | ----------- | ------------------- |
+| 0.22        | 0.01         | 0.99        | 0.97                |
+
+The comparable numbers are `noul` and `probabilities["yes"]`, and it is not obvious how to interpret either the Choice output and confidence for the Noul question or vice versa.
+
+The same question and its negation, "Is the customer asking for something other than a refund?", as two Nouls on the ticket "I was charged twice for the same order. Can someone look into this?":
+
+| `refund` | `not_refund` | Sum  |
+| -------- | ------------ | ---- |
+| 0.72     | 0.47         | 1.19 |
+
+There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly comparable.
+
+**Instead:** don't rely on expected structural invariance, and word questions to mean directly what you want. Don't carry a threshold tuned on a Noul over to a Choice, and don't hold the model to arithmetic identities between separate questions. A Choice over options and one Noul per option answer different questions: the Choice is relative, settling *which* option, while each Noul is absolute and can be low for all of them. The [skill suggestion cookbook](/cookbooks/skill_suggestion) uses both on the same shortlist, the Choice to pick a skill and the Nouls to decide whether to suggest one at all.
+
+## Generation
+
+`jev-1.13` is not trained to generate text. While you can force it to by chaining choices, this will not work well and will be very slow. For data extraction, it is better to extract possible options using regex or a generative model and let `jev-1.13` pick the correct extraction.
+
+**Instead:** when the answer space is bounded, turn extraction into a [Choice](/primitives/choice) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
+
+<Info>
+  **As a reminder, avoid the following:**
+
+  * Asking the model something code can compute exactly.
+  * Hiding several judgments inside one question.
+  * System Two tasks: more layers of indirections
+  * Giving it more context in `state` than the question needs. Jev suffers from context rot, so unrelated material in the `state` costs you accuracy.
+</Info>
+
+<Tip>
+  Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.com/invite/WUujKYBp8s).
+</Tip>
+
+
+
+
+# Models
+Source: https://docs.typesafe.ai/models
+
+
+
+Jev is TypeSafe's flagship model and the first [System One model](/concepts/system-one). Every model on this page is served by the same endpoint, `POST /v1/systemone`. The request's `model` field selects which one handles the call; see the [API reference](/api) for the full request shape.
+
+## Current models
+
+| Jev 1.13                    | `jev-1.13.0`                                                                              |
+| :-------------------------- | :---------------------------------------------------------------------------------------- |
+| Price (per Btok / per Mtok) | \$42 / \$0.042                                                                            |
+| Rate limits                 | 250,000 tokens per second / 1,200 requests per minute                                     |
+| Context length              | 64k tokens per request; 32k tokens for `state` plus the longest question                  |
+| Input                       | Text only. String, JSON object, or array of text values. No image, audio, or video input. |
+
+* **Price:** Charged per input token. Output tokens are free. A Btok is a billion tokens and an Mtok is a million tokens.
+* **Rate limits:** Measured in tokens per second and requests per minute. A request over either limit returns `429 Too Many Requests`. Our [client SDKs](/sdk) retry with backoff by default and honor the `retry-after` header when the response carries one. If you call the HTTP API directly, see [Handling rate limits](/api#handling-rate-limits).
+* **Context length:** Jev ingests the `state` once and evaluates every question against it in parallel. The 64k budget covers the `state` plus all questions combined; the 32k budget applies to the `state` plus the single longest question. See [Speculative fan-out](/patterns/fan-out) for packing many questions into one request, and [Jev 1.13 jaggedness](/model-jaggedness/jev-1.13) for how accuracy shifts as the state grows.
+* **Input:** Jev evaluates natural-language text. Pre-process non-text inputs (images, audio, video, binaries) into text or structured fields before sending them as `state`. See [State](/concepts/state) for supported shapes.
+
+<Warning>
+  **Rate limits are adjusting dynamically.** We are serving a very large volume of demand, and the limits above can change without notice while we do, as upcoming large GPU deals land and we let in more users. Once things settle down more, we'll be able to offer more stable limits. Higher limits are available on custom and enterprise plans. Contact [sales@typesafe.ai](mailto:sales@typesafe.ai).
+</Warning>
+
+## Aliases
+
+An alias is a model name that resolves to a versioned model ID. Send it in the `model` field like any other name.
+
+| Alias         | Points to    | Meaning                                                                                                                       |
+| :------------ | :----------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| `jev-latest`  | `jev-1.13.0` | The most recent stable, official release. The default in our client SDKs, and the name the examples in these docs use.        |
+| `jev-preview` | `jev-1.13.0` | The most recent release, whether or not it is an official one. Moves ahead of `jev-latest` when a preview build is available. |
+
+<Warning>
+  `jev-preview` currently points to the same model as `jev-latest`. There is no preview build available right now.
+</Warning>
+
+An alias moves when a new release ships, so the answers behind it can change without a change on your side. The response's `model` field reports the versioned ID that answered, so you can log which model produced each result. If you have tuned confidence thresholds against a specific version, pin that version's ID instead of the alias and move to the new one on your own schedule.
+
+## Customizing Jev
+
+Jev is not fine-tuned or LoRA-adapted with customer data. It is trained with [RLCD](/introduction/machine-learning-primer) to return calibrated decisions, and the same weights serve every account. You shape its answers to your domain through the request rather than through per-account weights:
+
+* Put your proprietary content, records, and reference material in the `state` field. See [State](/concepts/state).
+* Encode your domain rules and boundary cases in the `instructions` and `criteria` of each question. See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) and [Advanced: structure](/primitives/advanced).
+* Decompose broad judgments into atomic questions and combine the outputs in code. See [Composite scoring](/patterns/composite-scoring) and the [AutoResearch cookbook](/cookbooks/autoresearch_feature_discovery) for training a downstream classical model on Jev's probabilities.
+
+## Language support
+
+Jev accepts natural-language text. English is the primary training language and where accuracy is currently best. Other languages, including CJK scripts, are handled but not equally well; test on your own content before relying on Jev for a non-English workload, and pay close attention to [Confidence](/confidence) when routing.
+
+## Data handling
+
+Jev is not trained on customer requests or responses. See [Legal](/legal) for the Data Processing Agreement, the Privacy Policy, and details on zero data retention (ZDR) for enterprise customers.
+
+## Listing models
+
+`GET /v1/models` returns the names your account can send in the `model` field, with a description and release date for each. It currently lists the aliases. Versioned IDs such as `jev-1.13.0` are accepted by the `model` field whether or not they appear in the list.
+
+<CodeGroup>
+[Code example: see complete pages/models.md]
+
+[Code example: see complete pages/models.md]
+
+[Code example: see complete pages/models.md]
+</CodeGroup>
+
+<ResponseField name="models" type="array">
+  One entry per model or alias.
+
+  <Expandable title="properties">
+    <ResponseField name="name" type="string">
+      The model ID or alias, as accepted by the `model` field.
+    </ResponseField>
+
+    <ResponseField name="description" type="string">
+      What the model is for.
+    </ResponseField>
+
+    <ResponseField name="release_date" type="string">
+      When the model or alias was released.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+See the [Python](/sdk/python/api/clients/sync#typesafe_sdk.Models.list) and [JavaScript](/sdk/javascript/api/interfaces/Models) SDK references for the full method signatures.
+
+
+
+
+# Patterns
+Source: https://docs.typesafe.ai/patterns
+
+Architectural patterns for building systems with TypeSafe.
+
+TypeSafe is designed to sit within a larger system, powering decisions with AI. Learning to think in terms of discrete, atomic decisions that compose into complex system behavior is a key skill for getting the most out of TypeSafe.
+
+This section assumes you know the [TypeSafe primitives](/primitives) and understand [how confidence works](/confidence). If not, read those first.
+
+## The patterns
+
+| Pattern                                                  | What it does                                                                                               | Benefits                 |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------ |
+| [Speculative Fan-Out](/patterns/fan-out)                 | Send many questions in a single call, including speculative ones, and let your code decide what's relevant | Cost, Speed              |
+| [Confidence-Gated Routing](/patterns/confidence-routing) | Utilize confidence as a second decision axis to build safer systems                                        | Reliability, Safety      |
+| [Composite Scoring](/patterns/composite-scoring)         | Combine several dimensions of analysis into a single score                                                 | Cost, Reliability, Speed |
+| [Intent Routing](/patterns/intent-routing)               | Classify a user's intent and route to the appropriate handler                                              | Cost, Speed              |
+
+<Tip>
+  We're always keen to learn how people are making use of our primitives. If you've found a killer use case you think should be mentioned here, feel free to drop us a note!
+</Tip>
+
+
+
+
+# Composite scoring
+Source: https://docs.typesafe.ai/patterns/composite-scoring
+
+Break a complex judgment into atomic scores, combine with weights you control in code.
+
+Oftentimes we want to rank a set of items based on several criteria at once. Composite scoring is an easy way to think about this: break the judgment into independent dimensions, score each one separately, and combine them with weights you control in code.
+
+## Example: resume screening
+
+Let's imagine you are processing resumes for engineering roles. You want to rank the candidates based on several criteria, and ultimately select the top X candidates for further review.
+
+[Code example: see complete pages/patterns/composite-scoring.md]
+
+### Step 1: score each dimension independently
+
+<TypesafeExample title="questions" />
+
+### Step 2: combine with weights
+
+Each dimension is normalized to 0–1 and weighted. The weights give you an easy way to adjust the relative importance of each dimension, without losing any of the nuance of the individual scores.
+
+[Code example: see complete pages/patterns/composite-scoring.md]
+
+This gives you the ability to rank the candidates based on the composite score. But more importantly, it gives you visibility into how exactly the final score is being calculated. If the highest ranking candidates are not matching your expectations, you can adjust the weights to find the right balance.
+
+
+
+
+# Confidence-gated routing
+Source: https://docs.typesafe.ai/patterns/confidence-routing
+
+Use confidence as a second axis. The answer tells you what; confidence tells you whether to act.
+
+One of TypeSafe's most powerful features is [confidence](/confidence). By being intentional with the way you gate decisions on confidence, you can build systems that are both reliable and safe.
+
+## Example: voice banking commands
+
+Let's imagine you are building a voice banking interface to allow the user to interact with their account verbally. While you always want to have reasonable confidence in interpreting the user's intent, some actions are riskier than others and thus demand a higher confidence threshold.
+
+[Code example: see complete pages/patterns/confidence-routing.md]
+
+### Step 1: determine the user's intent
+
+<TypesafeExample title="questions" />
+
+### Step 2: confidence-gated routing
+
+[Code example: see complete pages/patterns/confidence-routing.md]
+
+The 0.6 floor catches anything the model is genuinely uncertain about. Above that floor, each action type has its own threshold based on the consequences of acting on a wrong classification. Checking a balance at 0.6 is fine because the worst case is the user having to listen to the balance read-out. But approving a transfer requires very high confidence (>0.85), otherwise the system should ask the user to confirm.
+
+See [Confidence](/confidence) for more details on how to think about confidence in your systems.
+
+
+
+
+# Speculative fan-out
+Source: https://docs.typesafe.ai/patterns/fan-out
+
+Send many questions in a single call, including speculative ones, and let your code decide what's relevant.
+
+Because TypeSafe supports sending many questions in a single API call, we recommend putting all of the questions your system needs in a single request, and then using code to decide what is relevant after the fact. All questions are evaluated in parallel, so adding more questions usually has little effect on response time.
+
+## Example: support ticket triage
+
+Let's imagine you are building a support system that needs to triage support tickets. You need to classify the ticket into a category. If it's a bug report, you also need to determine the severity of the bug.
+
+Instead of asking for the category first and then the severity in a follow-up call, you can ask for both at the same time. If the ticket is not a bug report, you simply ignore the results of the bug severity question.
+
+[Code example: see complete pages/patterns/fan-out.md]
+
+### Step 1: speculative fan-out
+
+<TypesafeExample title="questions" />
+
+<Note>
+  **Speculative questions:** `bug_severity` and `has_reproducible_steps` only matter if the ticket is a bug report. `refund_requested` only matters for billing. We include all upfront because additional questions usually have little effect on response time. If the ticket turns out to be a feature request, the bug severity result will be irrelevant, in which case your code path simply ignores it.
+</Note>
+
+### Step 2: route with code
+
+Your code decides what is relevant based on the classification result:
+
+[Code example: see complete pages/patterns/fan-out.md]
+
+Everything needed for the full decision tree comes from one call. Speculative questions are ignored when irrelevant and save a round trip when they are not.
+
+
+
+
+# Intent routing
+Source: https://docs.typesafe.ai/patterns/intent-routing
+
+Classify incoming requests and route each to the optimal handler: deterministic logic, a specialist LLM, or a human.
+
+Not every user request needs the same kind of handler. Some can be answered with a database lookup. Some need an LLM with domain-specific context. Some need a human. TypeSafe can sit in front of all of these as a fast, cheap classifier that determines which handler to invoke.
+
+## Example: customer service routing
+
+Let's imagine you are building a customer service system. Messages come in and need to be routed to the right handler. Rather than sending every message through an expensive LLM to figure out what kind of request it is, you classify first and route accordingly.
+
+[Code example: see complete pages/patterns/intent-routing.md]
+
+### Step 1: classify intent and complexity
+
+<TypesafeExample title="questions" />
+
+### Step 2: route to the optimal handler
+
+[Code example: see complete pages/patterns/intent-routing.md]
+
+One intent routes to deterministic code with no LLM involved. Two route to different specialist LLMs, each loaded with different context. One uses the complexity score to decide between an LLM and a human. TypeSafe handles the classification all in a single quick call; the expensive resources only get invoked for the requests that actually need them.
+
+Note the additional confidence check on the complexity score. As discussed in [Confidence](/confidence), it is always important to consider the meaning of a low confidence score in the context of the system and the stakes of the decision.
+
+
+
+
+# Primitives (Questions)
+Source: https://docs.typesafe.ai/primitives
+
+The three TypeSafe question types (Choice, Score, Noul), the typed answers they return, how to choose between them, and how to ask several at once.
+
+TypeSafe's primitives are the small, typed building blocks you compose in code. They come in pairs: a question defines one judgment for a [System One model](/concepts/system-one) to make about a [state](/concepts/state), and its answer is the typed value that comes back. You compose the answers in your code to make decisions. There are three question types, each returning a different shape of answer.
+
+| Type                         | What it answers         | Returns                                          |
+| ---------------------------- | ----------------------- | ------------------------------------------------ |
+| [Choice](/primitives/choice) | Which of these options? | `choice`, `probabilities`, `confidence`          |
+| [Score](/primitives/score)   | Which level?            | `score`, `legend`, `probabilities`, `confidence` |
+| [Noul](/primitives/noul)     | Is this true?           | `noul` (0 to 1)                                  |
+
+You can ask one question or send several together. Every question in a request sees the same state, is evaluated independently, and returns a typed answer under the ID you chose.
+
+## Ask for one snap judgment per question
+
+System One models are built for fast, focused judgments. Ask for a judgment a knowledgeable person makes in a second given the right context. "Does this message convey urgency?" is a good question. "Analyze this message and determine the best course of action" is not. That needs slow reasoning, and it is a signal to break the task into small questions and compose the answers in code.
+
+If the judgment you want depends on several independent factors, ask about each factor separately and combine the answers with your own logic. Instead of "rate this startup pitch", ask about market size, technical feasibility, and differentiation, then weight them in code based on their relative importance. When priorities shift, change the value of weights rather than rewriting a prompt. [Ask multiple questions together](#ask-multiple-questions-together) shows how to do this.
+
+## Define a question
+
+Every question has an ID, a `type`, and `instructions`. Choice and Score questions also take `criteria`, which define the options for a Choice question or the levels for a Score. Noul questions accept `criteria` as an optional clarification of what yes and no mean.
+
+* ID. The key you pick, such as `refund_requested`. It identifies the answer in the response.
+* `type`. One of `choice`, `score`, or `noul`.
+* `instructions`. The question you are asking about the state. This is where your evaluation logic goes. Write it as a clear, specific question, or as a statement for the model to judge. A string is enough for most questions. It can also be an object or an array, which puts the question in one field and the data it refers to in others; see [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions).
+* `criteria`. The possible answers: a map of options for a Choice question, an ordered list of levels for a Score, and an optional description of yes and no for a Noul. Each question type's page covers its shape.
+
+This question asks whether a customer requested a refund:
+
+[Code example: see complete pages/primitives.md]
+
+<Tip>
+  Question IDs are for your code. They are not sent to the model. Write the complete question in `instructions`, even when the ID seems self-explanatory.
+</Tip>
+
+## Choose a question type
+
+Pick the type that matches the shape of the answer you need.
+
+* **Choice** fits when the answer is one of a known set of options with no order between them: routing a ticket to a department, classifying a document type, detecting a programming language. Give the full list of options, and add an `other` or `none of the above` option when the list might not cover every input.
+
+* **Score** fits when the answer falls on a spectrum and you can describe what each point on that spectrum means: bug severity, customer frustration, skill level. The levels are yours to define, and the model returns a position along them.
+
+* **Noul** fits a clean yes/no question where the probability itself is the useful signal: does this message contain personally identifiable information, is the customer requesting a refund, does the resume mention distributed systems.
+
+<Note>
+  Use Noul for a yes/no judgment and Score to measure a position on a spectrum. "Is this candidate strong in Python?" needs a clear definition of "strong". A Noul value of 0.5 means the model gives yes and no equal probability. It does not mean the candidate has a medium skill level. An unclear definition makes that probability hard to interpret.
+
+  If you want to measure skill level, use a Score with defined levels, such as no experience, some familiarity, daily use, and deep expertise. If you need a yes/no decision, define the condition clearly, such as "Does the resume state that the candidate has used Python at work?"
+</Note>
+
+If two types both seem to fit, prefer the one whose answer your code can act on directly. A Choice between `refund`, `rebook`, and `information` maps straight onto three code paths. A Score of customer frustration maps onto a threshold. A Noul maps onto an `if`.
+
+## What comes back
+
+Answers are primitives too. Each question type returns a typed value that your code can compare, threshold, sort, pass into further logic, or put into the state of a follow-up request (see [When one question depends on another](#when-one-question-depends-on-another)).
+
+| Type   | Answer fields                                    | How to read it                                                                                                                                                       |
+| ------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Choice | `choice`, `probabilities`, `confidence`          | `choice` is the selected option. `probabilities` is the distribution across every option. `confidence` summarizes how peaked that distribution is.                   |
+| Score  | `score`, `legend`, `probabilities`, `confidence` | `score` is a position along your levels, and can fall between two of them. `legend` repeats the levels by number. `probabilities` is the distribution across levels. |
+| Noul   | `noul`                                           | The probability that the answer is yes. Near 1 is a strong yes, near 0 a strong no, near 0.5 uncertain. Noul has no separate `confidence`.                           |
+
+Two properties of these answers make them composable:
+
+* **Every answer is constrained to the options you supplied.** The model returns a probability distribution over your options or levels, never a value outside them. Your code never has to recover a value from generated prose.
+* **Every answer is independent.** One question's answer is not hidden context for another. You can add or remove questions without changing the others' results.
+
+[Confidence](/confidence) explains how `confidence` is derived from `probabilities` and how to use it to decide when to act automatically and when to escalate to a person.
+
+## Reference specific fields
+
+The content being evaluated, the [state](/concepts/state), is often a JSON object with several parts: a conversation, a record, a policy. When a question is about one of those parts, name it in the `instructions` with a dot-and-index path to its key, including the backticks. The model then knows which part of the state to judge.
+
+Take the support conversation from the State page:
+
+[Code example: see complete pages/primitives.md]
+
+These two questions point at the customer's message, the policy, and the charges by path:
+
+[Code example: see complete pages/primitives.md]
+
+Explicit paths make it clear which parts of a structured state should inform each judgment. See [State](/concepts/state) for how to structure the input.
+
+## Ask multiple questions together
+
+Send every question that uses the same state in one request. You can mix question types freely. System One models evaluate every question in a request in parallel. Adding questions barely changes the response time and costs only the tokens for the extra questions, which are cheap. Asking a question you might not need is close to free.
+
+This request classifies a customer message, checks for urgency, and scores frustration all at once:
+
+<TypesafeExample />
+
+Our [client SDKs](/sdk) provide typed questions and answers. In Python, pass a `questions` dictionary of `Choice`, `Noul`, and `Score` objects to `client.system_one(...)`. This request sends a ticket and a refund policy once and gets a typed answer for each question:
+
+[Code example: see complete pages/primitives.md]
+
+See [client SDKs](/sdk) for installation and usage in your language.
+
+### Ask speculative questions
+
+Ask every question your code might need, including ones whose answer only matters for some inputs, and let the code decide which answers to use. If a ticket turns out not to be a bug report, ignore the severity answer. We call this the [Speculative fan-out](/patterns/fan-out) pattern. The [Parallel questions cookbook](/cookbooks/parallel_questions) shows how batching 13 questions into one call is 11.5x cheaper and 9.6x faster than 13 separate calls, with no change in the answers.
+
+<Tip>
+  Coding agents fall into the one question per call habit more than people do. The [TypeSafe agent skill](/agent-skill#installation) tells your agent to put many questions in each call, including ones that only matter for some inputs.
+</Tip>
+
+### Split a complex judgment into several questions
+
+A judgment that depends on several things is best split into one question per thing. Combine the answers in your code, giving each a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Adding questions barely changes the response time because they run in parallel within one request. The split costs a few extra question tokens.
+
+For example, ticket priority might be built from three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with. The Score page walks through this request and the code that normalizes and weights the answers in [Splitting a complex judgment into several Scores](/primitives/score#splitting-a-complex-judgment-into-several-scores). This technique is called the [Composite scoring](/patterns/composite-scoring) pattern.
+
+### When one question depends on another
+
+Questions in the same request are independent: one answer does not become context for another question. If a later judgment depends on an earlier answer, make a second request in code. The dependency is real only when your code cannot build the second request until it has the first answer: it needs the answer to fetch more data for the state, to decide what the state is made of, or to pick the next question's options. Otherwise, ask the questions together and combine their answers in code.
+
+Two requests are the exception, not the rule. If the second request's questions could have been asked against the original state, ask them in the first request and let the code ignore the ones it doesn't need. Three cookbooks make a second request for a real reason. [Skill suggestion](/cookbooks/skill_suggestion) ranks 182 skills in one request, then fetches the full text of the top three and judges them again against that better evidence. [Structure recovery](/cookbooks/autoformat) asks whether each line break split a sentence, merges lines into blocks from those answers, then classifies the blocks, which did not exist until the first request had answered. [Hierarchical classification](/cookbooks/hierarchical_classification) uses each Choice answer to decide which options the next request offers.
+
+See [How to build with TypeSafe](/concepts/how-to-build-with-system-one) for guidance on breaking a workflow into focused judgments.
+
+## Next steps
+
+<Columns>
+  <Card title="Choice" href="/primitives/choice" icon="list">
+    Pick one option from a fixed list.
+  </Card>
+
+  <Card title="Score" href="/primitives/score" icon="gauge">
+    Rate the state along ordered levels.
+  </Card>
+
+  <Card title="Noul" href="/primitives/noul" icon="circle-check">
+    Get the probability that a statement is true.
+  </Card>
+</Columns>
+
+To see how these compose into system architectures, head to [Patterns](/patterns).
+
+
+
+
+# Advanced: structure
+Source: https://docs.typesafe.ai/primitives/advanced
+
+Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.
+
+System One models are trained to understand structure.
+
+## Where structure is allowed
+
+Every one of these fields is an [`EntryType`](/sdk/javascript/api/type-aliases/EntryType).
+
+| Field                                   | Applies to          | Accepted shape                         |
+| --------------------------------------- | ------------------- | -------------------------------------- |
+| `instructions`                          | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `criteria` values (option descriptions) | Choice              | `string`, `object`, `array`, or `null` |
+| `criteria` entries (level descriptions) | Score               | `string`, `object`, `array`, or `null` |
+| `criteria.true` and `criteria.false`    | Noul                | `string`, `object`, `array`, or `null` |
+
+## When to structure a question
+
+* **When it helps with clarity.** When a question has multiple parts, putting them in the form of JSON helps with clarity because the keys are labeled.
+* **When question needs supporting data.** A schema, a taxonomy, or a database row is already JSON. Use the JSON entirely or pass in the relevant subfields instead of serializing them into a string template.
+
+## Structured instructions
+
+One `field` object describes the field being checked, and each question refers to it by key. The same shape drives a Noul that verifies a value, a Choice that picks one from candidates, and two Scores that place a value on a scale.
+
+<TypesafeExample />
+
+In code, you could loop over the potential records and build one of these questions per field, all sent in a single call. The [SDE cascade cookbook](/cookbooks/sde_cascade) does something similar to this.
+
+Arrays work too. Use one when the instruction is a list of things to check or to compare:
+
+[Code example: see complete pages/primitives/advanced.md]
+
+## Structured Choice options
+
+A Choice option description can be a structured object as well.
+
+### JSON rubric for boundary clarification
+
+<TypesafeExample />
+
+The example tells the model what each option does and does *not* cover. It sharpens the boundary between options.
+
+### Walking a taxonomy
+
+To classify into a deep taxonomy, ask one Choice per level and walk the tree in code. At each step the options are the children of the current node, and each option's value is the child's tree. Doing so lets the model see what lives under a branch before committing to it, which matters when the item belongs to a leaf whose name is not obvious from the branch name alone.
+
+Here the state is a product listing and the first question picks a top-level department.
+
+<TypesafeExample />
+
+The bottle plausibly fits under two departments. Showing the subtrees lets the model see that both `Sporting Goods > Cycling > Bike Bottles & Cages` and `Home & Kitchen > Drinkware > Water Bottles` exist, and weigh the listing's emphasis on bike cages against everyday drinkware. The `probabilities` on this answer tell you whether the split is close enough to explore both branches.
+
+Once a department is chosen, ask the next Choice with that department's children as the options and their subtrees as the values, and repeat until you reach a leaf. In code this could be a loop over a nested dict, where each question's `criteria` is simply the current node. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows an example of a similar walk of the tree, including a beam search that keeps several candidate paths alive when the probabilities are close.
+
+<Note>
+  Subtrees can get large. If a branch is too large, trim the value to its direct children and a sample of leaves.
+</Note>
+
+## Structured Score levels
+
+Each entry in a Score `criteria` array can be an object.
+
+<TypesafeExample />
+
+## Structured Noul criteria
+
+Noul `criteria` is optional, and when the yes/no boundary is subtle, structured `true` and `false` descriptions let you pin it down with a definition and examples on each side.
+
+<TypesafeExample />
+
+
+
+
+# Choice
+Source: https://docs.typesafe.ai/primitives/choice
+
+A Choice is a System One question type for selecting one option from a defined set. The answer includes the selected option, a probability for each option, and confidence.
+
+Use a Choice when the answer is one of a fixed set of options. For example, which team handles a ticket, which category a product belongs to, or which language a code snippet is written in. If the answer is a position on a spectrum, use a [Score](/primitives/score). If it's a yes or no, use a [Noul](/primitives/noul). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+
+A Choice answer is the selected option in `choice`. The model also returns a probability for every option in `probabilities`, and a `confidence` value for the selected option.
+
+Example questions:
+
+[Code example: see complete pages/primitives/choice.md]
+
+## Request structure
+
+The POST request body to the [TypeSafe API](/api) has a specific structure. The top level has three fields: `state`, the content to evaluate; `model`; and `questions`, a map from question ids you choose to question objects. Each Choice question has the following fields:
+
+* `type`: Always `"choice"`.
+* `instructions`: The question the model answers.
+* `criteria`: The answer options, as a map. Each key is an option name and each value is a description of that option.
+
+Below is a request where the state is a support ticket from an online shoe store and the question is which team should handle it:
+
+<TypesafeExample />
+
+You choose the question id, `department` in this case. The answer is returned under the same id. The model never sees the question id. The option names and their descriptions are both sent to the model, so write descriptions that separate the options from each other.
+
+Our [client SDKs](/sdk) provide typed questions. In Python, the same question is a `Choice`:
+
+[Code example: see complete pages/primitives/choice.md]
+
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where in your code to call it.
+
+Use one of our [client SDKs](/sdk) or call the [HTTP API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+
+<Note>
+  `instructions` and each entry in `criteria` can be a string, an object, or an array. Start with a string. Use an object when a description needs several kinds of guidance, such as what an option covers, what it doesn't cover, and some examples. See [Structured instructions and criteria](#structured-instructions-and-criteria) below and the [API reference](/api#param-instructions-1).
+</Note>
+
+## Response structure
+
+The response has one entry in `answers` per question, under the ids from the request. This is the response to the example request above:
+
+[Code example: see complete pages/primitives/choice.md]
+
+Besides `type`, each Choice answer has three values:
+
+* `choice`: The option with the highest probability.
+* `probabilities`: The full probability distribution across every option. The sum of all values is 1.
+* [`confidence`](/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A flat shape, with probability spread across several options, means low confidence. A single peak on one option means high confidence.
+
+This ticket is an easy one, so all of the probability is on `returns` and confidence is 1.0. A ticket that mentions a wrong size and a missing refund would split probability between `returns` and `billing`, and confidence would drop.
+
+## Good practice: ask more than one question per call
+
+Ask every Choice question your code might need in a single request rather than one request per question. Questions are evaluated in parallel. Adding questions barely changes the response time, and the code can ignore answers it doesn't need. Extra questions still cost tokens. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in full; the next section shows five Choice questions in one call.
+
+The same logic applies to the options inside a single Choice question. A Choice question accepts up to 255 options, and adding options costs a few tokens each, so give the model the full list of teams, categories, or products rather than a shortlist. Add an `other` or `none of the above` option when the list might not cover every input, so the model can say none of the others fit.
+
+To classify documents through a deep hierarchy or large taxonomy, chain Choice questions level by level. The [Hierarchical Classification cookbook](/cookbooks/hierarchical_classification) shows how to run a beam search over Choice probabilities, keeping the best `K` candidate paths at each level instead of committing to a single greedy path.
+
+## A more complex example
+
+The basic example above routes a ticket to a team. A bigger support system might also need the return reason, the delivery problem, what the customer wants, and the customer's tone.
+
+The request below asks five Choice questions about a ticket that is more ambiguous than the first: it involves three teams and doesn't say what the customer wants.
+
+<TypesafeExample />
+
+Two of these Choice questions are speculative: `return_reason` only matters if the `department` is `returns`, and `shipping_issue` only matters if it's `shipping`. The `tone` question uses `null` descriptions because the option names are clear on their own.
+
+The TypeSafe response:
+
+[Code example: see complete pages/primitives/choice.md]
+
+Each question is answered on its own against the ticket:
+
+* The `department` answer is `returns` with a 0.61 probability, but `billing` has 0.35 because of the double charge. The ticket belongs to two teams, and the split confidence of 0.42 reflects that.
+* The `return_reason` is `wrong_size` with a confidence of 1.0, which is expected because it says this clearly in the ticket.
+* The `shipping_issue` answer is split between `delayed` and `other`. It's a speculative question and `department` didn't come back as shipping, so it can be ignored by the code, as shown in the example code snippet below.
+* The `requested_resolution` answer leans to `refund` at 0.40, with `replacement` and `exchange` sharing most of the rest, and the confidence is 0.20. The double charge suggests money back, the wrong size suggests a swap, and the customer never says which they want.
+* The `tone` answer is `frustrated` with a probability of 0.84 and a confidence of 0.76.
+
+The example code below reads the answers it needs, ignores the rest, and treats a low-confidence answer as a reason to ask rather than act:
+
+[Code example: see complete pages/primitives/choice.md]
+
+For the ticket above, this assigns the ticket to the returns team with issue `wrong_size`, sends the billing team a copy because its 0.35 share is over the 0.25 threshold, and asks the customer what they want because the resolution confidence of 0.20 is under 0.5. The code does not use the `shipping_issue` answer.
+
+One request, five answers, and the routing logic is ordinary `if` statements. If you later need to know the customer's language, or which product the ticket is about, add another Choice question to `TRIAGE_QUESTIONS`; the request count stays at one.
+
+The [smart home assistant demo](/demos/smart-home) evaluates every user request against a long list of Choice questions in one call: the request category, the room, the device, and the action. Most of those questions are irrelevant to any one request and the code ignores them.
+
+## Structured instructions and criteria
+
+Start with a one-line description per option. When two options are similar and the model keeps confusing them, describe each one with an object instead of a string. Give it fields for what the option covers, what belongs to a neighboring option instead, and a few example inputs.
+
+The two answer options below, return\_policy and return\_status, are easy to confuse. A ticket about either one can mention returns and refunds, so each option says what it is not for.
+
+<TypesafeExample />
+
+The response is `return_status` at confidence 1.0:
+
+[Code example: see complete pages/primitives/choice.md]
+
+The field names `question`, `focus`, `what`, `not_for`, and `examples` are not part of the API, and none are reserved. You choose them, the same way you choose option names. The model sees the names along with the values, so use short names that label what follows.
+
+
+
+
+# Noul
+Source: https://docs.typesafe.ai/primitives/noul
+
+A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
+
+Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](/primitives/choice). If it's a position on a spectrum, use a [Score](/primitives/score). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+
+A Noul answer is a single number representing the probability that the answer is yes where 0 means no and 1 means yes.
+
+## Request structure
+
+The POST request body to the [TypeSafe API](/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Noul question has the following fields:
+
+* `type`: Always `"noul"`.
+* `instructions`: The yes/no question the model answers, or a statement for it to judge.
+* `criteria`: Optional. An object with `true` and `false` descriptions of what a yes and a no mean.
+
+Below is a request where the state is a support message and the two questions are whether the customer wants a person and whether they have contacted support before:
+
+<TypesafeExample />
+
+You choose the question ids, `is_human_escalation` and `is_repeat_contact` here. The ids are not sent to the model. Each answer is returned under the same id. The first question relies on `instructions` alone. The second adds `criteria` to say what counts as a yes and what counts as a no.
+
+With the [Python SDK](/sdk/python), the same questions are `Noul` objects:
+
+[Code example: see complete pages/primitives/noul.md]
+
+The `system_one` method and the `https://api.typesafe.ai/v1/systemone` endpoint are both named after [System One](/concepts/system-one), TypeSafe's AI model. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where to use it in your code.
+
+If you're using a coding agent, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+
+<Note>
+  `instructions` can be a string, an object, or an array. Start with a string. Use an object when the question needs data alongside it, such as a record to compare the state against, or when part of the question is built by your code. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) explains when structure helps, and [the example below](#structured-instructions) shows it with questions built in code.
+</Note>
+
+## Response structure
+
+The response has one entry in `answers` per question, under the ids from the request:
+
+[Code example: see complete pages/primitives/noul.md]
+
+Both answers here are close to 1. The customer says "talk to a real person", so `is_human_escalation` is 0.99. "I have asked three times now" matches the `true` description of `is_repeat_contact`, so it is 0.93.
+
+## Reading a Noul
+
+The number is the answer and the certainty in one. A value near 1 is a strong yes. A value near 0 is a strong no. A value near 0.5 means the model gives yes and no similar probability.
+
+The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
+
+| State                                                                  | `noul` |
+| ---------------------------------------------------------------------- | ------ |
+| Thanks, that fixed it!                                                 | 0.02   |
+| How do I reset my password?                                            | 0.07   |
+| I need this sorted today, whatever it takes.                           | 0.26   |
+| Are you a bot?                                                         | 0.40   |
+| Is there any way to speak to someone about my invoice?                 | 0.84   |
+| I have asked three times now. Can I please just talk to a real person? | 0.99   |
+
+The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
+
+There is no separate `confidence` value for a Noul, unlike a [Choice](/primitives/choice) or a [Score](/primitives/score). A Noul's probability distribution has only two outcomes, yes and no, so the single `noul` value describes it completely. A Choice or Score spreads probability over several options or levels, and `confidence` summarizes that spread.
+
+Most often your code thresholds `noul` into a boolean:
+
+[Code example: see complete pages/primitives/noul.md]
+
+Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes and no are equally easy to act on. Raise it when acting on a false yes is expensive, such as paging someone or issuing a refund. Lower it when missing a true yes is expensive, such as failing to flag a safety issue. Values in the middle can go to a person rather than either code path. That is the same three-way split the [Confidence](/confidence#three-paths-for-using-confidence-in-your-code) page describes for Choice and Score answers.
+
+A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
+
+| Candidate                                                                                   | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| My experience is in Java and Go. I have not used Python.                                    | 0.03                                       | 0.0 (No experience)                                          |
+| I have used Python occasionally for small scripts alongside my main Java work.              | 0.14                                       | 1.0 (Some familiarity)                                       |
+| I used Python every day for two years in my last job, mostly data pipelines.                | 0.81                                       | 2.05 (Regular use in a job)                                  |
+| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92                                       | 2.89 (Deep expertise)                                        |
+
+The Noul judges one proposition, "strong", and the values are how likely it is. You could create levels in the 0 to 1 range in your code, such as 0.3 to 0.7 for "some experience", but the model will not see them, so nothing in the answer was judged against them. A middle value can mean medium experience or an unclear case, and the spacing between candidates is not something you chose. The Score judges each level description on its own, so every candidate landed on or near a level you wrote, and the returned probabilities show how the model divided its judgment between levels. If you disagree, reword a level and run it again. [Choose a question type](/primitives#choose-a-question-type) explains the distinction.
+
+## Writing a Noul question
+
+Ask one yes/no question per Noul. If a question has two conditions, such as "Is the customer angry and asking for a refund?", the model has to judge both at once and the value means less. Ask two Nouls and combine them in code.
+
+Phrase the question so that a high value means yes. "Does the message contain personal data?" is clear. "Is the message free of personal data?" inverts the meaning, and code that reads it later will get it backwards.
+
+A statement works as well as a question. For "The customer is requesting a refund", a value near 1 means the statement is true. Try both phrasings with your own data to see which works better.
+
+Make the boundary between yes and no unambiguous. "Does this candidate have any Python experience?" works well because "any" leaves no middle ground. When the boundary is subtle, add `criteria` with `true` and `false` descriptions, as the `is_repeat_contact` question above does. The instruction is enough for most Nouls, so try your questions with and without `criteria` and keep whichever gives better answers on your documents.
+
+## Good practice: ask more than one question per call
+
+For a checklist of conditions, ask many Noul questions in one request: one question per condition, and the code decides what the combination means. Questions are evaluated in parallel, so adding Nouls barely changes the response time. [Ask multiple questions together](/primitives#ask-multiple-questions-together) explains this in more detail.
+
+## Handling multiple Noul answers in code
+
+The two-question request above gives the code enough to route the message. The example below escalates to a person when the customer asks for one, and raises the priority when they have been in touch before. A value in the middle on either question goes to a reviewer instead of a code path:
+
+[Code example: see complete pages/primitives/noul.md]
+
+For the message above, the noul answer value for `is_human_escalation` is 0.99 and `is_repeat_contact` is 0.93, so the code routes it to an agent at high priority. The message "How do I reset my password?" is 0.07 on both questions and is routed to the bot.
+
+The thresholds live in your code. If reviewers see too many messages, narrow the gap between `NO` and `YES`. If too many wrong routes get through, widen it. If you later need to know whether the message mentions a payment, or whether it contains personal data, add another Noul to `SUPPORT_QUESTIONS`. The request count stays at one.
+
+## Structured instructions
+
+Instructions can be an object instead of a string, with the question in one field and supplementary data in the others. [Use structure in the questions](/concepts/how-to-build-with-system-one#use-structure-in-the-questions) covers when that helps. Here it's used for a question built using code: a resume that has just arrived is compared against records in a candidate database that might be the same person. Each record goes into a `potential_duplicate` field as it is, the `question` is the same for every record, and all the records are checked in one request. The code-generated question keys contain each record's database ID:
+
+<TypesafeExample />
+
+The response:
+
+[Code example: see complete pages/primitives/noul.md]
+
+Each answer is the probability that the resume is for the person in that record. Record 18 spells the name differently but matches on location and employer, and gets 0.74. Record 42 has the same name in a different city with a different employer, and gets 0.09. Record 77 is a similar name at the same location with a different employer, and gets 0.08. Threshold each value in your code, as in [Handling multiple Noul answers in code](#handling-multiple-noul-answers-in-code), and send the middle values to a person.
+
+With the Python SDK, the questions are built from the candidate records. The question text is fixed and the record changes:
+
+[Code example: see complete pages/primitives/noul.md]
+
+The [structured-data-extraction cascade cookbook](/cookbooks/sde_cascade) uses structured instructions to verify an extracted record. Every field gets the same set of questions. Each question's `instructions` object has the question text in the `main_question` property. There are also `field_spec` and `extracted_field` properties that change for each field.
+
+## Noul in the cookbooks
+
+Take a look at our cookbooks to see apps using Noul questions:
+
+* [Parallel questions](/cookbooks/parallel_questions) runs a 13-question regulatory checklist over one article in a single request.
+* [Self-consistency: nouls](/cookbooks/consistency_noul_cookbook) scores an insurance claim against a 15-question rubric and measures how stable the values are across runs.
+* [Re-ranking](/cookbooks/rerank_typesafe) uses the probability itself, not a threshold: one Noul per query-candidate pair, then sorts candidates by the value.
+* [Line-by-line search](/cookbooks/semantic_find) pairs a Choice that finds the matching line with a Noul that checks whether the document contains an answer at all.
+* [Structure recovery](/cookbooks/autoformat) asks one Noul per pair of lines, whether a line break split a sentence, to rebuild paragraphs from plain text.
+
+
+
+
+# Score
+Source: https://docs.typesafe.ai/primitives/score
+
+A Score is a System One question type for rating content against ordered, descriptive levels. The answer includes a score, a probability for each level, and confidence.
+
+Use a Score when the answer is a position on a spectrum you can describe in steps. For example, how severe a bug is, how happy a customer is, or how much Python experience a candidate has. If the answer is one of a fixed set of options with no order between them, use a [Choice](/primitives/choice). If it's a yes or no, use a [Noul](/primitives/noul). [Choose a question type](/primitives#choose-a-question-type) compares all three.
+
+A Score answer is a position along your levels in `score`, which can fall between two levels. The model also returns a probability for every level in `probabilities`, and a `confidence` value for the answer.
+
+<ScoreExplorer />
+
+The numbers in front of each step are positions, explained under [Levels](#levels).
+
+## Request structure
+
+The POST request body to the [TypeSafe API](/api) has the same three top-level fields as any other question type: `state`, which is the content to evaluate; `model`; and `questions`. Each Score question has the following fields:
+
+* `type`: Always `"score"`.
+* `instructions`: The question the model answers. What it's rating.
+* `criteria`: An ordered array of level descriptions, from the low end of the scale to the high end. Should have at least two levels; the API accepts up to 10.
+
+Below is a request where the state is a bug report and the question is how severe the bug is:
+
+<TypesafeExample />
+
+You choose the question id, `bug_severity` in this case. This id is not sent to the model. The answer is returned under the same id.
+
+### Levels
+
+Each entry in `criteria` is a level: one point on the spectrum of possible answers, described in words. A level's number is its position in the `criteria` array, starting at 0, so the three entries above are levels 0, 1 and 2. The order of the array is the numbering.
+
+The model gets the descriptions and nothing else, and each level is judged on its own against the state.
+
+The `score` in the response is a position on the levels spectrum. For a three-level scale it runs from 0 to 2, and it can land between two levels.
+
+Our [client SDKs](/sdk) provide typed questions. In Python, the same question is a `Score`:
+
+[Code example: see complete pages/primitives/score.md]
+
+Use the `system_one` method or the `https://api.typesafe.ai/v1/systemone` endpoint to call a System One model. The `model` field selects which model handles the request. [How to build with TypeSafe](/concepts/how-to-build-with-system-one) covers where in your code to call it.
+
+Use one of our [client SDKs](/sdk) or call the [TypeSafe API](/api) directly. If a coding agent is writing the integration for you, install the [TypeSafe agent skill](/agent-skill#installation) first so it knows the request and response shapes.
+
+<Note>
+  `instructions` and each level in `criteria` can be a string, an object, or an array. Start with strings. Use an object when a level needs a description plus a few example situations. See [Structured level descriptions](#structured-level-descriptions) below and the [API reference](/api#param-instructions-2).
+</Note>
+
+## Response structure
+
+The response has one entry in `answers` per question, under the ids from the request. This is the response to the example request above:
+
+[Code example: see complete pages/primitives/score.md]
+
+Each Score answer has five values:
+
+* `type`: The type of TypeSafe question.
+* `probabilities`: The probability of each level, keyed by level number as a string. The sum of all values is 1.
+* `score`: The position on the level number line, from 0 to the top level number, which is 2 here. It's each level number multiplied by its probability, added up: 0 x 0.0 + 1 x 0.57 + 2 x 0.43 = 1.43.
+* `legend`: Each level number mapped back to its description.
+* [`confidence`](/confidence): A number from 0 to 1 computed from how `probabilities` is spread. A single peak on one level means high confidence. Probability spread over several levels means low confidence.
+
+A score of 1.43 means the model is split between levels 1 and 2, leaning to level 1. That matches the report: the export is broken, and switching to Chrome is a workaround for most customers, but not for the ones who only use Safari. The model puts 0.57 on "workaround exists" and 0.43 on "no workaround", and confidence is 0.35 because it's split.
+
+Using the Python SDK, `ScoreAnswer` has `score`, `confidence`, `probabilities`, and `legend` as typed fields. The SDK keys `probabilities` and `legend` by integer level rather than by string.
+
+## Reading a Score
+
+Let's look at how the score changes with different inputs. For example, using the question and its levels from the request above:
+
+[Code example: see complete pages/primitives/score.md]
+
+We can see how different bug reports change the score:
+
+<table>
+  <thead>
+    <tr>
+      <th />
+
+      <th><code>probabilities</code></th>
+    </tr>
+
+    <tr>
+      <th>State</th>
+      <th><code>score</code></th>
+      <th><code>confidence</code></th>
+      <th>Level 0</th>
+      <th>Level 1</th>
+      <th>Level 2</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>The export button is misaligned by a few pixels on the settings page.</td>
+      <td>0.0</td><td>1.0</td><td>1.0</td><td>0.0</td><td>0.0</td>
+    </tr>
+
+    <tr>
+      <td>The PDF export button does nothing when clicked. I can still export to CSV and convert it myself, but that takes ages.</td>
+      <td>1.0</td><td>1.0</td><td>0.0</td><td>1.0</td><td>0.0</td>
+    </tr>
+
+    <tr>
+      <td>Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too.</td>
+      <td>1.11</td><td>0.84</td><td>0.0</td><td>0.89</td><td>0.11</td>
+    </tr>
+
+    <tr>
+      <td>The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.</td>
+      <td>1.43</td><td>0.35</td><td>0.0</td><td>0.57</td><td>0.43</td>
+    </tr>
+
+    <tr>
+      <td>Nobody on our team can log in since this morning. We get a 500 error on every attempt.</td>
+      <td>2.0</td><td>1.0</td><td>0.0</td><td>0.0</td><td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+
+In these examples, confidence 1.0 means the returned distribution puts all its probability on one level. This describes the model's answer, not a guarantee that the answer is correct.
+
+The score is a probability-weighted mean of the level numbers. In the third and fourth examples, probability is split between levels 1 and 2. More weight on level 2 raises the score. It does not measure the fraction of customers without a workaround.
+
+Different distributions can produce the same score. A score of 1.0 can mean all probability is on level 1, or half is on each of levels 0 and 2. Read `probabilities` and `confidence` alongside the score to distinguish these cases.
+
+A fractional score is a position. You can use it to rank reports by severity, or round it to the nearest level when your code needs one outcome. Our [entity alignment cookbook](/cookbooks/entity_alignment) shows an example of rounding to the nearest level to make a decision.
+
+Low confidence on a Score usually means one of three things. The levels overlap for this state, the question is measuring more than one thing, or the state doesn't say enough to place it. Our [Confidence](/confidence) docs cover how to use it in your code.
+
+## Writing good levels
+
+Describe situations, not degrees. "Broken or degraded feature, but workaround exists" gives the model something to match the state against. "Moderately severe" doesn't. Concrete descriptions can help the model distinguish levels. Check the answers against known examples; higher confidence alone does not show that a description is better.
+
+Every level is evaluated separately. The model doesn't see a level's number or its neighbours, so "worse than the previous level" means nothing to it, and numbers in the descriptions or the instructions don't help. Here is what happens when the levels are only numbers, on the misaligned-button report from the table above:
+
+[Code example: see complete pages/primitives/score.md]
+
+The same report with the three descriptive levels scores 0.0 at confidence 1.0. With numbers only, the model has nothing to match against and splits the probability between 0 and 1.
+
+Use as many levels as you can describe distinctly, up to 10. Three is fine. Don't add levels you can't describe distinctly.
+
+Keep each Score question to one dimension. If a description says "punctual and smart and experienced", the question is measuring three things, and an input that is high on one and low on another can't be placed. Confidence drops and the score means less. Split it into one Score question per thing and combine them in code, as the next section shows.
+
+If the top of your scale has a rare extreme case you need to act on differently, give it its own level. A sentiment scale that ends at "very angry" can add "abusive or threatening". Without that level, both messages may receive a score near the top. The score alone may not distinguish them.
+
+If there is no in-between at all, and the answer is one of a few discrete categories, use a [Choice](/primitives/choice) instead, or split the question into several [Noul](/primitives/noul) questions. It's important to test your levels against your own data. Two wordings of the same scale can behave differently on your data.
+
+## Splitting a complex judgment into several Score questions
+
+A complex judgment, one that depends on several things, is best split into one Score question per thing. You can then combine the Scores returned from TypeSafe in your code to make the judgment. Some Score questions may matter more than others, so give each Score question a weight for its relative importance. The weights are yours. When the combined result doesn't match what your team would decide, change them in code and run again. Send the Score questions in one request. They are evaluated in parallel. Adding questions barely changes the response time and costs a few extra question tokens; see [Ask multiple questions together](/primitives#ask-multiple-questions-together).
+
+The request below is the spinner ticket from the table above with some more context. It asks three Score questions: how severe the bug is, how frustrated the customer is, and how much the report gives an engineer to work with.
+
+<TypesafeExample />
+
+TypeSafe's response:
+
+[Code example: see complete pages/primitives/score.md]
+
+Each question is answered on its own against the ticket and given a score:
+
+* `severity` is 1.24 at confidence 0.64. Same reading as the opening example: the export is broken and some have a workaround.
+* `frustration` is 1.28 at confidence 0.58. The wording is civil, but "third time" and "I'm done" shift some of the score toward the top level, so the model splits 0.72 and 0.28 between "frustrated but civil" and "very angry". For this ticket the two levels overlap, which is why the confidence is moderate.
+* `report_quality` is 3.0 at confidence 1.0. The steps and browser version are both stated.
+
+The three scales have different lengths, so before combining them, normalize each score. A four-level scale returns 0 to 3 and a three-level scale returns 0 to 2, so a top score on one is bigger than a top score on the other. Divide each score by its top level number, `len(criteria) - 1`, to put every score on 0 to 1. Then the weights mean what they say: 0.6 on severity and 0.3 on frustration makes severity count twice as much.
+
+The TypeSafe Python SDK code below asks the three questions, normalizes each score, and combines them using an example priority calculation:
+
+[Code example: see complete pages/primitives/score.md]
+
+For the example response above, the normalized scores are 0.62 for severity, 0.64 for frustration, and 1.0 for report quality. The priority is `0.6 × 0.62 + 0.3 × 0.64 + 0.1 × 1.0 = 0.664`, which rounds to `0.66`.
+
+The weights live in your code, so you can see exactly how the number is made and change it when the ranking doesn't match what your team would do. If you later need more Score questions, add them to `TRIAGE_QUESTIONS`. The request count stays at one. This technique of breaking a complex judgment into separate Scores and then combining them with weights in your code is called the [Composite scoring](/patterns/composite-scoring) pattern.
+
+## Structured level descriptions
+
+Start with a basic text description for each level. When the model keeps scoring between two neighbouring levels on inputs you think are clear, give each level an object instead of a string, with a field for what the level covers and a field with a few example situations. Use the same field names on every level so the model can compare like with like.
+
+The request below is the spinner ticket that we used earlier, but with examples on each level:
+
+<TypesafeExample />
+
+The response:
+
+[Code example: see complete pages/primitives/score.md]
+
+With plain strings this ticket scored 1.11 with a confidence of 0.84. With examples it scores 1.09 at 0.87 confidence, a small shift because the plain strings already placed it well. The effect is larger when the plain strings leave the model split, as the next table shows.
+
+Examples steer the model, and they only help when they look like your real inputs. The table below is the opening Safari report with three different sets of level objects:
+
+| Level description                                                                                            | `score` | `confidence` |
+| ------------------------------------------------------------------------------------------------------------ | ------- | ------------ |
+| plain string: no object with examples                                                                        | 1.43    | 0.35         |
+| Added examples array with useful example: "export fails in one browser but works in another"                 | 1.03    | 0.96         |
+| Added examples array with example unrelated to browsers: "search fails, but browsing categories still works" | 1.43    | 0.35         |
+
+In this comparison, the matching example concentrates almost all the probability on one level. The unrelated example returns the same result as plain strings. Higher confidence does not establish which answer is correct. Choose examples with known expected levels, then test the revised descriptions on separate inputs before keeping them.
+
+

@@ -1,0 +1,174 @@
+# Interface: ScoreQuestion
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreQuestion
+A question that assigns a score using an ordered rubric.
+## Type Parameters
+### T
+`T` *extends* [`ScoreCriteria`] = [`ScoreCriteria`]
+## Properties
+### criteria
+Descriptions of the available outcomes.
+***
+### instructions?
+The question as text, a JSON object, or an array; optional or `null`.
+***
+### type
+# Interface: ScoreResponse
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/ScoreResponse
+An expected score with its rubric and probabilities.
+## Type Parameters
+### T
+`T` *extends* [`ScoreCriteria`] = [`ScoreCriteria`]
+## Properties
+### confidence
+Reported confidence in the score.
+***
+### legend
+Rubric descriptions keyed by score.
+***
+### probabilities
+Probabilities keyed by score.
+***
+### score
+Expected score, which may fall between integer rubric levels.
+***
+### type
+# Interface: SystemOneRequest
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequest
+State and named questions for `systemOne`.
+Additional properties on a request variable are forwarded, including `null` values.
+## Extended by
+* [`SystemOneRequestPayload`]
+## Type Parameters
+### Q
+`Q` *extends* [`Questions`] = [`Questions`]
+## Properties
+### model?
+Model override; omitted values inherit `defaultModel`.
+***
+### questions
+Nonempty questions keyed by the names used to identify their answers.
+***
+### state
+Text, a JSON object or array, or `null` to evaluate.
+# Interface: SystemOneRequestPayload
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneRequestPayload
+Request body for `POST /v1/systemone`, with the model resolved.
+## Extends
+* [`SystemOneRequest`]
+## Properties
+### model
+Model override; omitted values inherit `defaultModel`.
+#### Overrides
+[`SystemOneRequest`].[`model`]
+***
+### questions
+Nonempty questions keyed by the names used to identify their answers.
+#### Inherited from
+[`SystemOneRequest`].[`questions`]
+***
+### state
+Text, a JSON object or array, or `null` to evaluate.
+#### Inherited from
+[`SystemOneRequest`].[`state`]
+# Interface: SystemOneResult
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/SystemOneResult
+Answers keyed by question name, with model and usage metadata.
+## Type Parameters
+### Q
+`Q` *extends* [`Questions`]
+## Properties
+### answers
+Answers with types inferred from the supplied questions.
+***
+### model
+The model used to answer the request.
+***
+### usage
+Token usage for the request.
+# Interface: TypeSafeClientConfig
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/TypeSafeClientConfig
+Client options. Explicit values take precedence over environment variables, then SDK defaults.
+## Properties
+### apiKey?
+Required API key; falls back to `TYPESAFE_API_KEY`.
+***
+### baseURL?
+API root; falls back to `TYPESAFE_BASE_URL`, then `https://api.typesafe.ai`.
+***
+### dangerouslyAllowBrowser?
+Allow browser use, exposing the API key to page users. Default: false.
+***
+### defaultHeaders?
+Additional request headers; per-call headers take precedence.
+***
+### defaultModel?
+Default model; falls back to `TYPESAFE_DEFAULT_MODEL`, then `jev-latest`.
+***
+### fetch?
+Custom HTTP fetch implementation for transport configuration or tests. Default: global `fetch`.
+***
+### logger?
+Logger filtered to `logLevel` and above. Default: prefixed `console`.
+***
+### logLevel?
+Log level; falls back to `TYPESAFE_LOG_LEVEL`, then `warn`.
+`info` logs request summaries; `debug` adds headers and bodies.
+Known credential headers are redacted; bodies are not.
+***
+### retry?
+Retry overrides; omitted fields use the defaults in `RetryPolicy`.
+***
+### timeout?
+Timeout per attempt in milliseconds, without a total retry budget. Default: 10000.
+# Interface: Usage
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/Usage
+Token usage for a request.
+## Properties
+### input\_tokens
+Number of input tokens used.
+***
+### output\_tokens
+Number of output tokens used.
+# Interface: WithResponse
+Source: https://docs.typesafe.ai/sdk/javascript/api/interfaces/WithResponse
+Parsed data with its HTTP response and request ID.
+## Type Parameters
+### T
+`T`
+## Properties
+### data
+The parsed response body.
+***
+### requestId
+Request ID from `x-typesafe-request-id`, or `undefined` when absent.
+***
+### response
+The HTTP response, with its body consumed by parsing.
+# Type Alias: ChoiceCriteria
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/ChoiceCriteria
+Labels mapped to descriptions, or `null` for undescribed labels.
+## Index Signature
+# Type Alias: Description
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Description
+A criterion description; `null` leaves the label undescribed.
+# Type Alias: EntryType
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EntryType
+Text, a JSON object or array, or `null` for state, instructions, and criteria.
+# Type Alias: EnvVar
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/EnvVar
+# Type Alias: Fetch
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/Fetch
+HTTP fetch implementation compatible with the global `fetch`.
+## Parameters
+### input
+`string`
+### init?
+`RequestInit`
+## Returns
+`Promise`\
+# Type Alias: JsonValue
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/JsonValue
+A JSON-compatible value.
+# Type Alias: LogLevel
+Source: https://docs.typesafe.ai/sdk/javascript/api/type-aliases/LogLevel
+Log verbosity; `off` disables logging.
