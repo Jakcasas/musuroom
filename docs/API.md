@@ -1,4 +1,4 @@
-# REST API — Musuroom 1.1
+# REST API — Musuroom 1.2
 
 Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `Content-Type: application/json`, giới hạn 16 KB. Server không bật CORS; request từ origin khác bị từ chối. Database và `.env` không được phục vụ qua HTTP.
 
@@ -13,8 +13,65 @@ Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `
 | GET | `/api/batches/:id` | Chi tiết mẻ | Bearer token |
 | POST | `/api/batches` | Tính và lưu mẻ | Bearer token |
 | POST | `/api/chat` | Trợ lý có nguồn | Cùng origin, giới hạn tần suất |
+| POST | `/api/v1/sensory/submit` | Gửi phiếu Hedonic 1–9 | Không |
+| GET | `/api/v1/sensory/analytics?session_code=...&sample_code=...` | Mean, median, SD và radar | Bearer token |
+| POST | `/api/v1/sensory/export` | CSV phiếu thô của một đợt và mã mẫu | Bearer token |
+| POST | `/api/v1/sensory/insights` | Nhận xét mô tả hoặc AI tùy chọn từ số liệu tổng hợp | Bearer token |
+| POST | `/api/v1/leads/register` | Đăng ký quan tâm nhận mẫu thử | Không |
+| GET | `/api/v1/admin/leads?status=PENDING` | Danh sách có thông tin liên hệ | Bearer token |
+| PATCH | `/api/v1/admin/leads/:id` | Cập nhật trạng thái | Bearer token |
+| DELETE | `/api/v1/admin/leads/:id` | Xóa đăng ký | Bearer token |
 
-Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` trong `.env`. Đặt header `Authorization: Bearer <API_WRITE_TOKEN>` cho API mẻ; không đưa token vào JavaScript frontend hoặc URL. Nếu token trống, API mẻ từ chối truy cập.
+Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` trong `.env`. Đặt header `Authorization: Bearer <API_WRITE_TOKEN>` cho API mẻ, thống kê cảm quan và danh sách đăng ký; không đưa token vào JavaScript frontend hoặc URL. Nếu token trống, các API này từ chối truy cập.
+
+## Khảo sát cảm quan
+
+Gửi phiếu:
+
+```json
+{
+  "session_code":"ROUND-01",
+  "sample_code":"MUSH-01",
+  "tester_type":"CONSUMER",
+  "color_score":7,
+  "aroma_score":8,
+  "umami_taste_score":8,
+  "aftertaste_score":6,
+  "overall_acceptance":8,
+  "comments":"Mùi nấm rõ",
+  "submission_key":"a82cf87a-6d5e-4cf2-8b39-552f278bc708"
+}
+```
+
+Mọi điểm bắt buộc là **số nguyên 1–9**. `tester_type`: `JUDGE`, `STUDENT`, `CONSUMER`, `OTHER`. `session_code` và `sample_code`: 3–50 ký tự ASCII chữ/số, `_` hoặc `-`. `comments` tối đa 1.000 ký tự, tùy chọn. `submission_key` là UUID tùy chọn để retry an toàn: gửi lại cùng mã và nội dung nhận 200 với cùng ID; cùng mã nhưng nội dung khác nhận 409. Phiếu mới nhận 201. Không thu tên hoặc liên hệ trong phiếu cảm quan.
+
+Analytics bắt buộc có **cả `session_code` và `sample_code`**. Mỗi tiêu chí trả `n`, `mean`, `median`, `sd`, `distribution` (số lượng ở từng mức 1–9). `radar.labels` và `radar.values` theo thứ tự: màu sắc, mùi thơm, vị umami, hậu vị, ưa thích chung. Mọi số tính trên cùng tập phiếu hợp lệ của đợt và mẫu được chọn. `mean = Σx/n`; `median` là trung vị; `sd = sqrt(Σ(x−mean)²/(n−1))` là **độ lệch chuẩn mẫu**. Mean và SD làm tròn 4 chữ số thập phân sau khi tính. Nếu `n=0`, mean/median/SD là `null`; nếu `n=1`, SD là `null`. Không thực hiện ANOVA hoặc suy luận ý nghĩa thống kê.
+
+Xuất CSV bằng `POST /api/v1/sensory/export`, body `{"session_code":"ROUND-01","sample_code":"MUSH-01"}`. CSV UTF-8 có BOM, bao gồm phiếu thô của nhóm được chọn. Nội dung nhận xét bắt đầu bằng ký tự công thức bảng tính được vô hiệu hóa khi xuất.
+
+Nhận xét `POST /api/v1/sensory/insights` dùng body giống export. Khi AI tắt, API trả nhận xét mô tả kèm `basis` gồm số phiếu và Mean/SD. Khi AI bật và có từ 3 phiếu, chỉ **số liệu tổng hợp** được gửi đến OpenRouter; nhận xét thô và thông tin đăng ký mẫu không được gửi. AI lỗi hoặc trả kết quả không hợp lệ thì dùng nhận xét mô tả. Câu chữ AI cần được đối chiếu với số liệu, không được xem là kiểm định thống kê.
+
+Ví dụ PowerShell gửi phiếu:
+
+```powershell
+Invoke-RestMethod -Uri 'http://127.0.0.1:8766/api/v1/sensory/submit' -Method Post -ContentType 'application/json' -Body '{"session_code":"ROUND-01","sample_code":"MUSH-01","tester_type":"CONSUMER","color_score":7,"aroma_score":8,"umami_taste_score":8,"aftertaste_score":6,"overall_acceptance":8}'
+```
+
+## Đăng ký mẫu thử
+
+```json
+{
+  "full_name":"Nguyễn An",
+  "phone_or_email":"an@example.com",
+  "organization_type":"INDIVIDUAL",
+  "dietary_preference":"VEGAN",
+  "consent":true
+}
+```
+
+`organization_type`: `INDIVIDUAL`, `RESTAURANT`, `FOOD_BUSINESS`, `OTHER`; mặc định `INDIVIDUAL`. `dietary_preference`: `NONE`, `VEGAN`, `LOW_SODIUM`, `FAMILY`, `OTHER`; mặc định `NONE`. `shipping_address` tùy chọn tối đa 300 ký tự; nên chỉ bổ sung khi thực sự cần gửi mẫu. `consent:true` là bắt buộc để lưu liên hệ. Response không lặp lại tên hay địa chỉ, và chỉ xác nhận **đã nhận đăng ký**, không hứa gửi mẫu. Email không phân biệt hoa/thường; đăng ký trùng trả cùng ID và trạng thái.
+
+Danh sách có thông tin cá nhân chỉ đọc được bằng token quản trị. `status`: `PENDING`, `SENT`, `FEEDBACK_RECEIVED`, `CANCELLED`; có thể lọc danh sách theo trạng thái. `PATCH` cập nhật trạng thái, `DELETE` xóa đăng ký. Khi nhận yêu cầu xóa dữ liệu, người vận hành dùng API quản trị; tránh đưa file SQLite vào nơi chia sẻ.
 
 ## Tính và lưu mẻ
 

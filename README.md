@@ -1,6 +1,6 @@
-# Musuroom 1.1 — Website + Express API + SQLite
+# Musuroom 1.2 — Website + Express API + SQLite
 
-Website dự án bột gia vị từ phụ phẩm nấm ăn, gồm kho tri thức có trích dẫn, mô hình mẻ thử, backend và trợ lý tra cứu/AI tùy chọn.
+Website dự án bột gia vị từ phụ phẩm nấm ăn, gồm kho tri thức có trích dẫn, mô hình mẻ thử, API khảo sát cảm quan, đăng ký mẫu thử và AI tùy chọn.
 
 ## Mở trên máy này
 
@@ -42,17 +42,30 @@ Chạy nền bằng nút CMD hoặc `powershell -NoProfile -ExecutionPolicy Bypa
 
 Các biến môi trường của tiến trình có ưu tiên hơn `.env`.
 
+## API cảm quan và mẫu thử
+
+- `POST /api/v1/sensory/submit`: gửi phiếu Hedonic 1–9 theo đợt và mã mẫu.
+- `GET /api/v1/sensory/analytics`: Mean, median, độ lệch chuẩn mẫu, phân bố điểm và dữ liệu radar. Cần token quản trị và bộ lọc đợt/mẫu.
+- `POST /api/v1/sensory/export`: xuất CSV phiếu thô, cần token quản trị.
+- `POST /api/v1/sensory/insights`: nhận xét số liệu tổng hợp; AI tùy chọn, cần token.
+- `POST /api/v1/leads/register`: đăng ký quan tâm nhận mẫu thử, yêu cầu đồng ý lưu thông tin.
+- `/api/v1/admin/leads`: danh sách/cập nhật/xóa đăng ký, cần token.
+
+Body, các giá trị hợp lệ, thuật toán và ví dụ request nằm trong [tài liệu API](docs/API.md). Đây là API để tích hợp form/QR và dashboard sau này; website hiện chưa có form công khai cho hai tính năng này.
+
 ## Bật AI
 
 Trong `.env` trên máy, đặt `AI_PROVIDER=openrouter`, điền `OPENROUTER_API_KEY` và `AI_MODEL` từ tài khoản của bạn, rồi khởi động lại. Không gửi API key vào chat hoặc đưa vào frontend/Git.
 
 AI chỉ nhận câu hỏi và tối đa 3 bài liên quan từ kho tri thức. Giao diện thông báo việc gửi dữ liệu đến OpenRouter khi AI được bật. Không lưu hội thoại vào database. Khi lỗi hoặc thiếu trích dẫn hợp lệ, hệ thống chuyển sang trích nội dung nguồn. Đối chiếu câu trả lời với tài liệu gốc trước khi áp dụng. Luồng provider đã được kiểm tra bằng mock; chưa gọi AI thật vì chưa có key/model.
 
+API nhận xét cảm quan chỉ gửi dữ liệu **tổng hợp** đến OpenRouter khi bật AI và có ít nhất 3 phiếu. Không gửi nhận xét thô, tên hoặc liên hệ. Trường `basis` luôn trả số liệu để đối chiếu.
+
 ## Tài liệu dự án
 
 - [Kiến trúc, ERD và database](docs/ARCHITECTURE.md)
 - [REST API và ví dụ request](docs/API.md)
-- [Migration SQL](backend/db/migrations/001_initial.sql)
+- [Migration SQL](backend/db/migrations/002_sensory_samples.sql)
 - [Mẫu môi trường](.env.example)
 
 Repository Git hiện tại được giữ nguyên; nhánh triển khai backend là `codex/musuroom-backend`. Không tự đẩy nguồn lên remote.

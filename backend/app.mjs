@@ -7,6 +7,7 @@ import { openDatabase } from './db/database.mjs';
 import { knowledgeRepository } from './repositories/knowledge.mjs';
 import { batchRepository } from './repositories/batches.mjs';
 import { createAssistant } from './services/assistant.mjs';
+import { v1Router } from './routes/v1.mjs';
 import { calculate } from '../dist/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
   const db = database || openDatabase(config.databasePath);
@@ -34,8 +35,8 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
     next();
   });
   app.use(express.json({ limit: '16kb', strict: true }));
-  app.get('/healthz', (req, res) => { db.prepare('SELECT 1').get(); res.json({ app: 'musuroom', version: '1.1.0', database: 'ok' }); });
-  app.get('/api/status', (req, res) => res.json({ app: 'musuroom', version: '1.1.0', aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: knowledge.all().length }));
+  app.get('/healthz', (req, res) => { db.prepare('SELECT 1').get(); res.json({ app: 'musuroom', version: '1.2.0', database: 'ok' }); });
+  app.get('/api/status', (req, res) => res.json({ app: 'musuroom', version: '1.2.0', aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: knowledge.all().length }));
   app.get('/api/knowledge', (req, res) => {
     const q = req.query.q ?? ''; const category = req.query.category ?? '';
     if (typeof q !== 'string' || q.length > 200 || typeof category !== 'string' || category.length > 100) return res.status(400).json({ error: 'invalid_query' });
@@ -74,6 +75,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
     if (++requestCount > config.chatLimit) return res.status(429).set('Retry-After', '60').json({ error: 'rate_limit_exceeded' });
     res.json(await answer(question.trim()));
   });
+  app.use('/api/v1', v1Router(db, authorize, config, fetchImpl));
   app.use('/api', (req, res) => res.status(404).json({ error: 'endpoint_not_found' }));
   app.use((req, res, next) => ['GET', 'HEAD'].includes(req.method) ? next() : res.status(405).set('Allow', 'GET, HEAD').json({ error: 'method_not_allowed' }));
   app.use(express.static(resolve(projectRoot, 'dist'), { dotfiles: 'deny', index: 'index.html' }));

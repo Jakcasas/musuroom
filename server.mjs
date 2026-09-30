@@ -10,7 +10,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   if (existsSync(path)) loadEnvFile(path);
   const config = loadConfig();
   const server = createApp({ config });
-  server.listen(config.port, config.host, () => console.log(`Musuroom 1.1: http://${config.host}:${config.port}/`));
+  server.listen(config.port, config.host, () => console.log(`Musuroom 1.2: http://${config.host}:${config.port}/`));
   server.on('error', error => { console.error(error.code === 'EADDRINUSE' ? 'Port is already in use.' : 'Server could not start.'); process.exitCode = 1; });
   for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => server.close(() => process.exit(0)));
 }

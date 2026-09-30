@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Musuroom website, Express API, SQLite knowledge library and optional grounded AI",

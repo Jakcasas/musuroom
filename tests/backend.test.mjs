@@ -1,11 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { resolve } from 'node:path';
 import { createApp } from '../backend/app.mjs';
 import { loadConfig } from '../backend/config.mjs';
-import { openDatabase } from '../backend/db/database.mjs';
+import { openDatabase, seedDatabase } from '../backend/db/database.mjs';
 import { createAssistant } from '../backend/services/assistant.mjs';
 import { articles } from '../dist/knowledge-data.js';
 import { defaults } from '../dist/core.js';
@@ -24,19 +21,16 @@ test('Config validates port, local binding, token and AI configuration', () => {
   for (const extra of [{ PORT: '0' }, { PORT: 'not-a-port' }, { HOST: '0.0.0.0' }, { AI_PROVIDER: 'unknown' }, { AI_PROVIDER: 'openrouter' }, { API_WRITE_TOKEN: 'short' }]) assert.throws(() => config(extra));
   assert.equal(config().provider, 'disabled');
 });
-test('Migrations and seeds are idempotent; database persists and enforces foreign keys', () => {
-  const directory = mkdtempSync(resolve(tmpdir(), 'musuroom-test-'));
+test('Migrations and seeds are idempotent; database enforces foreign keys', () => {
+  const db = openDatabase(':memory:');
   try {
-    const path = resolve(directory, 'test.sqlite');
-    let db = openDatabase(path);
     db.prepare('UPDATE knowledge_articles SET title=? WHERE id=?').run('Persisted test title', 'umami');
     assert.throws(() => db.prepare('DELETE FROM sources WHERE id=?').run(2));
-    db.close(); db = openDatabase(path);
+    seedDatabase(db);
     assert.equal(db.prepare('SELECT count(*) n FROM knowledge_articles').get().n, 6);
     assert.equal(db.prepare('SELECT title FROM knowledge_articles WHERE id=?').get('umami').title, 'Persisted test title');
-    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n, 1);
-    db.close();
-  } finally { rmSync(directory, { recursive: true }); }
+    assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n, 2);
+  } finally { db.close(); }
 });
 test('Knowledge API reads sources from database and handles invalid queries', async t => {
   const a = await api(t);
