@@ -8,7 +8,7 @@
 .measure span{font-size:11px;font-weight:800;letter-spacing:.12em;color:#668145}
 .measure p{font-size:14px;color:#566b59;line-height:1.7;margin:6px 0 0}
 .impact-note{margin-top:32px;border-left:3px solid #91ad5e;padding:5px 0 5px 22px;max-width:940px}
-.impact-note strong{font-family:Manrope,Arial,sans-serif;font-size:19px;letter-spacing:-.02em}
+.impact-note strong{font-family:var(--font-ui);font-size:19px;letter-spacing:-.02em}
 .impact-note p{color:#506155;margin:8px 0 0;font-size:16px;line-height:1.8}
 .site-header nav{gap:22px}
 .intro-grid{grid-template-columns:minmax(0,42fr) minmax(0,58fr)}
