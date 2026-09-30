@@ -105,7 +105,7 @@ API nhận xét cảm quan chỉ gửi dữ liệu **tổng hợp** đến OpenR
 - [Vận hành cổng giám khảo, cấp mã và Jev](docs/JUDGE_PORTAL.md)
 - [Mẫu môi trường](.env.example)
 
-Repository Git hiện tại được giữ nguyên; nhánh triển khai backend là `codex/musuroom-backend`. Không tự đẩy nguồn lên remote.
+Repository công khai dùng nhánh `main`. Checkout trên máy này dùng nhánh `codex/musuroom-backend`, theo dõi `origin/main`. Các thay đổi mới nên được thực hiện trên nhánh riêng rồi review trước khi đưa vào `main`.
 
 ## Mẫu đo và số liệu công bố
 
@@ -123,4 +123,4 @@ Kiểm tra tìm kiếm tiếng Việt, nguồn, cân bằng vật chất, CSV, H
 
 4 nguồn bên ngoài và 2 ghi chú phương pháp của Musuroom; không tự cập nhật từ Internet. Website chính thức của dự án không đồng nghĩa với sản phẩm thương mại đã kiểm nghiệm. Ảnh hero do AI tạo để minh họa ý tưởng. Mô hình tính bột nền là giả định trước phối trộn, không xác nhận an toàn hoặc mức giảm lãng phí thực tế.
 
-Frontend có bản dữ liệu dự phòng để đọc khi API không sẵn sàng. Cập nhật bản ghi đã seed cần migration dữ liệu; seed không ghi đè dữ liệu có sẵn. Google Fonts và liên kết nguồn cần Internet; font hệ thống được dùng khi không tải được font.
+Frontend có bản dữ liệu dự phòng để đọc khi API không sẵn sàng. Cập nhật bản ghi đã seed cần migration dữ liệu; seed không ghi đè dữ liệu có sẵn. Font Roboto nằm trong `dist/assets/fonts/` với giấy phép OFL và được tải từ chính server. Liên kết tài liệu bên ngoài cần Internet.

@@ -10,3 +10,4 @@ coverage/
 cloud.env
 supabase/.temp/
 supabase/.branches/
+.openai/
