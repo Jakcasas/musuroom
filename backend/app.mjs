@@ -6,6 +6,7 @@ import { openDatabase } from './db/database.mjs';
 import { knowledgeRepository } from './repositories/knowledge.mjs';
 import { batchRepository } from './repositories/batches.mjs';
 import { createAssistant } from './services/assistant.mjs';
+import { createModelGateway } from './services/model-gateway.mjs';
 import { v1Router } from './routes/v1.mjs';
 import { createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
@@ -20,7 +21,8 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   if(config.production)app.set('trust proxy',1);
   const knowledge = knowledgeRepository(db);
   const batches = batchRepository(db);
-  const answer = createAssistant(config, knowledge, fetchImpl);
+  const complete = createModelGateway(config, fetchImpl);
+  const answer = createAssistant(config, knowledge, fetchImpl, complete);
   app.locals.db = db;
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
@@ -46,8 +48,8 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
     next();
   });
   app.use(express.json({ limit: '16kb', strict: true }));
-  app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.0', database: 'ok' }); });
-  app.get('/api/status', async (req, res) => res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.0', aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
+  app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.1', database: 'ok' }); });
+  app.get('/api/status', async (req, res) => res.json({ app: 'musuroom', release:'Musuroom 1', version: '1.4.1', aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
   app.get('/api/knowledge', async (req, res) => {
     const q = req.query.q ?? ''; const category = req.query.category ?? '';
     if (typeof q !== 'string' || q.length > 200 || typeof category !== 'string' || category.length > 100) return res.status(400).json({ error: 'invalid_query' });
@@ -82,7 +84,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   });
   app.use('/api/v1', judgeRouter(db,security,config,fetchImpl));
   app.use('/api/v1', projectRouter(db,security,config));
-  app.use('/api/v1', v1Router(db, authorize, config, fetchImpl, security.requireReviewer));
+  app.use('/api/v1', v1Router(db, authorize, config, fetchImpl, security.requireReviewer, complete));
   app.use('/api', (req, res) => res.status(404).json({ error: 'endpoint_not_found' }));
   app.use((req, res, next) => ['GET', 'HEAD'].includes(req.method) ? next() : res.status(405).set('Allow', 'GET, HEAD').json({ error: 'method_not_allowed' }));
   app.use(express.static(resolve(projectRoot, 'dist'), { dotfiles: 'deny', index: 'index.html',setHeaders:(res,path)=>{if(/[/\\]assets[/\\]/.test(path))res.setHeader('Cache-Control','public, max-age=86400');} }));

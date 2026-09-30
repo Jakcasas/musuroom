@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { sensoryRepository } from '../repositories/sensory.mjs';
 import { leadsRepository } from '../repositories/leads.mjs';
-import { codePattern, sensoryMetrics, sensoryCsv, validateSensory } from '../services/sensory-metrics.mjs';
+import { codePattern, sensoryMetricsFromDistribution, sensoryCsv, validateSensory } from '../services/sensory-metrics.mjs';
 import { validateRegistration } from '../services/sample-registration.mjs';
 import { createSensoryInterpreter } from '../services/sensory-insights.mjs';
 import { rateLimit } from '../security/rate-limit.mjs';
@@ -18,11 +18,11 @@ function pagination(input) {
   const offset = Number(input.offset ?? 0);
   return Number.isInteger(limit) && limit >= 1 && limit <= 100 && Number.isInteger(offset) && offset >= 0 && offset <= 1000000 ? { limit, offset } : null;
 }
-export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize) {
+export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize, complete) {
   const router = Router();
   const sensory = sensoryRepository(db);
   const leads = leadsRepository(db);
-  const interpret = createSensoryInterpreter(config, fetchImpl);
+  const interpret = createSensoryInterpreter(config, fetchImpl, complete);
   const throttle = rateLimit(60, 'submission_rate_limit');
   router.post('/sensory/submit', throttle, async (req, res) => {
     const { input, errors } = validateSensory(req.body);
@@ -34,7 +34,7 @@ export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize)
   router.get('/sensory/analytics', reviewer, async (req, res) => {
     const selected = filters(req.query);
     if (!selected) return res.status(400).json({ error: 'session_code_and_sample_code_required' });
-    res.json(sensoryMetrics(await sensory.list(selected.session, selected.sample), selected.session, selected.sample));
+    res.json(sensoryMetricsFromDistribution(await sensory.distribution(selected.session, selected.sample), selected.session, selected.sample));
   });
   router.post('/sensory/export', reviewer, async (req, res) => {
     const selected = filters(req.body);
@@ -42,10 +42,10 @@ export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize)
     const csv = sensoryCsv(await sensory.list(selected.session, selected.sample));
     res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="sensory-${selected.session}-${selected.sample}.csv"` }).send(csv);
   });
-  router.post('/sensory/insights', reviewer, async (req, res) => {
+  router.post('/sensory/insights', reviewer, rateLimit(config.insightsLimit ?? 10, 'insights_rate_limit'), async (req, res) => {
     const selected = filters(req.body);
     if (!selected) return res.status(422).json({ error: 'session_code_and_sample_code_required' });
-    const metrics = sensoryMetrics(await sensory.list(selected.session, selected.sample), selected.session, selected.sample);
+    const metrics = sensoryMetricsFromDistribution(await sensory.distribution(selected.session, selected.sample), selected.session, selected.sample);
     res.json(await interpret(metrics));
   });
   router.post('/leads/register', throttle, async (req, res) => {

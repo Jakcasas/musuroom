@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "type": "module",
   "description": "Musuroom 1: Express, SQLite/PostgreSQL, private Supabase dossier and optional Jev",

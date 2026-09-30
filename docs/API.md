@@ -1,4 +1,4 @@
-# REST API — Musuroom 1.3
+# REST API — Musuroom 1 (mã nguồn 1.4.1)
 
 Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `Content-Type: application/json`, giới hạn 16 KB. Server không bật CORS; request từ origin khác bị từ chối. Database và `.env` không được phục vụ qua HTTP.
 
@@ -67,6 +67,10 @@ Xuất CSV bằng `POST /api/v1/sensory/export`, body `{"session_code":"ROUND-01
 
 Nhận xét `POST /api/v1/sensory/insights` dùng body giống export. Khi AI tắt, API trả nhận xét mô tả kèm `basis` gồm số phiếu và Mean/SD. Khi AI bật và có từ 3 phiếu, chỉ **số liệu tổng hợp** được gửi đến OpenRouter; nhận xét thô và thông tin đăng ký mẫu không được gửi. AI lỗi hoặc trả kết quả không hợp lệ thì dùng nhận xét mô tả. Câu chữ AI cần được đối chiếu với số liệu, không được xem là kiểm định thống kê.
 
+Analytics/insights đọc tối đa 49 dòng phân bố điểm/loại người thử từ database, không đọc nội dung góp ý. PostgreSQL dùng `public.musuroom_sensory_distribution(text,text)`, `SECURITY INVOKER`, không cấp EXECUTE cho PUBLIC/anon/authenticated; server kiểm tra phiên/quyền trước khi gọi. SQLite dùng truy vấn tổng hợp tương đương. Mean, median và SD được tính từ phân bố, giữ nguyên cấu trúc JSON. Export CSV tiếp tục đọc phiếu thô theo phân quyền.
+
+Nhận xét có giới hạn mặc định 10 request/phút/IP sau xác thực (`INSIGHTS_REQUESTS_PER_MINUTE`). Vượt giới hạn trả 429, `error=insights_rate_limit` và header `Retry-After`. Khi provider tạm ngừng gọi sau lỗi, API vẫn trả 200 với nhận xét mô tả, `reason=provider_cooldown` và `retry_after` (giây).
+
 Ví dụ PowerShell gửi phiếu:
 
 ```powershell
@@ -126,7 +130,11 @@ Invoke-RestMethod -Uri 'http://127.0.0.1:8766/api/estimate' -Method Post -Conten
 }
 ```
 
-`mode=ai` khi provider trả lời hợp lệ; có thêm `model`. `mode=retrieval` là trích nội dung theo từ khóa, không phải AI sinh văn bản. `reason` có thể là `ai_disabled`, `no_matches`, `provider_unavailable`, `invalid_response`, `invalid_citations`, `ai_busy`. Giới hạn mặc định 10 câu/phút cho toàn bộ server local, tối đa 2 yêu cầu AI đồng thời. Vượt giới hạn trả 429 + `Retry-After`.
+`mode=ai` khi provider trả lời hợp lệ; có thêm `model`. `mode=retrieval` là trích nội dung theo từ khóa, không phải AI sinh văn bản. `reason` có thể là `ai_disabled`, `no_matches`, `provider_unavailable`, `provider_cooldown`, `invalid_response`, `invalid_citations`, `ai_busy`. `retry_after` tùy chọn là số giây chờ khi provider gặp lỗi/tạm nghỉ. Giới hạn mặc định 10 câu/phút/IP; vượt giới hạn trả 429 + header `Retry-After`.
+
+Hỏi đáp và nhận xét chia sẻ tối đa 2 lời gọi OpenRouter đồng thời/tiến trình (`AI_MAX_CONCURRENT`). JSON tối đa ba tài liệu được giới hạn ở 12.000 ký tự (`AI_CONTEXT_MAX_CHARS`), không tính câu hỏi/system prompt; tài liệu rút gọn có `truncated=true`. Mặc định chờ 20 giây cho toàn bộ lời gọi/đọc body, tối đa 700 token output (nhận xét cảm quan tối đa 400), phản hồi tối đa 64 KiB. HTTP lỗi, JSON không hợp lệ, câu trả lời bị cắt/lọc hoặc timeout dùng kết quả dự phòng. Khi provider lỗi, tạm ngừng gọi 30 giây (`AI_COOLDOWN_MS`), có thể tăng theo `Retry-After` nhưng không quá 120 giây. Không tự retry hay cache hội thoại. Các giới hạn này áp dụng cho một replica; cần bộ điều phối dùng chung trước khi tăng replica.
+
+Trích dẫn chấp nhận `[2]` hoặc `[1, 2]`; mọi mã trích dẫn được nhận diện phải có trong tập nguồn truy xuất. Kiểm tra này không xác minh nội dung từng nhận định. Cấu hình thiếu key/model, còn placeholder hoặc tham số ngoài khoảng cho phép sẽ khiến server từ chối khởi động; `/api/status.aiEnabled` không phải kiểm tra kết nối provider trực tiếp.
 
 ## Mã lỗi
 

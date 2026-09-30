@@ -53,6 +53,37 @@ export function sensoryMetrics(rows, sessionCode, sampleCode) {
     method: { scale: 'Hedonic 1–9', sd: 'sample standard deviation (n−1)', sd_for_n_less_than_2: null, rounding: 4, missing_scores: 'not accepted', grouping: 'session_code + sample_code' }
   };
 }
+export function sensoryMetricsFromDistribution(groups, sessionCode, sampleCode) {
+  const distributions = Object.fromEntries(criteria.map(({ key }) => [key, Object.fromEntries(Array.from({ length: 9 }, (_, i) => [i + 1, 0]))]));
+  const byTesterType = Object.fromEntries(['JUDGE','STUDENT','CONSUMER','OTHER'].map(type => [type, 0]));
+  for (const group of groups) {
+    if (!Number.isSafeInteger(group.n) || group.n < 0) throw new Error('invalid_distribution');
+    if (group.criterion === 'tester_type' && Object.hasOwn(byTesterType, group.tester_type)) byTesterType[group.tester_type] += group.n;
+    else if (Object.hasOwn(distributions, group.criterion) && Number.isInteger(group.score) && group.score >= 1 && group.score <= 9) distributions[group.criterion][group.score] += group.n;
+    else throw new Error('invalid_distribution');
+  }
+  const count = Object.values(byTesterType).reduce((sum, n) => sum + n, 0);
+  if (!Number.isSafeInteger(count)) throw new Error('invalid_distribution');
+  const metrics = Object.fromEntries(criteria.map(({ key }) => {
+    const distribution = distributions[key];
+    const bins = Object.entries(distribution).map(([value, n]) => ({ value: Number(value), n }));
+    const n = bins.reduce((sum, bin) => sum + bin.n, 0);
+    if (n !== count) throw new Error('inconsistent_distribution');
+    if (!n) return [key, { n, mean: null, median: null, sd: null, distribution }];
+    const mean = bins.reduce((sum, bin) => sum + bin.value * bin.n, 0) / n;
+    const positions = [Math.floor((n - 1) / 2), Math.floor(n / 2)];
+    // Locate each middle position independently, including the repeated position for odd n.
+    const at = position => { let seen = 0; for (const bin of bins) { seen += bin.n; if (seen > position) return bin.value; } };
+    const median = (at(positions[0]) + at(positions[1])) / 2;
+    const sd = n < 2 ? null : Math.sqrt(bins.reduce((sum, bin) => sum + bin.n * (bin.value - mean) ** 2, 0) / (n - 1));
+    return [key, { n, mean: round(mean), median, sd: sd === null ? null : round(sd), distribution }];
+  }));
+  return { session_code: sessionCode, sample_code: sampleCode, count, metrics,
+    radar: { labels: criteria.map(x => x.label), values: criteria.map(x => metrics[x.key].mean), min: 1, max: 9 },
+    by_tester_type: byTesterType,
+    method: { scale: 'Hedonic 1–9', sd: 'sample standard deviation (n−1)', sd_for_n_less_than_2: null, rounding: 4, missing_scores: 'not accepted', grouping: 'session_code + sample_code' }
+  };
+}
 export function sensoryCsv(rows) {
   const headers = ['id','session_code','sample_code','tester_type',...criteria.map(x => x.key),'comments','created_at'];
   const escape = value => {

@@ -25,14 +25,16 @@ export function loadConfig(env = process.env) {
   if(production && (!publicOrigin || databaseProvider!=='postgres' || storageProvider!=='supabase'))throw new Error('Production requires HTTPS PUBLIC_ORIGIN, Postgres and Supabase private storage');
   const provider = env.AI_PROVIDER || 'disabled';
   if (!['disabled', 'openrouter'].includes(provider)) throw new Error('Invalid AI_PROVIDER');
-  const apiKey = env.OPENROUTER_API_KEY || '';
-  const model = env.AI_MODEL || '';
+  const apiKey = (env.OPENROUTER_API_KEY || '').trim();
+  const model = (env.AI_MODEL || '').trim();
   if (provider === 'openrouter' && (!apiKey || !model)) throw new Error('OpenRouter requires OPENROUTER_API_KEY and AI_MODEL');
+  if (provider === 'openrouter' && (/^YOUR_|^<|^\[/.test(apiKey) || /^YOUR_|^<|^\[/.test(model) || /\s/.test(apiKey) || apiKey.length > 512 || !/^[A-Za-z0-9~][A-Za-z0-9._:/~+-]{0,199}$/.test(model))) throw new Error('Replace OpenRouter placeholders with a valid server key and model ID');
+  const aiControls = { aiConcurrency: integer('AI_MAX_CONCURRENT', 2, 1, 4), aiCooldownMs: integer('AI_COOLDOWN_MS', 30000, 0, 120000), aiContextMaxChars: integer('AI_CONTEXT_MAX_CHARS', 12000, 3000, 24000), insightsLimit: integer('INSIGHTS_REQUESTS_PER_MINUTE', 10, 1, 60) };
   const writeToken = env.API_WRITE_TOKEN || '';
   if (writeToken && writeToken.length < 32) throw new Error('API_WRITE_TOKEN must have at least 32 characters');
   if (env.JEV_ENABLED && !['true','false'].includes(env.JEV_ENABLED)) throw new Error('Invalid JEV_ENABLED');
   const jevEnabled = env.JEV_ENABLED === 'true';
   const typesafeKey = env.TYPESAFE_API_KEY || '';
   if (jevEnabled && !typesafeKey) throw new Error('JEV_ENABLED requires TYPESAFE_API_KEY');
-  return Object.freeze({ production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, typesafeKey, jevModel: env.JEV_MODEL || 'jev-latest', documentRoot: resolve(projectRoot, 'data/dossier') });
+  return Object.freeze({ ...aiControls, production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, typesafeKey, jevModel: env.JEV_MODEL || 'jev-latest', documentRoot: resolve(projectRoot, 'data/dossier') });
 }

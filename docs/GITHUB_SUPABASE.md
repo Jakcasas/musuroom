@@ -17,8 +17,9 @@
 - 6 nguồn và 6 bài tri thức được nạp từ mã nguồn. Chưa có khảo sát hoặc đăng ký mẫu thử thực tế trên cloud.
 - Bucket `musuroom-dossier`: `public=false`, giới hạn file 50 MB.
 - Migration bổ sung tạo index cho khóa ngoại hồ sơ mẫu và thu hồi quyền gọi `public.rls_auto_enable()` của các role trình duyệt. Function/event trigger hệ thống vẫn được giữ.
+- Migration `pg-003-sensory-distribution` đã áp dụng ngày 30.09.2026: hàm tổng hợp điểm trả tối đa 49 dòng/đợt/mẫu, không có nội dung góp ý hoặc ID người thử; dùng `SECURITY INVOKER`, search path cố định, không cấp EXECUTE cho PUBLIC/anon/authenticated. Server/service_role được dùng theo phân quyền ứng dụng.
 
-Kiểm tra Supabase Advisors ngày 30.09.2026 sau migration không còn WARN/ERROR. Các thông báo INFO còn lại là [RLS không có policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) (chủ ý chặn Data API của role trình duyệt) và [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) (database mới). Kiểm thử ứng dụng sau thay đổi migration: **26/26 thành công**.
+Kiểm tra bảo mật Supabase Advisors ngày 30.09.2026 sau migration không có WARN/ERROR. Thông báo INFO [RLS không có policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) là chủ ý chặn Data API của role trình duyệt. Kiểm tra hiệu năng trước đó có INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) do database mới. Kết quả kiểm thử bản 1.4.1 xem [ghi chú phát hành](RELEASE_NOTES.md).
 
 Ứng dụng Express kiểm tra phiên, vai trò và CSRF trước khi đọc dữ liệu riêng. Backend kết nối PostgreSQL bằng Session pooler, xác minh CA và hostname; Storage sử dụng khóa phía server. Frontend không nhận khóa server.
 

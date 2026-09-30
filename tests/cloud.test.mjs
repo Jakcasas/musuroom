@@ -21,6 +21,8 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  assert.equal((await engine.query("SELECT has_table_privilege('anon','judge_accounts','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','unrelated_table','SELECT') AS allowed")).rows[0].allowed,true);
  assert.equal((await engine.query("SELECT relrowsecurity FROM pg_class WHERE relname='sample_requests'")).rows[0].relrowsecurity,true);
+ assert.equal((await engine.query("SELECT has_function_privilege('anon','public.musuroom_sensory_distribution(text,text)','EXECUTE') AS allowed")).rows[0].allowed,false);
+ assert.equal((await engine.query("SELECT has_function_privilege('authenticated','public.musuroom_sensory_distribution(text,text)','EXECUTE') AS allowed")).rows[0].allowed,false);
  const judge=await createAccount(db,{name:'Cloud test judge'});const admin=await createAccount(db,{name:'Cloud test admin',role:'ADMIN'});
  const server=createApp({config:loadConfig(production),database:db});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(async()=>{await new Promise(r=>server.close(r));await server.databaseClosed;});
  const base=`http://127.0.0.1:${server.address().port}`;

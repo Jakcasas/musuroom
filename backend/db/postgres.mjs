@@ -7,6 +7,7 @@ pg.types.setTypeParser(20,value=>{const number=Number(value);if(!Number.isSafeIn
 export function postgresAdapter(client){
  const sql=text=>{let index=0;return text.replace(/\?/g,()=>`$${++index}`);};
  return {
+  dialect:'postgres',
   prepare(text){return{
    async all(...values){return (await client.query(sql(text),values)).rows;},
    async get(...values){return (await client.query(sql(text),values)).rows[0];},
@@ -21,6 +22,7 @@ export async function initializePostgres(db){
  const migrations=[
   ['pg-001-musuroom-1','001_musuroom.sql'],
   ['pg-002-access-hardening','20260930101047_musuroom_access_hardening.sql'],
+  ['pg-003-sensory-distribution','20260930152855_sensory_distribution.sql'],
  ];
  for(const [name,file] of migrations){
  if(!await db.prepare('SELECT version FROM schema_migrations WHERE version=?').get(name)){
