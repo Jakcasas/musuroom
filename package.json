@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "description": "Musuroom website, Express API, SQLite knowledge library and optional grounded AI",
@@ -9,6 +9,9 @@
     "dev": "node --watch server.mjs",
     "setup": "node scripts/setup.mjs",
     "db:migrate": "node scripts/database.mjs",
+    "access:create": "node scripts/create-access.mjs",
+    "access:revoke": "node scripts/revoke-access.mjs",
+    "dossier:add": "node scripts/add-document.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs"
   },
   "engines": { "node": ">=24" },

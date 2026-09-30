@@ -1,4 +1,4 @@
-# Musuroom 1.2 — Website + Express API + SQLite
+# Musuroom 1.3 — Website + Express API + SQLite
 
 Website dự án bột gia vị từ phụ phẩm nấm ăn, gồm kho tri thức có trích dẫn, mô hình mẻ thử, API khảo sát cảm quan, đăng ký mẫu thử và AI tùy chọn.
 
@@ -7,6 +7,12 @@ Website dự án bột gia vị từ phụ phẩm nấm ăn, gồm kho tri thứ
 Nhấp đúp **MO_MUSUROOM.cmd** rồi mở **http://127.0.0.1:8766/**.
 
 Kho tri thức và trợ lý: **http://127.0.0.1:8766/tri-thuc.html**. Mở mục **Hỏi trợ lý Musuroom** ở đầu thư viện. Khi chưa bật AI, trợ lý trả về trích đoạn và nguồn từ database.
+
+## Cổng giám khảo và trải nghiệm
+
+- Giám khảo: **http://127.0.0.1:8766/giam-khao.html**. Mã truy cập riêng có thời hạn, cookie HttpOnly, phân quyền và CSRF.
+- Khảo sát và đăng ký: **http://127.0.0.1:8766/trai-nghiem.html**.
+- [Hướng dẫn cấp/thu hồi mã, thêm hồ sơ và bật Jev](docs/JUDGE_PORTAL.md). Tài khoản máy này được lưu riêng trong `data/`, không nằm trong mã nguồn.
 
 ## Cài trên máy mới
 
@@ -21,7 +27,7 @@ node server.mjs
 
 Có thể dùng `npm install` nếu không dùng pnpm, nhưng lockfile của dự án là `pnpm-lock.yaml`. Node đi kèm Codex trên máy hiện tại đã có; script Windows tự tìm nếu PATH không có Node.
 
-Setup tạo `.env` từ `.env.example`, sinh token ngẫu nhiên và giữ nguyên `.env` đã có. Database tự tạo tại `data/musuroom.sqlite`, chạy migration và nạp 6 bài khi khởi động. Không cần cài riêng máy chủ database. `node_modules`, database, log, PID và `.env` không đưa vào Git/ZIP mã nguồn.
+Setup tạo `.env` từ `.env.example`, sinh token ngẫu nhiên và giữ giá trị `.env` đã có và bổ sung biến mới còn thiếu. Database tự tạo tại `data/musuroom.sqlite`, chạy migration và nạp 6 bài khi khởi động. Không cần cài riêng máy chủ database. `node_modules`, database, log, PID và `.env` không đưa vào Git/ZIP mã nguồn.
 
 Chạy nền bằng nút CMD hoặc `powershell -NoProfile -ExecutionPolicy Bypass -File .\start-musuroom.ps1`. Chạy terminal bằng `node server.mjs` và dừng bằng Ctrl+C. Nếu chạy nền, tìm PID trong `server.pid` rồi kết thúc đúng tiến trình đó trong Task Manager. Sau khi sửa `.env`, dừng server cũ rồi khởi động lại. Lỗi khởi động ghi trong `server-error.log`.
 
@@ -45,13 +51,13 @@ Các biến môi trường của tiến trình có ưu tiên hơn `.env`.
 ## API cảm quan và mẫu thử
 
 - `POST /api/v1/sensory/submit`: gửi phiếu Hedonic 1–9 theo đợt và mã mẫu.
-- `GET /api/v1/sensory/analytics`: Mean, median, độ lệch chuẩn mẫu, phân bố điểm và dữ liệu radar. Cần token quản trị và bộ lọc đợt/mẫu.
-- `POST /api/v1/sensory/export`: xuất CSV phiếu thô, cần token quản trị.
-- `POST /api/v1/sensory/insights`: nhận xét số liệu tổng hợp; AI tùy chọn, cần token.
+- `GET /api/v1/sensory/analytics`: Mean, median, độ lệch chuẩn mẫu, phân bố điểm và dữ liệu radar. Cần phiên giám khảo/quản trị hoặc bearer token, và bộ lọc đợt/mẫu.
+- `POST /api/v1/sensory/export`: xuất CSV phiếu thô, cần phiên giám khảo/quản trị hoặc bearer token.
+- `POST /api/v1/sensory/insights`: nhận xét số liệu tổng hợp; AI tùy chọn, cần phiên giám khảo/quản trị hoặc bearer token.
 - `POST /api/v1/leads/register`: đăng ký quan tâm nhận mẫu thử, yêu cầu đồng ý lưu thông tin.
-- `/api/v1/admin/leads`: danh sách/cập nhật/xóa đăng ký, cần token.
+- `/api/v1/admin/leads`: danh sách/cập nhật/xóa đăng ký, cần quyền ADMIN hoặc bearer token.
 
-Body, các giá trị hợp lệ, thuật toán và ví dụ request nằm trong [tài liệu API](docs/API.md). Đây là API để tích hợp form/QR và dashboard sau này; website hiện chưa có form công khai cho hai tính năng này.
+Body, các giá trị hợp lệ, thuật toán và ví dụ request nằm trong [tài liệu API](docs/API.md). Form khảo sát và đăng ký đã tích hợp ở `trai-nghiem.html`. Dashboard bảo vệ bằng đăng nhập ở `giam-khao.html`, có biểu đồ radar, bảng thống kê, CSV và quản lý đăng ký theo quyền.
 
 ## Bật AI
 
@@ -66,6 +72,8 @@ API nhận xét cảm quan chỉ gửi dữ liệu **tổng hợp** đến OpenR
 - [Kiến trúc, ERD và database](docs/ARCHITECTURE.md)
 - [REST API và ví dụ request](docs/API.md)
 - [Migration SQL](backend/db/migrations/002_sensory_samples.sql)
+- [Migration tài khoản, phiên và hồ sơ](backend/db/migrations/003_judge_portal.sql)
+- [Vận hành cổng giám khảo, cấp mã và Jev](docs/JUDGE_PORTAL.md)
 - [Mẫu môi trường](.env.example)
 
 Repository Git hiện tại được giữ nguyên; nhánh triển khai backend là `codex/musuroom-backend`. Không tự đẩy nguồn lên remote.

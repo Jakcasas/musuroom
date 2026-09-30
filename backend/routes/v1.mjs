@@ -17,7 +17,7 @@ function pagination(input) {
   const offset = Number(input.offset ?? 0);
   return Number.isInteger(limit) && limit >= 1 && limit <= 100 && Number.isInteger(offset) && offset >= 0 && offset <= 1000000 ? { limit, offset } : null;
 }
-export function v1Router(db, authorize, config, fetchImpl) {
+export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize) {
   const router = Router();
   const sensory = sensoryRepository(db);
   const leads = leadsRepository(db);
@@ -35,18 +35,18 @@ export function v1Router(db, authorize, config, fetchImpl) {
     if (result.conflict) return res.status(409).json({ error: 'submission_key_conflict' });
     res.status(result.repeated ? 200 : 201).json({ id: result.row.id, session_code: result.row.session_code, sample_code: result.row.sample_code, submitted_at: result.row.created_at, repeated: result.repeated });
   });
-  router.get('/sensory/analytics', authorize, (req, res) => {
+  router.get('/sensory/analytics', reviewer, (req, res) => {
     const selected = filters(req.query);
     if (!selected) return res.status(400).json({ error: 'session_code_and_sample_code_required' });
     res.json(sensoryMetrics(sensory.list(selected.session, selected.sample), selected.session, selected.sample));
   });
-  router.post('/sensory/export', authorize, (req, res) => {
+  router.post('/sensory/export', reviewer, (req, res) => {
     const selected = filters(req.body);
     if (!selected) return res.status(422).json({ error: 'session_code_and_sample_code_required' });
     const csv = sensoryCsv(sensory.list(selected.session, selected.sample));
     res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="sensory-${selected.session}-${selected.sample}.csv"` }).send(csv);
   });
-  router.post('/sensory/insights', authorize, async (req, res) => {
+  router.post('/sensory/insights', reviewer, async (req, res) => {
     const selected = filters(req.body);
     if (!selected) return res.status(422).json({ error: 'session_code_and_sample_code_required' });
     const metrics = sensoryMetrics(sensory.list(selected.session, selected.sample), selected.session, selected.sample);

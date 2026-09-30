@@ -1,4 +1,4 @@
-# Kiến trúc Musuroom 1.2
+# Kiến trúc Musuroom 1.3
 
 ## Luồng ứng dụng
 
@@ -28,6 +28,8 @@ backend/
   db/migrations/*.sql      Schema SQL có phiên bản
   repositories/            Đọc/ghi SQLite bằng prepared statement
   services/assistant.mjs   Truy xuất tài liệu và AI tùy chọn
+  security/auth.mjs        Mã scrypt, cookie phiên và phân quyền
+  routes/judge.mjs         Hồ sơ riêng tư và Jev có đồng ý
 dist/                      Website và tài nguyên static
 scripts/                   Tạo .env, migrate/seed database
 tests/                     Kiểm tra logic, HTTP, database và AI mock
@@ -122,9 +124,56 @@ SQLite bật foreign keys, WAL và timeout 5 giây. Có index chủ đề, ngu�
 
 Không lưu lịch sử hội thoại. Sao lưu local: dừng server rồi sao chép thư mục `data/`; giữ bản sao ngoài thư mục đang chạy. Tránh chỉ sao chép file `.sqlite` khi server đang chạy vì dữ liệu mới có thể còn trong WAL.
 
+## Cổng giám khảo
+
+Migration `003_judge_portal.sql` bổ sung:
+
+```mermaid
+erDiagram
+  judge_accounts ||--o{ auth_sessions : owns
+  judge_accounts {
+    TEXT id PK
+    TEXT display_name
+    TEXT role
+    INTEGER enabled
+    TEXT secret_salt
+    TEXT secret_hash
+    INTEGER expires_at
+  }
+  auth_sessions {
+    TEXT token_hash PK
+    TEXT account_id FK
+    TEXT csrf_token
+    INTEGER created_at
+    INTEGER expires_at
+    INTEGER last_seen
+  }
+  quality_documents {
+    TEXT id PK
+    TEXT title
+    TEXT doc_type
+    TEXT file_name UK
+    TEXT mime
+    INTEGER size_bytes
+    TEXT sha256
+    TEXT evidence_status
+  }
+  access_audit {
+    INTEGER id PK
+    TEXT account_id
+    TEXT action
+    TEXT resource_id
+    TEXT created_at
+  }
+```
+
+Tệp ở `data/dossier/`, ngoài static root `dist/`. API kiểm tra quyền trước khi đọc metadata hoặc file, xác minh containment bằng realpath và đối chiếu hash/size. Trang đăng nhập static có thể mở, nội dung hồ sơ được tải riêng sau xác thực. JUDGE đọc tài liệu/cảm quan; ADMIN thêm quyền dữ liệu đăng ký và mẻ thử. Nhật ký không chứa mã truy cập. SQLite lưu hash token phiên; frontend giữ CSRF trong bộ nhớ.
+
+Jev chỉ nhận một góp ý người dùng nhập và đồng ý gửi, qua TypeSafe System One với câu hỏi `choice`. Server kiểm tra cấu trúc, loại nhãn và xác suất trước khi trả gợi ý. Nhận xét cảm quan bằng OpenRouter vẫn là cấu hình riêng; số liệu tính bằng code. Xem [hướng dẫn cổng giám khảo](JUDGE_PORTAL.md).
+
 ## Giới hạn triển khai
 
-Bản này phục vụ một máy trên `127.0.0.1`. SQLite phù hợp quy mô hiện tại; chưa có tài khoản người dùng, quản trị bài viết, đồng bộ nhiều máy hay tìm kiếm vector. API mẻ thử dùng bearer token chung cho người vận hành, không phải hệ thống phân quyền nhiều người. Không đổi sang public hosting trước khi bổ sung xác thực, phân quyền và giới hạn sử dụng theo người dùng.
+Bản này phục vụ một máy trên `127.0.0.1`. SQLite phù hợp quy mô hiện tại; đã có tài khoản JUDGE/ADMIN và phiên có thời hạn. Chưa có quản trị bài viết, đồng bộ nhiều máy hay tìm kiếm vector. API mẻ thử chỉ cho ADMIN hoặc bearer token riêng của người vận hành. Triển khai công cộng cần thiết kế HTTPS, cookie Secure, giới hạn theo người dùng và quy trình quản lý tài khoản.
 
 AI kho tri thức lấy tối đa 3 bài bằng đối sánh từ khóa. Server kiểm tra mã nguồn trích dẫn có thuộc các bài đã truy xuất; phép kiểm tra này không chứng minh mọi câu AI sinh ra đều đúng. Giao diện dẫn về bài gốc để đối chiếu. Khi thiếu nguồn, lỗi provider hoặc trích dẫn không hợp lệ, trả nội dung tra cứu từ thư viện. AI mock đã được kiểm tra; gọi provider thật cần API key/model hợp lệ.
 

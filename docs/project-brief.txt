@@ -1,0 +1,13 @@
+MUSUROOM — TÓM TẮT DỰ ÁN
+Cập nhật: 30.09.2026
+
+Đề tài: Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm.
+Trạng thái: nghiên cứu và hoàn thiện sản phẩm.
+
+Hướng phát triển: lựa chọn phần nấm ăn còn phù hợp làm thực phẩm, thử nghiệm sơ chế/sấy/nghiền, đánh giá cảm quan và theo dõi cân bằng vật chất từng mẻ. Mô hình tính trên website chỉ là công cụ ước tính bột nền trước phối trộn.
+
+Hạ tầng số hiện có: kho tri thức có nguồn, API phiếu Hedonic 1–9, thống kê mô tả theo đợt và mã mẫu, đăng ký quan tâm nhận mẫu thử và cổng hồ sơ có xác thực.
+
+Chưa có dữ liệu được cung cấp để công bố công thức chính thức, hạn dùng, giá bán, số liệu kiểm nghiệm độc lập hoặc chứng nhận. Tài liệu này là tóm tắt dự án, không thay thế COA, SOP đã thẩm định hay hồ sơ tài chính.
+
+Độ ẩm và hoạt độ nước là hai chỉ số khác nhau. Hiệu quả giảm lãng phí và chất lượng sản phẩm cần được xác nhận từ số liệu thử nghiệm thực tế.

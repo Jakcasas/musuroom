@@ -1,4 +1,4 @@
-# REST API — Musuroom 1.2
+# REST API — Musuroom 1.3
 
 Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `Content-Type: application/json`, giới hạn 16 KB. Server không bật CORS; request từ origin khác bị từ chối. Database và `.env` không được phục vụ qua HTTP.
 
@@ -9,20 +9,36 @@ Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `
 | GET | `/api/knowledge?q=umami&category=Hương%20vị` | Tìm bài có/không dấu | Không |
 | GET | `/api/knowledge/:id` | Bài và thông tin nguồn | Không |
 | POST | `/api/estimate` | Tính mẻ, không lưu | Không |
-| GET | `/api/batches?limit=20&offset=0` | Đọc các mẻ đã lưu | Bearer token |
-| GET | `/api/batches/:id` | Chi tiết mẻ | Bearer token |
-| POST | `/api/batches` | Tính và lưu mẻ | Bearer token |
+| GET | `/api/batches?limit=20&offset=0` | Đọc các mẻ đã lưu | ADMIN hoặc bearer token |
+| GET | `/api/batches/:id` | Chi tiết mẻ | ADMIN hoặc bearer token |
+| POST | `/api/batches` | Tính và lưu mẻ | ADMIN hoặc bearer token |
 | POST | `/api/chat` | Trợ lý có nguồn | Cùng origin, giới hạn tần suất |
 | POST | `/api/v1/sensory/submit` | Gửi phiếu Hedonic 1–9 | Không |
-| GET | `/api/v1/sensory/analytics?session_code=...&sample_code=...` | Mean, median, SD và radar | Bearer token |
-| POST | `/api/v1/sensory/export` | CSV phiếu thô của một đợt và mã mẫu | Bearer token |
-| POST | `/api/v1/sensory/insights` | Nhận xét mô tả hoặc AI tùy chọn từ số liệu tổng hợp | Bearer token |
+| GET | `/api/v1/sensory/analytics?session_code=...&sample_code=...` | Mean, median, SD và radar | JUDGE/ADMIN hoặc bearer token |
+| POST | `/api/v1/sensory/export` | CSV phiếu thô của một đợt và mã mẫu | JUDGE/ADMIN hoặc bearer token |
+| POST | `/api/v1/sensory/insights` | Nhận xét mô tả hoặc AI tùy chọn từ số liệu tổng hợp | JUDGE/ADMIN hoặc bearer token |
 | POST | `/api/v1/leads/register` | Đăng ký quan tâm nhận mẫu thử | Không |
-| GET | `/api/v1/admin/leads?status=PENDING` | Danh sách có thông tin liên hệ | Bearer token |
-| PATCH | `/api/v1/admin/leads/:id` | Cập nhật trạng thái | Bearer token |
-| DELETE | `/api/v1/admin/leads/:id` | Xóa đăng ký | Bearer token |
+| GET | `/api/v1/admin/leads?status=PENDING` | Danh sách có thông tin liên hệ | ADMIN hoặc bearer token |
+| PATCH | `/api/v1/admin/leads/:id` | Cập nhật trạng thái | ADMIN hoặc bearer token |
+| DELETE | `/api/v1/admin/leads/:id` | Xóa đăng ký | ADMIN hoặc bearer token |
 
-Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` trong `.env`. Đặt header `Authorization: Bearer <API_WRITE_TOKEN>` cho API mẻ, thống kê cảm quan và danh sách đăng ký; không đưa token vào JavaScript frontend hoặc URL. Nếu token trống, các API này từ chối truy cập.
+Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` trong `.env`. Đặt header `Authorization: Bearer <API_WRITE_TOKEN>` cho API mẻ, thống kê cảm quan và danh sách đăng ký; không đưa token vào JavaScript frontend hoặc URL. Nếu không dùng bearer token, đăng nhập để lấy cookie phiên; quyền ADMIN cho API mẻ/đăng ký và JUDGE hoặc ADMIN cho cảm quan. Mọi thao tác POST/PATCH/DELETE bằng cookie cần header `X-CSRF-Token` từ phiên.
+
+## Phiên đăng nhập và hồ sơ riêng tư
+
+| Method | Endpoint | Mục đích | Quyền |
+|---|---|---|---|
+| POST | `/api/v1/judge/verify` hoặc `/api/v1/auth/login` | Body `{"access_code":"UUID.secret"}`, tạo cookie phiên | Mã còn hiệu lực |
+| GET | `/api/v1/auth/session` | Trả user, expires_at, csrf_token | Cookie phiên |
+| POST | `/api/v1/auth/logout` | Thu hồi phiên và xóa cookie, trả 204 | JUDGE/ADMIN + CSRF |
+| GET | `/api/v1/judge/dossier` | Tổng quan, metadata và URL tải từng hồ sơ | JUDGE/ADMIN |
+| GET | `/api/v1/judge/groups` | Các đợt/mẫu và số phiếu để chọn thống kê | JUDGE/ADMIN |
+| GET | `/api/v1/judge/documents/:id` | Tải file có kiểm tra SHA-256 và kích thước | JUDGE/ADMIN |
+| POST | `/api/v1/judge/classify` | Jev phân loại góp ý có opt-in | JUDGE/ADMIN + CSRF |
+
+Login trả `Set-Cookie` HttpOnly/SameSite=Strict và JSON `{user:{id,name,role},expires_at,csrf_token}`. Gửi cookie cùng request; đặt `X-CSRF-Token` khi thay đổi dữ liệu. Không trả lại mã truy cập. Mã hết hạn/vô hiệu hoặc phiên hết hạn/idle trả 401; sai quyền hoặc CSRF trả 403. Tạo và thu hồi tài khoản qua CLI, không có API tự cấp quyền. Danh sách hồ sơ chứa `id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at,download_url`; file tải là attachment. Không trả đường dẫn tệp hệ thống.
+
+Jev body `{"comment":"Mùi nấm rõ","allow_remote":true}`. Góp ý 3–1.000 ký tự. Khi bật Jev và kết quả hợp lệ, trả `mode:jev,key,label,confidence,probabilities,message`; lỗi hoặc chưa bật trả `mode:manual,reason,label:null,message`. API không dùng Jev để cấp quyền hoặc sửa điểm. Hướng dẫn vận hành trong [JUDGE_PORTAL.md](JUDGE_PORTAL.md).
 
 ## Khảo sát cảm quan
 
@@ -71,7 +87,7 @@ Invoke-RestMethod -Uri 'http://127.0.0.1:8766/api/v1/sensory/submit' -Method Pos
 
 `organization_type`: `INDIVIDUAL`, `RESTAURANT`, `FOOD_BUSINESS`, `OTHER`; mặc định `INDIVIDUAL`. `dietary_preference`: `NONE`, `VEGAN`, `LOW_SODIUM`, `FAMILY`, `OTHER`; mặc định `NONE`. `shipping_address` tùy chọn tối đa 300 ký tự; nên chỉ bổ sung khi thực sự cần gửi mẫu. `consent:true` là bắt buộc để lưu liên hệ. Response không lặp lại tên hay địa chỉ, và chỉ xác nhận **đã nhận đăng ký**, không hứa gửi mẫu. Email không phân biệt hoa/thường; đăng ký trùng trả cùng ID và trạng thái.
 
-Danh sách có thông tin cá nhân chỉ đọc được bằng token quản trị. `status`: `PENDING`, `SENT`, `FEEDBACK_RECEIVED`, `CANCELLED`; có thể lọc danh sách theo trạng thái. `PATCH` cập nhật trạng thái, `DELETE` xóa đăng ký. Khi nhận yêu cầu xóa dữ liệu, người vận hành dùng API quản trị; tránh đưa file SQLite vào nơi chia sẻ.
+Danh sách có thông tin cá nhân chỉ đọc được bằng phiên ADMIN hoặc bearer token quản trị. `status`: `PENDING`, `SENT`, `FEEDBACK_RECEIVED`, `CANCELLED`; có thể lọc danh sách theo trạng thái. `PATCH` cập nhật trạng thái, `DELETE` xóa đăng ký. Khi nhận yêu cầu xóa dữ liệu, người vận hành dùng API quản trị; tránh đưa file SQLite vào nơi chia sẻ.
 
 ## Tính và lưu mẻ
 
