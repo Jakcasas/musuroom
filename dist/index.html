@@ -1,118 +1,63 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10271e">
-  <meta name="description" content="Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm. Tìm hiểu cải tiến sản phẩm, quy trình chế biến và công cụ ước tính mẻ thử nghiệm.">
-  <title>Nấm Tròn | Bột gia vị từ phụ phẩm nấm ăn</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta name="description" content="Musuroom — dự án phát triển bột gia vị từ phụ phẩm nấm ăn. Khám phá sản phẩm, quy trình, mô hình mẻ thử và kho tri thức có trích dẫn nguồn.">
+  <title>Musuroom — Trọn vị nấm. Thêm giá trị.</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="improvements.css">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Đến nội dung chính</a>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="#dau-trang" aria-label="Về đầu trang Nấm Tròn">
-        <span class="brand-mark" aria-hidden="true">N.</span><span>NẤM TRÒN</span>
-      </a>
-      <nav aria-label="Điều hướng chính">
-        <a href="#y-tuong">Ý tưởng</a>
-        <a href="#cai-tien">Cải tiến sản phẩm</a>
-        <a href="#quy-trinh">Quy trình</a>
-        <a href="#tinh-thu">Tính thử mẻ</a>
-        <a href="#kiem-chung">Kiểm chứng</a>
-      </nav>
-      <a class="header-link" href="#tinh-thu">Ước tính sản lượng</a>
-    </div>
-  </header>
+<a class="skip" href="#main">Đến nội dung chính</a>
+<header class="header"><div class="wrap header-inner">
+  <a class="brand" href="index.html" aria-label="Musuroom — Trang chủ"><span class="brand-mark">m.</span>musuroom</a>
+  <button class="menu-toggle" aria-controls="navigation" aria-expanded="false" hidden>Menu <span aria-hidden="true">☰</span></button>
+  <nav id="navigation" aria-label="Điều hướng chính"><a href="#san-pham">Sản phẩm</a><a href="#hanh-trinh">Hành trình</a><a href="#mo-phong">Mẻ thử</a><a href="tri-thuc.html" class="nav-cta">Kho tri thức <span aria-hidden="true">↗</span></a></nav>
+</div></header>
+<main id="main">
+<section class="hero"><div class="wrap hero-grid">
+  <div class="hero-copy"><p class="eyebrow light"><span class="status-dot"></span> TỪ NẤM ĂN, CHO MỘT VÒNG ĐỜI MỚI</p>
+    <h1>Trọn vị nấm.<br><em>Thêm giá trị.</em></h1>
+    <p class="lead">Một hướng đi mới cho những phần nấm còn giá trị: phát triển thành bột gia vị, mang vị umami đến căn bếp và góp phần giảm lãng phí thực phẩm.</p>
+    <div class="actions"><a class="button lime" href="#san-pham">Khám phá Musuroom <span aria-hidden="true">↗</span></a><a class="text-link" href="tri-thuc.html">Đọc cơ sở nghiên cứu →</a></div>
+    <div class="hero-note"><span class="small-ring" aria-hidden="true">◌</span><div><strong>Nghiên cứu & hoàn thiện sản phẩm</strong><br><span>Mỗi cải tiến bắt đầu từ nguyên liệu và bằng chứng.</span></div></div>
+  </div>
+  <figure class="hero-photo"><img src="assets/mushroom-seasoning.webp" width="1536" height="1024" alt="Nấm ăn và hũ bột gia vị nấm trên nền xanh đậm" fetchpriority="high"><div class="photo-label"><span>NGUYÊN LIỆU QUEN THUỘC</span><strong>Một khả năng mới.</strong></div><figcaption>Hình ảnh minh họa ý tưởng sản phẩm.</figcaption></figure>
+</div><div class="wrap hero-bottom"><span>NẤM ĂN ĐƯỢC CHỌN LỌC</span><span>HƯỚNG VỊ UMAMI</span><span>TƯ DUY TUẦN HOÀN</span></div></section>
 
-  <main id="main">
-    <section class="hero" id="dau-trang" aria-labelledby="hero-title">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> BỘT GIA VỊ TỪ PHỤ PHẨM NẤM ĂN</p>
-          <h1 id="hero-title">Từ phần nấm bị bỏ lại đến <em>vị ngon</em> được giữ lại.</h1>
-          <p class="hero-lead">Phát triển bột gia vị từ phụ phẩm nấm ăn còn phù hợp làm thực phẩm, hướng tới giảm thất thoát nguyên liệu và tạo thêm giá trị trong chuỗi chế biến.</p>
-          <div class="hero-actions">
-            <a class="button button-lime" href="#tinh-thu">Ước tính mẻ thử</a>
-            <a class="text-link" href="#y-tuong">Khám phá ý tưởng <span aria-hidden="true">↘</span></a>
-          </div>
-          <p class="hero-note">Bản giới thiệu ý tưởng · Chưa phải sản phẩm đã thương mại hóa</p>
-        </div>
-        <div class="hero-visual">
-          <img src="assets/mushroom-seasoning.png" alt="Ảnh minh họa nấm ăn sạch và lọ bột gia vị từ nấm" width="1536" height="1024" fetchpriority="high">
-          <div class="visual-caption"><span class="caption-dot"></span> Phụ phẩm có thể trở thành nguyên liệu mới</div>
-        </div>
-      </div>
-      <div class="container hero-footer"><span>01 / 05</span><span>Giữ giá trị nguyên liệu · Giảm lãng phí thực phẩm</span><span>CUỘN XUỐNG ↓</span></div>
-    </section>
+<section class="section wrap" id="san-pham"><div class="section-heading"><p class="eyebrow">01 / SẢN PHẨM</p><h2>Nhỏ trong căn bếp.<br>Lớn ở cách nghĩ.</h2><p>Musuroom phát triển bột gia vị từ phần nấm ăn còn phù hợp làm thực phẩm, như chân nấm và phần cắt tỉa được kiểm soát nguồn gốc.</p></div>
+<div class="product-grid"><article class="feature-card featured"><span class="card-symbol" aria-hidden="true">✳</span><p class="eyebrow">GIỮ LẠI GIÁ TRỊ</p><h3>Từ phần cắt tỉa<br>đến nền vị nấm.</h3><p>Tận dụng nguyên liệu có giá trị cần đi cùng lựa chọn đúng dòng phụ phẩm và đánh giá tính khả thi của chế biến. <a class="citation" href="tri-thuc.html?doc=phu-pham">[1]</a></p><a class="arrow-link" href="tri-thuc.html?doc=phu-pham">Tìm hiểu nguyên liệu ↗</a></article>
+<article class="feature-card"><span class="card-symbol" aria-hidden="true">◎</span><p class="eyebrow">PHÁT TRIỂN HƯƠNG VỊ</p><h3>Khám phá<br>chiều sâu umami.</h3><p>Nghiên cứu trên chân nấm hương cho thấy tiềm năng tạo nguyên liệu tăng vị umami. Đây là cơ sở tham khảo cho hướng phát triển Musuroom. <a class="citation" href="tri-thuc.html?doc=umami">[2]</a></p><a class="arrow-link" href="tri-thuc.html?doc=umami">Đọc nghiên cứu ↗</a></article>
+<article class="feature-card"><span class="card-symbol" aria-hidden="true">↻</span><p class="eyebrow">THIẾT KẾ CÓ TRÁCH NHIỆM</p><h3>Giảm lãng phí,<br>đo bằng dữ liệu.</h3><p>Theo dõi lượng đầu vào, phần loại bỏ và bột thu hồi qua từng mẻ. Hiệu quả giảm lãng phí cần được xác nhận bằng số liệu thực tế và phương án đối chứng.</p><a class="arrow-link" href="#mo-phong">Thử mô hình mẻ ↗</a></article></div>
+<div class="application"><div><p class="eyebrow">HƯỚNG ỨNG DỤNG</p><h3>Một nền vị.<br>Nhiều cách khám phá.</h3></div><div class="application-items"><span><b>01</b> Canh & súp</span><span><b>02</b> Món xào & kho</span><span><b>03</b> Sốt & ướp</span><p>Các ứng dụng dự kiến sẽ được đánh giá cảm quan trước khi chốt công thức.</p></div></div>
+</section>
 
-    <section class="intro section" id="y-tuong" aria-labelledby="intro-title">
-      <div class="container intro-grid">
-        <div><p class="section-kicker">01 / VẤN ĐỀ & GIẢI PHÁP</p><h2 id="intro-title">Không phải phần thừa nào cũng là rác.</h2></div>
-        <div class="intro-body">
-          <p>Trong quá trình sơ chế nấm ăn, những phần cắt tỉa hoặc nấm lệch kích cỡ có thể bị loại khỏi dòng bán tươi dù vẫn có khả năng sử dụng làm thực phẩm. Ý tưởng này thu gom <strong>phần nấm ăn được, có nguồn gốc rõ ràng</strong>, rồi phát triển thành bột gia vị tạo vị umami.</p>
-          <p>Hướng phát triển là một loại gia vị tiện dùng cho nước dùng, món xào và sốt, với hương vị đặc trưng từ nấm. Mức giảm lãng phí cần được xác định bằng lượng phụ phẩm thực sự được chuyển sang làm thực phẩm, đối chiếu với cách sử dụng hoặc thải bỏ trước đó tại từng cơ sở.</p>
-          <div class="ingredient-rule"><span>NGUYÊN LIỆU ĐỀ XUẤT</span><strong>Chân nấm và phần cắt tỉa sạch · nấm sai quy cách hình dáng</strong><small>Không sử dụng nấm hư hỏng, không rõ loài hoặc giá thể trồng nấm.</small></div>
-        </div>
-      </div>
-    </section>
+<section class="journey section" id="hanh-trinh"><div class="wrap"><div class="section-heading"><p class="eyebrow">02 / HÀNH TRÌNH NGUYÊN LIỆU</p><h2>Giá trị được giữ lại.<br>Chất lượng được kiểm soát.</h2><p>Từ tiếp nhận đến đóng gói, mỗi bước cần có tiêu chí và hồ sơ mẻ. Tái sử dụng nguyên liệu luôn đi cùng đánh giá an toàn. <a class="citation" href="tri-thuc.html?doc=tuan-hoan">[3]</a></p></div>
+<div class="steps"><article><span>01</span><h3>Chọn lọc</h3><p>Xác định loài nấm ăn, nguồn cung và điều kiện tiếp nhận. Loại nguyên liệu hư hỏng, không rõ nguồn gốc.</p></article><article><span>02</span><h3>Sơ chế & làm khô</h3><p>Thử nghiệm điều kiện sơ chế, sấy và ghi nhận ảnh hưởng đến chất lượng, mùi vị.</p></article><article><span>03</span><h3>Nghiền & phối vị</h3><p>Đánh giá độ mịn, cảm quan và tính ổn định của công thức. Lưu mẫu theo từng mẻ.</p></article><article><span>04</span><h3>Kiểm tra & đóng gói</h3><p>Đánh giá chỉ tiêu phù hợp, bao bì và độ ổn định trước khi xác định hạn dùng.</p></article></div>
+<aside class="process-note"><strong>Độ ẩm và hoạt độ nước không phải cùng một chỉ số.</strong><p>Độ ẩm dùng trong mô hình cân bằng vật chất; hoạt độ nước cần được đo để đánh giá khả năng nước tham gia các quá trình ảnh hưởng đến độ ổn định. <a class="citation" href="tri-thuc.html?doc=hoat-do-nuoc">[4]</a></p></aside></div></section>
 
-    <section class="improvements section" id="cai-tien" aria-labelledby="improvements-title">
-      <div class="container">
-        <div class="section-head"><div><p class="section-kicker">02 / CẢI TIẾN SẢN PHẨM</p><h2 id="improvements-title">Giữ vị nấm.<br>Tận dụng nhiều hơn.</h2></div><p>Ba hướng thử nghiệm để phát triển một sản phẩm có chất lượng ổn định và sử dụng nguyên liệu hiệu quả. Đây là mục tiêu nghiên cứu cần kiểm chứng.</p></div>
-        <div class="improvement-grid">
-          <article><span class="improvement-number">01</span><h3>Nguyên liệu đồng đều</h3><p>Phân riêng từng loài nấm và nguồn phụ phẩm; theo dõi thời điểm thu gom, tỷ lệ đạt và điều kiện bảo quản của mỗi lô.</p><div class="measure"><span>CẦN ĐO</span><p>Tỷ lệ nguyên liệu phù hợp làm thực phẩm và độ ổn định giữa các lô.</p></div></article>
-          <article><span class="improvement-number">02</span><h3>Hương vị dễ ứng dụng</h3><p>So sánh cách làm khô, kích thước bột và phương án phối trộn bằng thử nghiệm cảm quan với mẫu đối chứng.</p><div class="measure"><span>CẦN ĐO</span><p>Mức ưa thích, mùi vị, màu sắc và khả năng phân tán trong món ăn.</p></div></article>
-          <article><span class="improvement-number">03</span><h3>Bảo quản phù hợp</h3><p>Thử bao bì chống ẩm và cách đóng mở phù hợp; theo dõi chất lượng trong điều kiện bảo quản dự kiến.</p><div class="measure"><span>CẦN ĐO</span><p>Độ ẩm, hoạt độ nước, vi sinh và cảm quan trong suốt thử nghiệm.</p></div></article>
-        </div>
-        <div class="impact-note"><strong>Đo hiệu quả ở cả mẻ sản xuất.</strong><p>Ghi khối lượng phụ phẩm được tận dụng, phần loại bỏ, sản lượng bột, điện tiêu thụ và chi phí trên mỗi kg. Chỉ kết luận mức giảm lãng phí sau khi so sánh với hiện trạng của cơ sở.</p></div>
-      </div>
-    </section>
+<section class="section wrap calculator-section" id="mo-phong"><div><p class="eyebrow">03 / TỪ Ý TƯỞNG ĐẾN MẺ THỬ</p><h2>Một mẻ nấm.<br>Có thể thu được<br><em>bao nhiêu bột?</em></h2><p class="section-intro">Thay đổi các giả định để ước tính lượng bột nền nấm sau sấy và hao hụt. Các giá trị mặc định chỉ là ví dụ tính toán.</p><a class="arrow-link" href="tri-thuc.html?doc=can-bang">Xem phương pháp & giới hạn ↗</a><p class="small">Không bao gồm thành phần phối trộn. Kết quả không xác nhận an toàn, hạn dùng hay lượng phát thải giảm được.</p></div>
+<div class="calculator"><form id="batch-form" novalidate><div class="form-grid">
+<label>Nguyên liệu đầu vào (kg)<input name="mass" type="number" min="0.01" max="1000000" step="any" value="100" required aria-describedby="mass-error"><span class="field-error" id="mass-error"></span></label>
+<label>Phần loại bỏ (%)<input name="reject" type="number" min="0" max="100" step="any" value="10" required aria-describedby="reject-error"><span class="field-error" id="reject-error"></span></label>
+<label>Độ ẩm ban đầu (%)<input name="initial" type="number" min="0" max="99.99" step="any" value="88" required aria-describedby="initial-error"><span class="field-error" id="initial-error"></span></label>
+<label>Độ ẩm sau sấy (%)<input name="final" type="number" min="0" max="99.99" step="any" value="8" required aria-describedby="final-error"><span class="field-error" id="final-error"></span></label>
+<label class="full">Hao hụt bột sau sấy (%)<input name="loss" type="number" min="0" max="100" step="any" value="5" required aria-describedby="loss-error"><span class="field-error" id="loss-error"></span></label></div>
+<div class="batch-result" aria-live="polite" aria-atomic="true"><span>BỘT NỀN NẤM ƯỚC TÍNH</span><strong id="powder">—</strong><p id="batch-detail">Bật JavaScript để sử dụng mô hình.</p></div>
+<div class="form-actions"><button type="button" class="button dark" id="export" disabled>Tải kết quả CSV ↓</button><button type="reset" class="text-button">Đặt lại</button></div></form></div></section>
 
-    <section class="process section" id="quy-trinh" aria-labelledby="process-title">
-      <div class="container">
-        <div class="section-head"><div><p class="section-kicker">03 / TỪ NGUYÊN LIỆU ĐẾN SẢN PHẨM</p><h2 id="process-title">Một vòng đời mới<br>cho nấm ăn.</h2></div><p>Sơ đồ dưới đây là định hướng thử nghiệm. Thông số vận hành phải được xác lập và thẩm định bằng nghiên cứu thực tế.</p></div>
-        <ol class="steps">
-          <li><span class="step-number">01</span><div><h3>Phân loại tại nguồn</h3><p>Chỉ nhận phần nấm ăn được, còn tươi, có hồ sơ lô và điều kiện bảo quản phù hợp.</p></div></li>
-          <li><span class="step-number">02</span><div><h3>Làm sạch &amp; sơ chế</h3><p>Loại bỏ tạp chất và phần không đạt; ghi lại khối lượng trước, sau phân loại.</p></div></li>
-          <li><span class="step-number">03</span><div><h3>Làm khô có kiểm soát</h3><p>Thử nghiệm điều kiện sấy phù hợp với chất lượng cảm quan và chỉ tiêu an toàn.</p></div></li>
-          <li><span class="step-number">04</span><div><h3>Nghiền, phối trộn &amp; đóng gói</h3><p>Đánh giá độ đồng đều, độ ẩm, hoạt độ nước, độ ổn định và bao bì bảo vệ sản phẩm.</p></div></li>
-        </ol>
-        <div class="process-foot"><span>ĐẦU VÀO CÓ THỂ TRUY XUẤT</span><span aria-hidden="true">→</span><span>BỘT GIA VỊ TỪ NẤM</span><span aria-hidden="true">→</span><span>GIÁ TRỊ ĐƯỢC GIỮ LẠI</span></div>
-      </div>
-    </section>
+<section class="knowledge-banner"><div class="wrap"><div><p class="eyebrow light">04 / KHO TRI THỨC</p><h2>Có câu hỏi?<br>Bắt đầu từ bằng chứng.</h2><p>Tìm hiểu phụ phẩm nấm, umami, an toàn và phương pháp tính. Mỗi bài có nguồn, năm xuất bản và giới hạn áp dụng.</p></div><div><a class="button lime" href="tri-thuc.html">Khám phá kho tri thức ↗</a><div class="topic-links"><a href="tri-thuc.html?q=umami">Umami</a><a href="tri-thuc.html?q=phu+pham">Phụ phẩm</a><a href="tri-thuc.html?q=hoat+do+nuoc">Hoạt độ nước</a></div><p class="small">Tra cứu có dấu hoặc không dấu · Nguồn gốc rõ ràng</p></div></div></section>
 
-    <section class="calculator section" id="tinh-thu" aria-labelledby="calc-title">
-      <div class="container calculator-grid">
-        <div class="calculator-copy"><p class="section-kicker">04 / CÔNG CỤ THỬ NHANH</p><h2 id="calc-title">Một mẻ nấm sẽ cho ra bao nhiêu bột?</h2><p>Thay các giả định bằng số liệu của bạn để ước tính <strong>bột nấm nền trước phối trộn</strong>. Khối lượng chưa bao gồm muối, gia vị hoặc nguyên liệu bổ sung. Kết quả lý thuyết cần được đối chiếu với mẻ thử thực tế.</p><div class="formula"><span>CÁCH TÍNH</span><p>Khối lượng bột ≈ nấm đầu vào × tỷ lệ đạt × (1 − ẩm ban đầu) ÷ (1 − ẩm mục tiêu) × (1 − hao hụt chế biến)</p></div></div>
-        <div class="calculator-card">
-          <div class="card-top"><span>ƯỚC TÍNH MẺ THỬ</span><span class="card-icon" aria-hidden="true">✳</span></div>
-          <div class="fields">
-            <label for="input-mass">Nấm phụ phẩm thu gom <span>kg</span></label><input id="input-mass" type="number" min="0.1" max="100000" step="0.1" value="100" inputmode="decimal">
-            <label for="reject-rate">Tỷ lệ loại sau kiểm tra <span>%</span></label><input id="reject-rate" type="number" min="0" max="99" step="1" value="10" inputmode="decimal">
-            <label for="initial-moisture">Độ ẩm nguyên liệu ban đầu <span>%</span></label><input id="initial-moisture" type="number" min="1" max="99" step="1" value="88" inputmode="decimal">
-            <label for="final-moisture">Độ ẩm bột mục tiêu <span>%</span></label><input id="final-moisture" type="number" min="0" max="50" step="1" value="8" inputmode="decimal">
-            <label for="process-loss">Hao hụt sau sấy, nghiền <span>%</span></label><input id="process-loss" type="number" min="0" max="99" step="1" value="5" inputmode="decimal">
-          </div>
-          <p class="form-error" id="form-error" role="alert" hidden></p>
-          <div class="results" aria-live="polite"><div><span>Nguyên liệu đạt</span><strong id="accepted-output">90 kg</strong></div><div class="result-main"><span>Bột nấm nền ước tính</span><strong id="powder-output">11,2 kg</strong></div><div><span>Phần loại sau kiểm tra</span><strong id="rejected-output">10 kg</strong></div><div><span>Thu hồi trên lượng thu gom</span><strong id="yield-output">11,2%</strong></div></div>
-          <p class="calc-note">Giá trị mặc định chỉ để minh họa phép tính, không phải kết quả nghiên cứu hay thông số khuyến nghị.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="validation section" id="kiem-chung" aria-labelledby="validation-title">
-      <div class="container validation-grid"><div><p class="section-kicker">05 / TRƯỚC KHI ĐƯA RA THỊ TRƯỜNG</p><h2 id="validation-title">Giá trị bền vững cần đi cùng an toàn thực phẩm.</h2><p>Việc tận dụng phụ phẩm cho thực phẩm đòi hỏi đánh giá an toàn riêng, truy xuất nguồn gốc và kiểm chứng chất lượng; không thể suy ra tính an toàn chỉ từ quá trình sấy hay nghiền.</p></div><div class="validation-list"><div><span>01</span><p><strong>Đầu vào</strong> — xác nhận loài nấm, điều kiện thu gom, thời gian bảo quản và tiêu chí loại bỏ.</p></div><div><span>02</span><p><strong>Quy trình</strong> — thiết lập thông số sấy, vệ sinh thiết bị và điểm kiểm soát nhiễm chéo.</p></div><div><span>03</span><p><strong>Thành phẩm</strong> — kiểm nghiệm vi sinh, độ ẩm, hoạt độ nước, cảm quan và độ ổn định bảo quản theo yêu cầu áp dụng.</p></div><div><span>04</span><p><strong>Hiệu quả</strong> — cân đo lượng nguyên liệu thực sự được tận dụng và đánh giá chi phí, bao bì, năng lượng.</p></div></div></div>
-    </section>
-
-    <section class="closing"><div class="container closing-grid"><div><p class="section-kicker">PHÁT TRIỂN SẢN PHẨM TỪ PHỤ PHẨM NẤM ĂN</p><h2>Giảm lãng phí bắt đầu từ việc nhìn lại giá trị của nguyên liệu.</h2></div><div><p>Website này là bản mô tả ý tưởng và công cụ minh họa cho giai đoạn nghiên cứu. Kết luận về hiệu quả, thời hạn sử dụng và khả năng thương mại hóa cần dữ liệu thử nghiệm, kiểm nghiệm và đánh giá thị trường.</p><a class="button button-dark" href="#dau-trang">Về đầu trang</a></div></div></section>
-  </main>
-  <footer class="site-footer"><div class="container footer-grid"><div><span class="footer-brand">NẤM TRÒN</span><p>Ý tưởng bột gia vị từ phụ phẩm nấm ăn.</p><small>Ảnh minh họa tạo bằng AI, không phải sản phẩm thật.</small></div><div><strong>NGHIÊN CỨU THAM KHẢO</strong><a href="https://www.fao.org/food-safety/scientific-advice/food-safety-in-a-circular-economy/en" target="_blank" rel="noopener noreferrer">FAO: An toàn trong kinh tế tuần hoàn ↗</a><a href="https://agris.fao.org/search/en/providers/122535/records/65de373663b8185d9ca7957b" target="_blank" rel="noopener noreferrer">FAO AGRIS: Phụ phẩm nấm ↗</a></div></div></footer>
-</body>
-</html>
+<section class="section wrap faq-section"><div><p class="eyebrow">05 / HIỂU RÕ MUSUROOM</p><h2>Minh bạch<br>từ những điều nhỏ.</h2><p class="section-intro">Website chính thức của dự án Musuroom. Sản phẩm đang trong giai đoạn nghiên cứu và hoàn thiện.</p></div><div class="faq">
+<details><summary>“Phụ phẩm nấm” ở đây là gì?</summary><p>Là phần của nấm ăn phát sinh trong quá trình sơ chế, như chân nấm hoặc phần cắt tỉa, còn phù hợp dùng làm thực phẩm sau khi được đánh giá. Không sử dụng giá thể trồng nấm, nấm hỏng hay nguyên liệu không rõ nguồn gốc.</p></details>
+<details><summary>Bột nền nấm khác bột gia vị như thế nào?</summary><p>Bột nền là nguyên liệu nấm sau chế biến. Bột gia vị có thể được phối thêm các thành phần theo công thức. Mô hình trên website chỉ tính bột nền, chưa tính nguyên liệu phối trộn.</p></details>
+<details><summary>Musuroom đã có bán chưa?</summary><p>Dự án chưa công bố sản phẩm thương mại. Công thức, thành phần, hướng dẫn sử dụng và hạn dùng sẽ được cập nhật sau khi có kết quả đánh giá phù hợp.</p></details>
+<details><summary>Các nguồn nghiên cứu chứng minh điều gì?</summary><p>Nguồn tham khảo cung cấp kiến thức và kết quả trong điều kiện nghiên cứu của tác giả. Chúng không thay thế kiểm nghiệm trên sản phẩm Musuroom. <a href="tri-thuc.html">Xem nguồn và giới hạn từng bài →</a></p></details>
+<details><summary>Musuroom đo mức giảm lãng phí ra sao?</summary><p>Cần ghi nhận lượng phụ phẩm phát sinh, lượng đủ điều kiện chế biến, đầu ra thu hồi và cách xử lý trước khi áp dụng giải pháp. Lượng bột thu được không đồng nghĩa với lượng thực phẩm tránh lãng phí hay lượng CO₂ giảm được.</p></details>
+</div></section>
+</main>
+<footer><div class="wrap footer-top"><a class="brand" href="index.html"><span class="brand-mark">m.</span>musuroom</a><p>Từ những phần nhỏ.<br>Cho một vòng giá trị lớn hơn.</p><a href="tri-thuc.html">Kho tri thức & nguồn tham khảo ↗</a></div><div class="wrap footer-bottom"><span>© 2026 Musuroom · Website dự án</span><span>Phiên bản 1.0 · Cập nhật 30.09.2026</span><a href="#main">Về đầu trang ↑</a></div></footer>
+</body></html>
