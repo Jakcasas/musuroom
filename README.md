@@ -88,14 +88,6 @@ Các biến môi trường của tiến trình có ưu tiên hơn `.env`.
 
 Body, các giá trị hợp lệ, thuật toán và ví dụ request nằm trong [tài liệu API](docs/API.md). Form khảo sát và đăng ký đã tích hợp ở `trai-nghiem.html`. Dashboard bảo vệ bằng đăng nhập ở `giam-khao.html`, có biểu đồ radar, bảng thống kê, CSV và quản lý đăng ký theo quyền.
 
-## Bật AI
-
-Trong `.env` trên máy, đặt `AI_PROVIDER=openrouter`, điền `OPENROUTER_API_KEY` và `AI_MODEL` từ tài khoản của bạn, rồi khởi động lại. Không gửi API key vào chat hoặc đưa vào frontend/Git.
-
-AI chỉ nhận câu hỏi và tối đa 3 bài liên quan từ kho tri thức. Giao diện thông báo việc gửi dữ liệu đến OpenRouter khi AI được bật. Không lưu hội thoại vào database. Khi lỗi hoặc thiếu trích dẫn hợp lệ, hệ thống chuyển sang trích nội dung nguồn. Đối chiếu câu trả lời với tài liệu gốc trước khi áp dụng. Luồng provider đã được kiểm tra bằng mock; chưa gọi AI thật vì chưa có key/model.
-
-API nhận xét cảm quan chỉ gửi dữ liệu **tổng hợp** đến OpenRouter khi bật AI và có ít nhất 3 phiếu. Không gửi nhận xét thô, tên hoặc liên hệ. Trường `basis` luôn trả số liệu để đối chiếu.
-
 ## Tài liệu dự án
 
 - [Kiến trúc, ERD và database](docs/ARCHITECTURE.md)
