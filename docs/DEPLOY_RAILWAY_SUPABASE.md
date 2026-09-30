@@ -11,6 +11,8 @@
 
 ## Cấu hình riêng tư
 
+Trên máy mới, tạo thư mục `data` rồi sao chép `cloud.env.example` thành `data/cloud.env` và điền khóa/mật khẩu riêng. Template không chứa thông tin xác thực.
+
 Điền `data/cloud.env` trên máy: DATABASE_URL (Session pooler cổng 5432, percent-encode mật khẩu), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY. Trên máy này đã lưu service_role hiện có và tạo bucket riêng tư; chỉ còn mật khẩu database. Nhấp đúp **CAU_HINH_SUPABASE.cmd** để nhập mật khẩu dưới dạng ẩn; script tự percent-encode và lưu DATABASE_URL. Không gửi khóa vào chat, không đưa file này vào Git/ZIP. Nếu sử dụng DATABASE_CA_CERT, lấy CA chính thức của project; không tắt kiểm chứng TLS.
 
 Không dùng transaction pooler cổng 6543: migration sử dụng khóa PostgreSQL theo session. Database cloud và database local là hai bộ dữ liệu riêng; script không tự tải dữ liệu liên hệ trên máy lên cloud.
@@ -43,6 +45,7 @@ CLI Railway cần phiên đăng nhập riêng: `pnpm exec railway login --browse
 
 - PostgreSQL có RLS và thu hồi quyền anon/authenticated trên **các bảng Musuroom**. Server kết nối trực tiếp; không đưa service key xuống trình duyệt.
 - Bucket `musuroom-dossier` riêng tư. Download đi qua API có xác thực, kiểm tra SHA-256/kích thước và ghi audit; không tạo public object URL.
+- Bucket trên project hiện tại đã tạo và kiểm tra `public=false`, giới hạn mỗi file 50 MB. Chưa upload hồ sơ cloud khi database chưa kết nối.
 - Production không được fallback SQLite hay ổ đĩa tạm. Container chạy user `node`, chỉ sao chép backend/dist/schema cần thiết.
 - Cần sao lưu Supabase theo lịch vận hành thực tế; cấu hình hiện tại không hứa hẹn backup tự động của gói Free.
 - Giữ một replica: rate limit đang dùng bộ nhớ trong tiến trình. Khi tăng replica, chuyển rate limit sang kho dùng chung trước.
