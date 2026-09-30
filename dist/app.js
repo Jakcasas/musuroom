@@ -1,4 +1,5 @@
 import { calculate, makeCsv } from './core.js';
+void import('./assistant-ui.js');
 document.documentElement.classList.add('js');
 const toggle = document.querySelector('.menu-toggle');
 const nav = document.querySelector('#navigation');

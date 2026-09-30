@@ -4,6 +4,7 @@ import { request } from 'node:http';
 import { calculate, defaults, makeCsv, normalize, searchArticles } from '../dist/core.js';
 import { articles } from '../dist/knowledge-data.js';
 import { createApp } from '../server.mjs';
+import { loadConfig } from '../backend/config.mjs';
 test('Vietnamese accents, capital Đ, combined category and empty search', () => {
   assert.equal(normalize('ĐỘ ẨM'), 'do am');
   assert.deepEqual(searchArticles(articles, 'phụ phẩm'), searchArticles(articles, 'phu pham'));
@@ -42,7 +43,7 @@ test('CSV preserves raw numbers, units and scope in UTF-8', () => {
   assert.throws(() => makeCsv(defaults, { errors: { mass: 'invalid' } }));
 });
 test('HTTP: assets, HEAD, malformed URL, restricted paths and method', async t => {
-  const server = createApp();
+  const server = createApp({ config: loadConfig({ DATABASE_PATH: ':memory:' }) });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const port = server.address().port;

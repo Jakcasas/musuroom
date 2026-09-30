@@ -1,0 +1,10 @@
+import { loadEnvFile } from 'node:process';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { projectRoot, loadConfig } from '../backend/config.mjs';
+import { openDatabase } from '../backend/db/database.mjs';
+const envPath = resolve(projectRoot, '.env');
+if (existsSync(envPath)) loadEnvFile(envPath);
+const db = openDatabase(loadConfig().databasePath);
+console.log('Database ready:', db.prepare('SELECT count(*) AS total FROM knowledge_articles').get().total, 'articles');
+db.close();

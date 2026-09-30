@@ -1,10 +1,22 @@
-import { articles, updated } from './knowledge-data.js';
+import { articles as snapshot, updated } from './knowledge-data.js';
 import { searchArticles } from './core.js';
+let articles = snapshot;
+let databaseOnline = false;
+try {
+  const response = await fetch('/api/knowledge', { signal: AbortSignal.timeout(4000) });
+  if (!response.ok) throw new Error('API unavailable');
+  const data = await response.json();
+  if (!Array.isArray(data.items)) throw new Error('Invalid data');
+  articles = data.items; databaseOnline = true;
+} catch { /* Static library remains readable when the API is unavailable. */ }
 const input = document.querySelector('#search');
 const category = document.querySelector('#category');
 const grid = document.querySelector('#articles');
 const form = document.querySelector('#search-form');
 const count = document.querySelector('#result-count');
+const status = document.createElement('p'); status.className = 'library-data-status';
+status.textContent = databaseOnline ? 'Kho tri thức đang đọc từ database Musuroom.' : 'Đang dùng bản dữ liệu đi kèm website; chưa kết nối được database.';
+document.querySelector('.library-note').prepend(status);
 const node = (tag, text, className) => { const e = document.createElement(tag); if (text) e.textContent = text; if (className) e.className = className; return e; };
 for (const value of [...new Set(articles.map(a => a.category))]) {
   const option = node('option', value); option.value = value; category.append(option);
