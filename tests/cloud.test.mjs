@@ -59,6 +59,10 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  assert.equal((await call('/api/v1/judge/dossier')).status,401);
  const login=async account=>{const response=await call('/api/v1/judge/verify','POST',{access_code:account.access_code});assert.equal(response.status,200);assert.match(response.headers.get('set-cookie'),/^__Host-musuroom_session=.*; Secure$/);assert.equal(response.headers.get('strict-transport-security'),'max-age=31536000');return{cookie:response.headers.get('set-cookie').split(';')[0],csrf:(await response.json()).csrf_token};};
  const signed=await login(judge);const operator=await login(admin);
+ const classified=await call('/api/v1/admin/data/classify-batch','POST',{article_ids:['umami'],allow_remote:false},operator);assert.equal(classified.status,200);assert.equal((await classified.json()).jev_requests,0);
+ const reviews=await(await call('/api/v1/admin/data/reviews','GET',undefined,operator)).json();assert.equal(reviews.items.length,1);assert.equal(reviews.items[0].stale,false);
+ assert.equal((await call('/api/v1/admin/data/review','POST',{article_id:'umami',decision_version:reviews.items[0].decision_version,status:'confirmed'},operator)).status,200);
+ assert.equal((await call('/api/v1/admin/data/review','POST',{article_id:'umami',decision_version:reviews.items[0].decision_version,status:'rejected'},operator)).status,409);
  const score={session_code:'PG-ROUND',sample_code:'PG-MUSH',tester_type:'CONSUMER',color_score:1,aroma_score:1,umami_taste_score:1,aftertaste_score:1,overall_acceptance:1,submission_key:'11111111-1111-4111-8111-111111111111'};
  const responses=await Promise.all([call('/api/v1/sensory/submit','POST',score),call('/api/v1/sensory/submit','POST',score)]);assert.deepEqual(responses.map(x=>x.status).sort(),[200,201]);
  for(const n of [5,9])assert.equal((await call('/api/v1/sensory/submit','POST',{...score,submission_key:undefined,color_score:n,aroma_score:n,umami_taste_score:n,aftertaste_score:n,overall_acceptance:n})).status,201);
