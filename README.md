@@ -22,7 +22,7 @@ node server.mjs
 
 Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và setup, có thể dùng `MO_MUSUROOM.cmd` để chạy nền. Setup tạo cấu hình riêng tư; server tự tạo database local và nạp kho tri thức.
 
-**Trạng thái ngày 01.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.5.0`, PostgreSQL `ok`. Supabase Singapore có 13 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP; REST trả 502. Chưa có inference thành công; giao diện giữ chế độ phân loại thủ công khi dịch vụ không đáp ứng.
+**Trạng thái ngày 01.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.5.0`, PostgreSQL `ok`. Supabase Singapore có 13 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP; REST trả 502. Chưa có inference thành công; giao diện dùng luật từ khóa cục bộ khi dịch vụ không đáp ứng.
 
 Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.5.0`. Local chạy SQLite; cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
 
@@ -186,7 +186,7 @@ pnpm test
 pnpm audit --prod --audit-level=moderate
 ```
 
-`pnpm check` kiểm tra cú pháp JavaScript và đường dẫn tài nguyên HTML. `pnpm test` hiện có **47 bài kiểm thử**, bổ sung queue/revision/lease, quyền ADMIN cho JSON, projection không chứa liên hệ, Jev tri thức, kiểm tra cloud và QR theo phiên bản. Database kiểm thử dùng bộ nhớ hoặc thư mục tạm; provider/Mongo writer dùng mock. Đăng nhập, phân quyền, Storage và health đã được kiểm tra thêm trên cloud thật. GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; audit dependencies sản xuất chạy trên Linux.
+`pnpm check` kiểm tra cú pháp JavaScript và đường dẫn tài nguyên HTML. `pnpm test` hiện có **49 bài kiểm thử**, bổ sung queue/revision/lease, quyền ADMIN cho JSON, projection không chứa liên hệ, Jev tri thức, kiểm tra cloud và QR theo phiên bản. Database kiểm thử dùng bộ nhớ hoặc thư mục tạm; provider/Mongo writer dùng mock. Đăng nhập, phân quyền, Storage và health đã được kiểm tra thêm trên cloud thật. GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; audit dependencies sản xuất chạy trên Linux.
 
 Trước khi công bố từ máy người vận hành, chạy `node scripts/check-publish.mjs` sau commit để kiểm tra lịch sử Git đối chiếu bí mật cục bộ. Script không in giá trị bí mật. Tạo ZIP mã nguồn bằng `git archive` từ commit đã kiểm tra để chỉ đóng gói tệp được theo dõi.
 

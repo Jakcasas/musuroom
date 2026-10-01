@@ -59,7 +59,7 @@ test('Jev requires opt-in, strips email/phone and validates all structured proba
  assert.equal((await classify('Mùi thơm. Liên hệ an@example.com 0901234567',true)).key,'aroma');assert.ok(!JSON.stringify(payload).includes('an@example.com'));assert.ok(!JSON.stringify(payload).includes('0901234567'));
  assert.equal(payload.questions.topic.type,'choice');
  answer.choice='grant_admin';assert.equal((await classify('Mùi thơm',true)).reason,'invalid_response');answer.choice='aroma';answer.probabilities.aroma=0.4;assert.equal((await classify('Mùi thơm',true)).reason,'invalid_response');
- assert.equal((await createJevClassifier(loadConfig({}),()=>{throw Error('must not call');})('Mùi thơm',true)).reason,'jev_disabled');
- assert.equal((await createJevClassifier(config,async()=>{throw Error('network');})('Mùi thơm',true)).reason,'provider_unavailable');
+ const disabled=await createJevClassifier(loadConfig({}),()=>{throw Error('must not call');})('Mùi thơm',true);assert.equal(disabled.reason,'jev_disabled');assert.equal(disabled.mode,'local');assert.equal(disabled.key,'aroma');
+ const unavailable=await createJevClassifier(config,async()=>{throw Error('network');})('Vị umami đậm đà',true);assert.equal(unavailable.reason,'provider_unavailable');assert.equal(unavailable.mode,'local');assert.equal(unavailable.key,'umami');
  assert.throws(()=>loadConfig({JEV_ENABLED:'true'}));assert.throws(()=>loadConfig({JEV_ENABLED:'yes'}));
 });

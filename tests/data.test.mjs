@@ -14,6 +14,15 @@ import { generateQr } from '../scripts/generate-qr.mjs';
 import { releaseInfo } from '../backend/version.mjs';
 import { createApp } from '../backend/app.mjs';
 import { createAccount } from '../backend/security/auth.mjs';
+import { mongoFailureCode } from '../backend/services/mongo-store.mjs';
+
+test('Atlas diagnostics distinguish authentication, permission, network and TLS without exposing error messages',()=>{
+ assert.equal(mongoFailureCode({code:8000,message:'private-uri'}),'atlas_authentication_failed');
+ assert.equal(mongoFailureCode({code:13}),'atlas_permission_denied');
+ assert.equal(mongoFailureCode({name:'MongoServerSelectionError'}),'atlas_network_unavailable');
+ assert.equal(mongoFailureCode({name:'MongoServerSelectionError',reason:{servers:new Map([['host',{error:{code:'CERT_HAS_EXPIRED'}}]])}}),'atlas_tls_failed');
+ assert.equal(mongoFailureCode({message:'private-uri'}),'connection_unavailable');
+});
 const fixtureConfig=loadConfig({DATABASE_PATH:':memory:'});
 const sensor=(db,id,session='TEST',sample='NAM')=>db.prepare('INSERT INTO sensory_evaluations(id,session_code,sample_code,tester_type,color_score,aroma_score,umami_taste_score,aftertaste_score,overall_acceptance,comments) VALUES(?,?,?,?,?,?,?,?,?,?)').run(id,session,sample,'CONSUMER',7,7,7,7,7,'private-comment@example.invalid');
 test('Durable jobs share the source transaction, preserve tombstones and omit private tables',async()=>{
@@ -73,6 +82,7 @@ test('Data API enforces role/CSRF, validates cursors and previews a single sourc
  assert.equal((await call('admin/data/jev-preview',{...operator,csrf:''},{article_id:'umami'})).status,403);
  const preview=await(await call('admin/data/jev-preview',operator,{article_id:'umami'})).json();assert.equal(preview.request.state.title,db.prepare("SELECT title FROM knowledge_articles WHERE id='umami'").get().title);assert.equal((await call('admin/data/classify',operator,{article_id:'umami'})).status,422);
  assert.equal((await(await call('admin/data/classify',operator,{article_id:'umami',allow_remote:true})).json()).reason,'jev_disabled');
+ const local=await call('admin/data/classify',operator,{article_id:'umami',allow_remote:false});assert.equal(local.status,200);assert.equal((await local.json()).mode,'local');
 });
 test('Cloud preflight rejects private bucket, hides auth errors and includes every runtime control',async()=>{
  const values={DATABASE_PROVIDER:'postgres',DATABASE_URL:'postgresql://postgres:mock-password@pooler.example:5432/postgres',STORAGE_PROVIDER:'supabase',SUPABASE_URL:'https://test.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'mock-secret'};

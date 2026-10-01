@@ -88,7 +88,8 @@ test('Jev bounds response size and total deadline including stalled fetch/body, 
   const config = { ...loadConfig({ JEV_ENABLED:'true',JEV_API_KEY:'mock-key' }),timeout:20 };
   for (const fetchImpl of [async () => new Response('x'.repeat(70000)),async () => new Promise(() => {}),async () => new Response(new ReadableStream()),async (_, options) => { assert.equal(options.redirect,'error');throw new Error('redirect'); }]) {
     const result = await createJevClassifier(config,fetchImpl)('Mùi thơm',true);
-    assert.equal(result.mode,'manual');
+    assert.equal(result.mode,'local');
+    assert.equal(result.key,'aroma');
     assert.equal(result.reason,'provider_unavailable');
     assert.ok(!JSON.stringify(result).includes('mock-key'));
   }

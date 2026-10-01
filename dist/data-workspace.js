@@ -22,8 +22,8 @@ export function dataWorkspace(onError) {
    if(!items.length){const row=element('tr'),cell=element('td','Chưa có bản ghi trong nhóm này.');cell.colSpan=4;row.append(cell);$('data-rows').append(row);}
    $('data-page').textContent=`Trang ${history.length+1} · ${items.length} bản ghi`;
    $('data-next').disabled=!cursor;$('data-back').disabled=!history.length;$('data-download').disabled=!items.length;
-   $('data-preview').disabled=!$('data-article').options.length;$('data-classify').disabled=!status.jev_enabled||!$('data-article').options.length;
-   $('data-jev-status').textContent=status.jev_enabled?'Jev gợi ý chủ đề bài tri thức. Xem JSON trước khi gửi; kết quả cần được đối chiếu với nguồn.':'Jev chưa được cấu hình. Bạn vẫn có thể xem yêu cầu JSON và thử nó trong Playground.';
+   $('data-preview').disabled=!$('data-article').options.length;$('data-classify').disabled=!$('data-article').options.length;$('data-consent').disabled=!status.jev_enabled;
+   $('data-jev-status').textContent=status.jev_enabled?'Phân loại tại máy chủ bằng từ khóa. Chọn ô đồng ý nếu muốn gửi bài đến JevAI; khi dịch vụ lỗi, dùng phân loại cục bộ.':'Phân loại cục bộ theo từ khóa đang sẵn sàng. JevAI chưa được cấu hình.';
   }catch(error){if(current(v))onError(error);}finally{if(current(v))$('data-refresh').disabled=false;}
  }
  $('data-refresh').addEventListener('click',()=>load());
@@ -38,11 +38,10 @@ export function dataWorkspace(onError) {
   const v=version;try{const data=await request('/api/v1/admin/data/jev-preview',{method:'POST',csrf:session?.csrf_token,body:{article_id:$('data-article').value}});if(current(v))$('data-json').textContent=JSON.stringify(data.request,null,2);}catch(error){if(current(v))onError(error);}
  });
  $('data-classify').addEventListener('click',async event=>{
-  if(!$('data-consent').checked)return feedback($('data-decision'),'Vui lòng đồng ý gửi bài tri thức đã chọn.',true);
   const v=version;event.target.disabled=true;
-  try{const data=await request('/api/v1/admin/data/classify',{method:'POST',csrf:session?.csrf_token,body:{article_id:$('data-article').value,allow_remote:true}});if(current(v)){
+  try{const data=await request('/api/v1/admin/data/classify',{method:'POST',csrf:session?.csrf_token,body:{article_id:$('data-article').value,allow_remote:$('data-consent').checked}});if(current(v)){
    const labels={ingredients:'Nguyên liệu',flavor:'Hương vị',safety:'Ổn định & an toàn thực phẩm',methods:'Phương pháp nghiên cứu',other:'Chưa rõ chủ đề'};
-   feedback($('data-decision'),data.mode==='jev'?`${labels[data.topic]} · Độ tin cậy mô hình ${(data.confidence*100).toFixed(1)}% · ${data.requires_review?'Cần người vận hành xem lại':'Đề xuất để đối chiếu nguồn'}. Kết quả không thay đổi dữ liệu gốc.`:data.message||'Jev chưa trả được đề xuất hợp lệ. Bạn có thể tự phân loại.');
+   feedback($('data-decision'),data.mode==='jev'?`${labels[data.topic]} · Độ tin cậy mô hình ${(data.confidence*100).toFixed(1)}% · ${data.requires_review?'Cần người vận hành xem lại':'Đề xuất để đối chiếu nguồn'}. Kết quả không thay đổi dữ liệu gốc.`:data.mode==='local'?`${labels[data.topic]} · Luật từ khóa cục bộ${data.matched_terms.length?' · Từ khóa: '+data.matched_terms.join(', '):''}. ${data.message}`:data.message||'Chưa có đề xuất hợp lệ.');
   }}catch(error){if(current(v))onError(error);}finally{if(current(v))event.target.disabled=false;}
  });
  return{clear,async show(auth){clear();if(auth.user.role==='ADMIN'){session=auth;$('data-panel').hidden=false;await load('');}}};

@@ -1,0 +1,19 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { localSensoryClassification,localKnowledgeClassification } from '../backend/services/local-classifier.mjs';
+import { createJevClassifier } from '../backend/services/jev.mjs';
+import { createKnowledgeClassifier } from '../backend/services/knowledge-decisions.mjs';
+import { loadConfig } from '../backend/config.mjs';
+test('Local fallback handles Vietnamese words and ambiguity, exposes no false confidence and never calls remote without consent',async()=>{
+ const labels={aroma:'Mùi',umami:'Vị',other:'Khác'};
+ assert.equal(localSensoryClassification('ĐẬM ĐÀ',labels,'test').key,'umami');
+ assert.equal(localSensoryClassification('format unknown',labels,'test').key,'other');
+ assert.equal(localSensoryClassification('mùi umami',labels,'test').key,'other');
+ const config=loadConfig({JEV_ENABLED:'true',JEV_API_KEY:'fixture-private-key'}),noRemote=()=>{throw Error('Unexpected remote call');};
+ const sensory=await createJevClassifier(config,noRemote)('Mùi thơm test@example.test 0901234567',false);
+ assert.equal(sensory.mode,'local');assert.equal(sensory.key,'aroma');assert.equal(sensory.confidence,null);assert.equal(sensory.probabilities,null);assert.equal(sensory.requires_review,true);
+ assert.ok(!JSON.stringify(sensory).includes('test@example.test'));assert.ok(!JSON.stringify(sensory).includes('0901234567'));
+ const document={type:'knowledge',active:true,data:{title:'Hoạt độ nước',body:'Water activity and food safety',summary:'',limitation:'',tags:[]}};
+ const result=await createKnowledgeClassifier(config,noRemote)(document,false);assert.equal(result.mode,'local');assert.equal(result.topic,'safety');assert.equal(result.reason,'remote_consent_required');assert.equal(result.requires_review,true);
+ assert.equal(localKnowledgeClassification(document,'test').confidence,null);
+});

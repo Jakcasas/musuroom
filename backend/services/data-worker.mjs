@@ -12,9 +12,10 @@ export function startDataWorker(db,config,fetchImpl) {
    store??=await openMongoStore(config);
    const result=await syncData({db,config,store,classify});
    if(result.mode==='unavailable'){await store.close().catch(()=>{});store=null;}
-  }catch{
+  }catch(error){
    if(store){await store.close().catch(()=>{});store=null;}
-   await db.prepare("UPDATE data_sync_state SET last_error_code='connection_unavailable' WHERE id='mongo'").run();
+   const code=['atlas_authentication_failed','atlas_permission_denied','atlas_network_unavailable','atlas_tls_failed'].includes(error.code)?error.code:'connection_unavailable';
+   await db.prepare("UPDATE data_sync_state SET last_error_code=? WHERE id='mongo'").run(code);
   }
  },config.mongoSyncMs);
  return async()=>{await stop();await store?.close();};

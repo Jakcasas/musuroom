@@ -61,7 +61,7 @@ Trong cổng ADMIN, chọn bài tri thức → **Xem yêu cầu Jev** → xem `s
 
 Chạy **CAU_HINH_JEV.cmd** để lưu `JEV_API_KEY` từ JevAI /agent/keys phía server. `JEV_MODEL=typesafe-ai/jev`; backend không cho chọn model khác. `JEV_ENABLED=true` cho phép phân loại theo thao tác người dùng. Đồng bộ tự động chỉ gọi Jev khi thêm `MONGO_JEV_ENRICHMENT=true`; mặc định false để người vận hành quyết định phạm vi và chi phí. Chỉ bài tri thức được gửi trong worker; không tự đổi category, điểm cảm quan hoặc quyền truy cập.
 
-Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời gọi theo `AI_TIMEOUT_MS`, tối đa 2 lời gọi đồng thời mỗi evaluator. Chỉ retry một lần khi 429/529 và Retry-After tối đa 3 giây. Thiếu key, lỗi/timeout hoặc lựa chọn ngoài rubric trả `mode=manual`; các API khảo sát vẫn hoạt động.
+Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời gọi theo `AI_TIMEOUT_MS`, tối đa 2 lời gọi đồng thời mỗi evaluator. Chỉ retry một lần khi 429/529 và Retry-After tối đa 3 giây. Thiếu key, lỗi/timeout hoặc lựa chọn ngoài rubric trả `mode=local` theo luật từ khóa, confidence/probabilities=null và requires_review=true; các API khảo sát vẫn hoạt động.
 
 | Biến | Mặc định | Mục đích |
 |---|---|---|
@@ -76,3 +76,9 @@ Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời g
 | JEV_MIN_CONFIDENCE | 0.65 | Ngưỡng đề xuất cần xem lại, 0–1 |
 
 Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File được lưu ở `data/exports/`, đọc từng trang 100 công việc. Đây là projection tại thời điểm đọc từng bản ghi; cập nhật diễn ra trong lúc xuất có thể được bao gồm. Export này không thay thế backup PostgreSQL hoặc private Storage.
+
+## Phân loại cục bộ khi Jev chưa đáp ứng
+
+`backend/services/local-classifier.mjs` là bộ luật từ khóa tại server, không dùng provider khác. Chuẩn hóa tiếng Việt (gồm Đ/đ), khớp nguyên từ/cụm từ; hòa điểm hoặc không có từ khóa trả other. Kết quả luôn cần xem lại, không có độ tin cậy xác suất. Trên web, bỏ chọn ô gửi đến Jev để chỉ phân loại cục bộ; giao diện hiển thị nhãn và từ khóa khớp. Lỗi Jev cũng chuyển về bộ luật này.
+
+Để thêm nhãn cục bộ vào JSON Atlas hiện có, chạy với môi trường cloud riêng: `pnpm data:sync --rebuild --local-classification`. Lệnh tăng revision và đồng bộ từng batch; không gọi Jev hoặc dịch vụ AI nào. Nhãn nằm trong metadata `jev` với mode=local/source=keyword_rules; không phải inference Jev. Worker mặc định chưa enrichment; cập nhật nội dung sẽ thay nhãn cũ, cần chạy lại phân loại.

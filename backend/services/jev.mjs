@@ -1,12 +1,13 @@
 import { sensoryLabels as labels,sensoryQuestion } from './jev-rubric.mjs';
-import { createJevEvaluator,validChoice,jevFailureMessage } from './jev-client.mjs';
+import { createJevEvaluator,validChoice } from './jev-client.mjs';
+import { localSensoryClassification } from './local-classifier.mjs';
 export function createJevClassifier(config,fetchImpl) {
  const evaluate=createJevEvaluator(config,fetchImpl);
  return async(comment,allowRemote)=>{
-  const unavailable=reason=>({mode:'manual',reason,label:null,message:jevFailureMessage(reason)});
+  const text=comment.replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g,'[email removed]').replace(/\+?\d[\d\s().-]{6,}\d/g,'[phone removed]');
+  const unavailable=reason=>localSensoryClassification(text,labels,reason);
   if(!config.jevEnabled)return unavailable('jev_disabled');
   if(!allowRemote)return unavailable('remote_consent_required');
-  const text=comment.replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g,'[email removed]').replace(/\+?\d[\d\s().-]{6,}\d/g,'[phone removed]');
   const result=await evaluate({model:config.jevModel,state:{comment:text},questions:{topic:sensoryQuestion}});
   if(result.reason)return unavailable(result.reason);
   const answer=result.data?.answers?.topic;

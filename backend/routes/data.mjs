@@ -22,9 +22,9 @@ export function dataRouter(db,security,config,fetchImpl) {
  };
  router.post('/admin/data/jev-preview',async(req,res)=>{const item=await document(req);if(!item)return res.status(404).json({error:'article_not_found'});res.json({request:knowledgeDecisionRequest(item,config.jevModel),notice:'Chỉ gửi nội dung bài tri thức này khi bạn chọn phân loại. Không chứa khóa API.'});});
  router.post('/admin/data/classify',rateLimit(5,'classification_rate_limit'),async(req,res)=>{
-  if(req.body?.allow_remote!==true)return res.status(422).json({error:'remote_consent_required'});
+  if(typeof req.body?.allow_remote!=='boolean')return res.status(422).json({error:'remote_consent_required'});
   const item=await document(req);if(!item)return res.status(404).json({error:'article_not_found'});
-  res.json({article_id:item.resource_id,...await classify(item)});
+  res.json({article_id:item.resource_id,...await classify(item,req.body.allow_remote)});
  });
  return router;
 }

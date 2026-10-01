@@ -23,6 +23,6 @@ Nguồn yêu cầu tham khảo: `ke_hoach_web_server_bot_gia_vi_nam.md` trong Do
 3. Production sử dụng PostgreSQL + private Storage, không lưu dữ liệu lâu dài vào filesystem container.
 4. Rate limit riêng mỗi IP, map có giới hạn; một replica. Toàn bộ API cũ chuyển sang bất đồng bộ để hỗ trợ PostgreSQL.
 5. Snapshot 111 trang TypeSafe, manifest SHA-256, bản gốc đầy đủ và tìm kiếm offline được lưu cùng dự án.
-6. 47 bài kiểm thử thành công: thêm hàng đợi/revision/lease, JSON/Jev ADMIN và preflight/QR. Đã kiểm tra thêm xác thực/phân quyền/đăng xuất trên Railway thật; chưa thay thế đo cảm quan hoặc đánh giá Atlas/Jev thực tế.
+6. 49 bài kiểm thử thành công: thêm hàng đợi/revision/lease, JSON/Jev ADMIN và preflight/QR. Đã kiểm tra thêm xác thực/phân quyền/đăng xuất trên Railway thật; chưa thay thế đo cảm quan hoặc đánh giá Atlas/Jev thực tế.
 7. GitHub Actions kiểm tra Windows/Linux; khóa phiên bản dependencies; rà lịch sử Git đối chiếu bí mật trước khi publish. Form khóa trong lúc gửi, chống thao tác reset xung đột và giữ mã đợt/mẫu từ QR khi tạo phiếu mới.
 8. Jev giới hạn deadline/64 KiB; OpenRouter có giới hạn đồng thời/cooldown. Thiếu key hoặc lỗi dịch vụ vẫn có tra cứu nguồn, thống kê và phân loại thủ công.

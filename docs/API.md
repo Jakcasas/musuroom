@@ -38,7 +38,7 @@ Token quản trị được tạo khi chạy setup, lưu ở `API_WRITE_TOKEN` t
 
 Login trả `Set-Cookie` HttpOnly/SameSite=Strict và JSON `{user:{id,name,role},expires_at,csrf_token}`. Gửi cookie cùng request; đặt `X-CSRF-Token` khi thay đổi dữ liệu. Không trả lại mã truy cập. Mã hết hạn/vô hiệu hoặc phiên hết hạn/idle trả 401; sai quyền hoặc CSRF trả 403. Tạo và thu hồi tài khoản qua CLI, không có API tự cấp quyền. Danh sách hồ sơ chứa `id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at,download_url`; file tải là attachment. Không trả đường dẫn tệp hệ thống.
 
-Jev body `{"comment":"Mùi nấm rõ","allow_remote":true}`. Góp ý 3–1.000 ký tự. Khi bật Jev và kết quả hợp lệ, trả `mode:jev,key,label,confidence,probabilities,message`; lỗi hoặc chưa bật trả `mode:manual,reason,label:null,message`. Giới hạn theo IP sau xác thực dùng `CHAT_REQUESTS_PER_MINUTE`; vượt hạn mức trả 429 và `Retry-After`. Toàn bộ lời gọi/đọc phản hồi cùng một deadline; phản hồi tối đa 64 KiB, chặn redirect. Chỉ retry một lần với lỗi tạm thời trong thời gian còn lại. API không dùng Jev để cấp quyền hoặc sửa điểm. Hướng dẫn vận hành trong [JUDGE_PORTAL.md](JUDGE_PORTAL.md).
+Jev body `{"comment":"Mùi nấm rõ","allow_remote":true}`. Góp ý 3–1.000 ký tự. Khi bật Jev và kết quả hợp lệ, trả `mode:jev,key,label,confidence,probabilities,message`. Khi thiếu key, chưa đồng ý gửi từ xa hoặc provider lỗi, API vẫn trả `mode:local` với `source:keyword_rules`, nhãn, từ khóa khớp và `reason`; `confidence`/`probabilities` là `null` vì luật cục bộ không phải mô hình xác suất. `requires_review=true` cho mọi kết quả cục bộ. Giới hạn theo IP sau xác thực dùng `CHAT_REQUESTS_PER_MINUTE`; vượt hạn mức trả 429 và `Retry-After`. Toàn bộ lời gọi/đọc phản hồi cùng một deadline; phản hồi tối đa 64 KiB, chặn redirect. Chỉ retry một lần với lỗi tạm thời trong thời gian còn lại. API không dùng Jev để cấp quyền hoặc sửa điểm. Hướng dẫn vận hành trong [JUDGE_PORTAL.md](JUDGE_PORTAL.md).
 
 ## Khảo sát cảm quan
 
@@ -164,7 +164,7 @@ Các endpoint `/api/v1/admin/data/*` yêu cầu role ADMIN; POST dùng CSRF củ
 | POST `/api/v1/admin/data/jev-preview` | `{ "article_id": "umami" }` → yêu cầu `model/state/questions`; chưa gọi Jev |
 | POST `/api/v1/admin/data/classify` | `{ "article_id": "umami", "allow_remote": true }` → `article_id`, mode; Jev hợp lệ thêm topic/confidence/probabilities/model/requires_review/rubric_version |
 
-Preview/classify chỉ chọn bài tri thức đang tồn tại. Classify có giới hạn 5 lần/phút/IP sau xác thực, thiếu đồng ý trả 422; thiếu cấu hình hoặc lỗi provider trả `mode=manual`. Topic thuộc ingredients/flavor/safety/methods/other. Response là đề xuất, không sửa bản ghi gốc. `requires_review=true` nếu không rõ chủ đề hoặc confidence dưới ngưỡng.
+Preview/classify chỉ chọn bài tri thức đang tồn tại. Classify có giới hạn 5 lần/phút/IP sau xác thực, cần `allow_remote` là boolean (thiếu/sai kiểu trả 422); false chỉ phân loại cục bộ, true cho phép Jev; thiếu cấu hình hoặc lỗi provider trả `mode=local` theo luật từ khóa và luôn yêu cầu xem lại. Topic thuộc ingredients/flavor/safety/methods/other. Response là đề xuất, không sửa bản ghi gốc. `requires_review=true` nếu không rõ chủ đề, dùng fallback cục bộ hoặc confidence dưới ngưỡng.
 
 JSON đọc projection từ SQL, không phải truy vấn trực tiếp Atlas. Tải toàn bộ bằng CLI NDJSON để xử lý từng trang và giữ giới hạn bộ nhớ. Chi tiết schema/cấu hình ở [MongoDB + Jev](MONGODB_JEV.md).
 
