@@ -82,3 +82,7 @@ Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File 
 `backend/services/local-classifier.mjs` là bộ luật từ khóa tại server, không dùng provider khác. Chuẩn hóa tiếng Việt (gồm Đ/đ), khớp nguyên từ/cụm từ; hòa điểm hoặc không có từ khóa trả other. Kết quả luôn cần xem lại, không có độ tin cậy xác suất. Trên web, bỏ chọn ô gửi đến Jev để chỉ phân loại cục bộ; giao diện hiển thị nhãn và từ khóa khớp. Lỗi Jev cũng chuyển về bộ luật này.
 
 Để thêm nhãn cục bộ vào JSON Atlas hiện có, chạy với môi trường cloud riêng: `pnpm data:sync --rebuild --local-classification`. Lệnh tăng revision và đồng bộ từng batch; không gọi Jev hoặc dịch vụ AI nào. Nhãn nằm trong metadata `jev` với mode=local/source=keyword_rules; không phải inference Jev. Worker mặc định chưa enrichment; cập nhật nội dung sẽ thay nhãn cũ, cần chạy lại phân loại.
+
+## Trạng thái đồng bộ trên Railway
+
+Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.

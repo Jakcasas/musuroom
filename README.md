@@ -195,3 +195,7 @@ Trước khi công bố từ máy người vận hành, chạy `node scripts/che
 4 nguồn bên ngoài và 2 ghi chú phương pháp của Musuroom; không tự cập nhật từ Internet. Website chính thức của dự án không đồng nghĩa với sản phẩm thương mại đã kiểm nghiệm. Ảnh hero do AI tạo để minh họa ý tưởng. Mô hình tính bột nền là giả định trước phối trộn, không xác nhận an toàn hoặc mức giảm lãng phí thực tế.
 
 Frontend có bản dữ liệu dự phòng để đọc khi API không sẵn sàng. Cập nhật bản ghi đã seed cần migration dữ liệu; seed không ghi đè dữ liệu có sẵn. Font Roboto nằm trong `dist/assets/fonts/` với giấy phép OFL và được tải từ chính server. Liên kết tài liệu bên ngoài cần Internet.
+
+## Trạng thái đồng bộ trên Railway
+
+Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.

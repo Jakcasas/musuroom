@@ -89,3 +89,14 @@ Khi tạo QR mới trên máy sau deploy, các tệp được đưa vào lần p
 ## Tài liệu nhà cung cấp
 
 [Railway CLI](https://docs.railway.com/cli), [Railway Express](https://docs.railway.com/guides/express), [Supabase PostgreSQL](https://supabase.com/docs/guides/database/connecting-to-postgres), [Supabase Storage](https://supabase.com/docs/guides/storage/uploads/standard-uploads), [JevAI REST/MCP](https://www.jevai.org/mcp).
+
+## Trạng thái đồng bộ trên Railway
+
+Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.
+
+1. Trong Railway, xem Networking/Outbound và xác định IP egress ổn định nếu gói hiện có hỗ trợ; không tự nâng cấp gói.
+2. Trong Atlas Network Access, cho phép chính IP/CIDR đó; kiểm tra database user vẫn có readWrite trên musuroom. Không mở toàn Internet để xử lý tạm lỗi.
+3. Kiểm tra DNS/SRV/TLS từ môi trường cloud nếu lỗi vẫn còn. Mã lỗi mới phân biệt network/auth/permission/TLS và không chứa URI.
+4. Deploy lại và kiểm tra ADMIN data/status: last_error_code=null, last_completed_at mới và pending giảm sau cập nhật thật. Nếu chưa có egress ổn định, dùng `pnpm cloud:deploy --without-atlas` và đồng bộ có kiểm soát từ máy hiện tại.
+
+Source Railway đã gắn Jakcasas/musuroom, nhánh main. Push mới nhất chưa tự tạo deployment; bản này được triển khai bằng CLI sau khi CI đạt. Đối chiếu GitHub App/webhook trong Railway và thử push trước khi coi auto deploy đã hoạt động.
