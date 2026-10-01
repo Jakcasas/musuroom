@@ -12,3 +12,4 @@ tests
 *.pid
 *.png
 !dist/assets/*
+!dist/qr/*.png

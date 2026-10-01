@@ -4,6 +4,8 @@ Ngày cập nhật: **01.10.2026**.
 
 ## Bản 1.5.0
 
+- Sửa `.railwayignore` để giữ ảnh PNG trong `dist/qr`; bản upload CLI trước đó có trang A4/SVG nhưng thiếu ảnh PNG. Kiểm tra lại ảnh QR thật sau deploy.
+
 - Tích hợp bộ phân loại cục bộ người dùng bổ sung; sửa khớp tiếng Việt và nguyên từ, ambiguity trả other, confidence=null. Giao diện hiển thị nhãn dự phòng và cho dùng cục bộ khi chưa có Jev/không chọn gửi từ xa. Có CLI thêm nhãn cục bộ vào JSON Atlas.
 - Mã lỗi Atlas phân biệt xác thực, quyền, mạng và TLS bằng mã tĩnh; không đưa URI/error message vào API.
 
