@@ -36,3 +36,7 @@ Theo dõi cả **Supabase Preview**, **verify (ubuntu-24.04)** và **verify (win
 - Không dùng migration repair/reverted khi chưa đối chiếu schema và lịch sử thật. Không tắt Supabase Preview để che lỗi.
 
 [Hướng dẫn GitHub integration](https://supabase.com/docs/guides/deployment/branching/github-integration), [database migrations](https://supabase.com/docs/guides/deployment/database-migrations).
+
+## Kết quả xác minh 01.10.2026
+
+Commit `2cd48c3` đã có cả 3 check success: Supabase Preview và verify Windows/Linux. Nhánh Supabase chuyển MIGRATIONS_FAILED → FUNCTIONS_DEPLOYED, project ACTIVE_HEALTHY. Railway health trả 1.5.1/database=ok. Production có 13 bảng RLS, 6 bài tri thức, không có phiếu/đăng ký giả.

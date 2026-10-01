@@ -1,8 +1,8 @@
 {
   "app": "musuroom",
   "release": "Musuroom 1",
-  "version": "1.5.0",
-  "generated_at": "2026-10-01T03:18:55.539Z",
+  "version": "1.5.1",
+  "generated_at": "2026-10-01T08:46:01.563Z",
   "verified_public_origin": "https://musuroom-web-production.up.railway.app",
   "links": {
     "survey": "https://musuroom-web-production.up.railway.app/trai-nghiem.html",
