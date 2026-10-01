@@ -22,9 +22,15 @@ node server.mjs
 
 Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và setup, có thể dùng `MO_MUSUROOM.cmd` để chạy nền. Setup tạo cấu hình riêng tư; server tự tạo database local và nạp kho tri thức.
 
-**Trạng thái ngày 30.09.2026:** bản local hoạt động; Supabase Singapore đã có schema, 6 bài tri thức và bucket hồ sơ riêng tư. Website Railway và QR công khai còn chờ kết nối database của server và deploy. Jev có tích hợp tùy chọn, chưa bật khi chưa có API key.
+**Trạng thái ngày 01.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.5.0`, PostgreSQL `ok`. Supabase Singapore có 13 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP; REST trả 502. Chưa có inference thành công; giao diện giữ chế độ phân loại thủ công khi dịch vụ không đáp ứng.
 
-Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.4.2`. Local chạy SQLite; cấu hình cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
+Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.5.0`. Local chạy SQLite; cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
+
+## Kho dữ liệu và hỗ trợ phân tích
+
+Cổng ADMIN có thêm kho JSON: lọc nhóm dữ liệu, phân trang, xem từng bản ghi, tải JSON trang hiện tại và xem yêu cầu Jev trước khi gửi. Đồng bộ Atlas dùng hàng đợi có revision trong SQL, batch/upsert và xử lý thử lại. Bản JSON chỉ chọn tri thức, thống kê cảm quan tổng hợp và mẫu đo đã công bố; không chọn liên hệ đăng ký hoặc khóa truy cập.
+
+Jev gợi ý chủ đề có kiểu và confidence để người vận hành đối chiếu nguồn. Chỉ gửi bài đã chọn khi người dùng đồng ý; enrichment tự động trong worker mặc định chưa được chọn. [Cấu hình Atlas, Jev, NDJSON và giới hạn xử lý](docs/MONGODB_JEV.md).
 
 Bản này sửa xung đột khi gửi/reset biểu mẫu, giữ mã đợt/mẫu từ QR khi tạo phiếu mới, chuẩn hóa số điện thoại Việt Nam để tránh đăng ký trùng và cải thiện tìm kiếm nhiều từ. Mẫu đo chỉ công bố khi minh chứng COA/REPORT vẫn ở trạng thái FINAL. Database kiểm tra cấu trúc/chỉ tiêu đo; API và CLI kiểm tra thêm giá trị và phạm vi. Jev có thời hạn xử lý toàn bộ phản hồi và giới hạn 64 KiB. GitHub tự kiểm tra trên Windows và Linux.
 
@@ -164,7 +170,7 @@ API thống kê và nhận xét đọc phân bố tổng hợp ngay tại databa
 - [Migration tài khoản, phiên và hồ sơ](backend/db/migrations/003_judge_portal.sql)
 - [Vận hành cổng giám khảo, cấp mã và Jev](docs/JUDGE_PORTAL.md)
 - [Mẫu môi trường](.env.example)
-- [Ghi chú bản 1.4.2](docs/RELEASE_NOTES.md)
+- [Ghi chú bản 1.5.0](docs/RELEASE_NOTES.md)
 
 Repository công khai dùng nhánh `main`. Checkout trên máy này dùng nhánh `codex/musuroom-backend`, theo dõi `origin/main`. Các thay đổi mới nên được thực hiện trên nhánh riêng rồi review trước khi đưa vào `main`.
 
@@ -180,7 +186,7 @@ pnpm test
 pnpm audit --prod --audit-level=moderate
 ```
 
-`pnpm check` kiểm tra cú pháp JavaScript và đường dẫn tài nguyên HTML. `pnpm test` hiện có **37 bài kiểm thử**: tìm kiếm tiếng Việt, nguồn, cân bằng vật chất, CSV, HTTP, migration/seed SQLite/PostgreSQL, xác thực, CSRF, đăng ký trùng, minh chứng và phản hồi mô hình bằng mock. Database kiểm thử dùng bộ nhớ hoặc thư mục tạm. GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; audit dependencies sản xuất chạy trên Linux.
+`pnpm check` kiểm tra cú pháp JavaScript và đường dẫn tài nguyên HTML. `pnpm test` hiện có **47 bài kiểm thử**, bổ sung queue/revision/lease, quyền ADMIN cho JSON, projection không chứa liên hệ, Jev tri thức, kiểm tra cloud và QR theo phiên bản. Database kiểm thử dùng bộ nhớ hoặc thư mục tạm; provider/Mongo writer dùng mock. Đăng nhập, phân quyền, Storage và health đã được kiểm tra thêm trên cloud thật. GitHub Actions chạy cùng bộ kiểm tra trên Windows/Linux; audit dependencies sản xuất chạy trên Linux.
 
 Trước khi công bố từ máy người vận hành, chạy `node scripts/check-publish.mjs` sau commit để kiểm tra lịch sử Git đối chiếu bí mật cục bộ. Script không in giá trị bí mật. Tạo ZIP mã nguồn bằng `git archive` từ commit đã kiểm tra để chỉ đóng gói tệp được theo dõi.
 

@@ -53,11 +53,11 @@ Trong `.env`, đặt:
 
 ```dotenv
 JEV_ENABLED=true
-TYPESAFE_API_KEY=DIEN_KEY_TREN_MAY
-JEV_MODEL=jev-latest
+JEV_API_KEY=DIEN_KEY_JEVAI_TREN_MAY
+JEV_MODEL=typesafe-ai/jev
 ```
 
-Khởi động lại server. Khi chưa có key, giữ `JEV_ENABLED=false`. Không đưa key vào frontend, URL hoặc chat. Cấu hình hiện tại chưa gọi provider thật.
+Khởi động lại server. Khi chưa có key, giữ `JEV_ENABLED=false`. Không đưa key vào frontend, URL hoặc chat. Runtime chỉ gọi JevAI Community www.jevai.org với key từ /agent/keys; thử thật đang bị từ chối credentials/model access, dùng kết quả dự phòng.
 
 Jev phân loại **một góp ý được người xem chủ động nhập và đồng ý gửi** thành màu sắc, mùi thơm, umami, hậu vị, ưa thích chung hoặc khác. Server loại chuỗi email/số điện thoại theo mẫu trước khi gửi; người dùng vẫn cần bỏ thông tin cá nhân và bí mật khỏi đoạn góp ý vì bộ lọc không nhận diện mọi dạng. Không gửi toàn bộ database, tài liệu, liên hệ hoặc điểm cá nhân. Kiểm tra loại `choice`, nhãn, xác suất, tổng xác suất và confidence. Khi lỗi, trả trạng thái tự phân loại. Confidence là độ tin cậy mô hình, không phải mức tin cậy thống kê hoặc kiểm chứng cho dữ liệu tiếng Việt.
 

@@ -1,68 +1,91 @@
-# Musuroom 1 — Railway + Supabase
+# Triển khai Musuroom 1 — Railway + Supabase
 
-## Trạng thái chuẩn bị ngày 30.09.2026
+## Bản đang chạy, ngày 01.10.2026
 
-- Railway project `Musuroom 1`: `2fb171d1-803d-4f5e-93cc-94837e2f42d4`.
-- Service `musuroom-web`: `1bb6900a-64d2-47c9-be06-648f6139ff6e`.
-- Tên miền đã cấp: `https://musuroom-web-production.up.railway.app`. **Chưa phải xác nhận website hoạt động**; cần hoàn tất kết nối, deploy và health check.
-- Supabase project `hlkzngyuoqzcfhrfkuub`: đã áp dụng schema và migration hardening qua plugin; 11 bảng, 6 nguồn và 6 bài tri thức đã được kiểm tra trên database thực.
-- Supabase Singapore `ap-southeast-1`. Railway cấu hình Singapore `asia-southeast1-eqsg3a`, một replica.
-- Hai nhà cung cấp chưa có deployment region Việt Nam theo [Supabase regions](https://supabase.com/docs/guides/platform/regions) và [Railway regions](https://docs.railway.com/deployments/regions). Singapore được chọn theo vị trí và khoảng cách API–database, chưa phải kết quả đo độ trễ thực tế.
+- Ứng dụng: **https://musuroom-web-production.up.railway.app**.
+- Health `/healthz`: `app=musuroom`, `version=1.5.0`, `database=ok`.
+- Railway project `Musuroom 1`: `2fb171d1-803d-4f5e-93cc-94837e2f42d4`; service `musuroom-web`: `1bb6900a-64d2-47c9-be06-648f6139ff6e`; environment `production`.
+- Supabase project `hlkzngyuoqzcfhrfkuub`: PostgreSQL, 13 bảng Musuroom, 6 bài/nguồn tri thức; bucket `musuroom-dossier` riêng tư, tối đa 50 MB/file.
+- Singapore: Supabase `ap-southeast-1`, Railway `asia-southeast1-eqsg3a`, một replica. [Các vùng Supabase](https://supabase.com/docs/guides/platform/regions), [các vùng Railway](https://docs.railway.com/deployments/regions). Chưa đo benchmark độ trễ thực tế từ Việt Nam.
+- Mã cloud riêng có thời hạn đã tạo; bản giới thiệu BRIEF ở trạng thái DRAFT đã upload. Chưa có COA/dinh dưỡng/khảo sát thử nếm thực tế để công bố.
 
-## Cấu hình riêng tư
+## 1. Chuẩn bị bên ngoài
 
-Trên máy mới, tạo thư mục `data` rồi sao chép `cloud.env.example` thành `data/cloud.env` và điền khóa/mật khẩu riêng. Template không chứa thông tin xác thực.
+Trong thư mục dự án, cài Node.js 24 và pnpm 11.19.0. Chạy `pnpm install --frozen-lockfile`. Railway CLI cần phiên đăng nhập của chủ dự án: `pnpm exec railway login --browserless`. Nếu binary CLI chưa được cài do scripts bị chặn, chạy `node node_modules/@railway/cli/npm-install/postinstall.js` rồi kiểm tra `pnpm exec railway --version`.
 
-Điền `data/cloud.env` trên máy: DATABASE_URL (Session pooler cổng 5432, percent-encode mật khẩu), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY. Trên máy này đã lưu service_role hiện có và tạo bucket riêng tư; chỉ còn mật khẩu database. Nhấp đúp **CAU_HINH_SUPABASE.cmd** để nhập mật khẩu dưới dạng ẩn; script tự percent-encode và lưu DATABASE_URL. Không gửi khóa vào chat, không đưa file này vào Git/ZIP. Nếu sử dụng DATABASE_CA_CERT, lấy CA chính thức của project; không tắt kiểm chứng TLS.
+Trên máy mới, tạo `data/cloud.env` từ `cloud.env.example`. Trong Supabase **Connect**, lấy **Session pooler cổng 5432**; điền password đã percent-encode. Không dùng transaction pooler 6543 vì migration giữ advisory lock theo session. Khóa Storage chỉ lưu ở backend. Trên máy này **CAU_HINH_SUPABASE.cmd** nhập ẩn mật khẩu và ghi riêng vào `data/cloud.env`.
 
-Không dùng transaction pooler cổng 6543: migration sử dụng khóa PostgreSQL theo session. Database cloud và database local là hai bộ dữ liệu riêng; script không tự tải dữ liệu liên hệ trên máy lên cloud.
+Đổi/reset mật khẩu thực hiện trong Supabase Dashboard rồi cập nhật helper. Lỗi 28P01 là mật khẩu chưa được chấp nhận. Sau đổi mật khẩu, preflight thử lại tối đa 2 lần với khoảng chờ 2 giây để xử lý thời gian cập nhật của pooler; nếu vẫn lỗi, dừng trước khi upload. Không đưa mật khẩu vào URL Git, README hoặc frontend.
 
-### Chứng chỉ TLS đã xác minh trên máy này
+CA được lấy từ **Database Settings > SSL configuration > Download certificate**. Máy này có CA trong `data/supabase-ca.crt` và `DATABASE_CA_CERT` lưu riêng. Backend luôn xác minh TLS/hostname; tham số SSL trong URL không được dùng để tắt xác minh. PEM một dòng trong `.env` dùng dấu nháy đơn và `\n` cho xuống dòng. [Hướng dẫn kết nối PostgreSQL](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
-Đã tải CA từ nút **Database Settings > SSL configuration > Download certificate** trong Supabase Dashboard: [Supabase Root 2021 CA](https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt). Bản cục bộ nằm trong `data/supabase-ca.crt`; `DATABASE_CA_CERT` đã lưu riêng trong `data/cloud.env` và được chuyển sang Railway bằng stdin. SHA-256 fingerprint: `80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA`.
+Bucket Storage phải `public=false`. Khi chuẩn bị trên một project mới, chạy với `MUSUROOM_ENV_FILE=data/cloud.env`: `node scripts/database.mjs` và `node scripts/provision-storage.mjs`. Với fork dùng project khác, sửa IDs/domain tại `scripts/cloud-config.mjs` và project/pooler trong template trước khi cấu hình.
 
-Kết nối đã vượt qua xác minh chứng chỉ và hostname của pooler với `rejectUnauthorized=true`. Lần kiểm tra kết nối của server gần nhất trả `28P01` (chưa chấp nhận mật khẩu đã chọn). Migration đã được áp dụng qua plugin Supabase OAuth; chưa xác nhận website Railway hoạt động. Người dùng cần tự hoàn tất thao tác Reset database password trong Supabase rồi kiểm tra lại kết nối của server.
+## 2. Kiểm tra và triển khai
 
-Trên máy mới, lấy CA từ Dashboard của project. Nếu lưu PEM trên một dòng trong `.env`, thay mỗi xuống dòng bằng ký tự `\n` và bọc giá trị bằng **dấu nháy đơn**; không JSON-escape thêm lần nữa. Hướng dẫn nhà cung cấp: [kết nối có xác minh TLS](https://supabase.com/docs/guides/database/connecting-to-postgres).
+```powershell
+pnpm check
+pnpm test
+pnpm audit --prod --audit-level=moderate
+pnpm cloud:check
+pnpm cloud:deploy
+```
 
-Trong PowerShell tại thư mục dự án (Node.js 24+):
+`cloud:check` đọc file riêng, kiểm tra PostgreSQL/migration và private bucket; Atlas được kiểm tra nếu được cấu hình. Jev báo configured/disabled, chưa coi cấu hình là lời gọi dịch vụ đã thành công.
+
+Atlas đã kết nối và nhận 6 tài liệu JSON được đọc kiểm chứng; SQL pending=0. `pnpm cloud:deploy` cấu hình worker trên Railway. Khi Atlas tạm không đáp ứng, có thể triển khai với `--without-atlas`; flag chỉ tắt worker trên deployment đó, bảo toàn URI trong file riêng. Jev dùng `JEV_API_KEY` từ www.jevai.org/agent/keys và `typesafe-ai/jev`; thử thật hiện báo credentials/model access rejected (MCP) và REST 502. Kiểm tra key/quyền model tại JevAI; không đổi sang provider khác để vượt lỗi này.
+
+`cloud:deploy` kiểm tra trước, chuyển toàn bộ biến môi trường theo whitelist bằng stdin, chọn đúng project/service/production, upload, theo dõi ID deployment vừa tạo đến SUCCESS và chờ tối đa 10 phút cho `/healthz` đúng phiên bản package và database. Bản cũ cùng version không được dùng để xác nhận triển khai. QR chỉ tạo sau khi health và trang khảo sát/giám khảo đã hoạt động. Script không in giá trị bí mật. Có thể tách bước chuyển biến bằng `pnpm cloud:configure` và upload bằng:
+
+```powershell
+pnpm exec railway up --project 2fb171d1-803d-4f5e-93cc-94837e2f42d4 --environment production --service musuroom-web --detach
+```
+
+Trong Railway, domain gắn port **8080**; `HOST=0.0.0.0`, `PORT=8080`, `PUBLIC_ORIGIN=https://musuroom-web-production.up.railway.app`. Docker dùng Node 24, pnpm cố định, user `node`; `.dockerignore` chỉ cho phép backend/dist/schema cần thiết. `.railwayignore` và `.gitignore` loại data, `.env`, cache, dependencies, log và PID.
+
+Để tự triển khai từ GitHub, vào Railway **Service > Settings > Source**, chọn `Jakcasas/musuroom`, nhánh `main`; nếu chưa có quyền repository, chủ tài khoản hoàn tất cài/quyền Railway GitHub App. CLI tương đương:
+
+```powershell
+pnpm exec railway service source connect --repo Jakcasas/musuroom --branch main --project 2fb171d1-803d-4f5e-93cc-94837e2f42d4 --environment production --service musuroom-web
+```
+
+Các lệnh upload thủ công vẫn dùng được khi GitHub App chưa được kết nối. Kiểm tra GitHub Actions của commit trước khi deploy; kết nối Source không tự bảo đảm rằng CI đã đạt.
+
+Railway hiện thông báo chuyển từ `railway.json` sang [Infrastructure as Code](https://docs.railway.com/infrastructure-as-code). Cấu hình hiện tại vẫn được hỗ trợ; đối chiếu công cụ `railway config migrate` và hướng dẫn nhà cung cấp trước đợt nâng cấp cấu hình tiếp theo.
+
+## 3. Cấp mã cloud và thêm hồ sơ
 
 ```powershell
 $env:MUSUROOM_ENV_FILE='data/cloud.env'
-node scripts/database.mjs
-node scripts/provision-storage.mjs
 node scripts/create-access.mjs --role JUDGE --days 7 --out data/cloud-judge-access.json
-node scripts/create-access.mjs --role ADMIN --days 7 --out data/cloud-admin-access.json
+node scripts/create-access.mjs --role ADMIN --name 'Quản trị Musuroom' --days 7 --out data/cloud-admin-access.json
 node scripts/add-document.mjs --file docs/project-brief.txt --title 'Giới thiệu đề tài Musuroom' --type BRIEF --status DRAFT
 Remove-Item Env:MUSUROOM_ENV_FILE
-node scripts/railway-configure.mjs https://musuroom-web-production.up.railway.app
-pnpm exec railway up --service musuroom-web --detach
 ```
 
-CLI Railway cần phiên đăng nhập riêng: `pnpm exec railway login --browserless`. Dùng giới hạn trial hiện có; khi nhà cung cấp yêu cầu nâng cấp, người dùng quyết định gói và ngân sách trước khi mua.
+Máy này đã có hai file mã cloud; script giữ file/tài khoản đã tồn tại. Mã giám khảo khác mật khẩu database. Gửi riêng đúng mã JUDGE cho người được mời; mã ADMIN chỉ dành cho người vận hành. Mã mặc định hết hạn sau 7 ngày; tạo file mới khi cần và thu hồi mã cũ bằng `scripts/revoke-access.mjs ACCOUNT_ID` với môi trường cloud.
 
-## Xác minh trước khi in
+Upload SOP/COGS/COA thật bằng cùng CLI và nhãn đúng nội dung. BRIEF DRAFT không trở thành kết quả kiểm nghiệm. File nằm trong private Storage; tải đi qua API có xác thực và kiểm tra hash/kích thước.
 
-1. Chạy `pnpm check`, `pnpm test`, `pnpm audit --prod --audit-level=moderate`; kiểm tra GitHub Actions cho commit triển khai. Deployment Healthy và `/healthz` trả `version: 1.4.2`, `database: ok`.
-2. Mở trang chủ, khảo sát, kho tri thức và minh bạch mẫu qua HTTPS. API hồ sơ và danh sách đăng ký phải trả 401 nếu chưa đăng nhập.
-3. Đăng nhập bằng **mã cloud**, kiểm tra role JUDGE; tài khoản giám khảo không được xem danh sách liên hệ ADMIN. Đăng xuất sau khi kiểm tra.
-4. Kiểm tra vùng chạy thực tế bằng deployment settings hoặc response header `X-Railway-Upstream-Zone` khi gửi `X-Railway-Debug: 1`.
-5. Chạy `node scripts/generate-qr.mjs https://musuroom-web-production.up.railway.app`. Script kiểm tra URL thật trước khi tạo `dist/qr/IN_QR_A4.html`, SVG/PNG và manifest. Mã truy cập không nằm trong QR. Quét thử bản in bằng điện thoại trước khi dán.
+## 4. QR cho bao bì và poster
 
-## Dữ liệu và hồ sơ
+```powershell
+pnpm qr:generate https://musuroom-web-production.up.railway.app
+```
 
-- PostgreSQL có RLS và thu hồi quyền anon/authenticated trên **các bảng Musuroom**. Server kết nối trực tiếp; không đưa service key xuống trình duyệt.
-- Bucket `musuroom-dossier` riêng tư. Download đi qua API có xác thực, kiểm tra SHA-256/kích thước và ghi audit; không tạo public object URL.
-- Bucket trên project hiện tại đã tạo và kiểm tra `public=false`, giới hạn mỗi file 50 MB. Chưa upload hồ sơ cloud khi database chưa kết nối.
-- Production không được fallback SQLite hay ổ đĩa tạm. Container chạy user `node`, chỉ sao chép backend/dist/schema cần thiết.
-- Cần sao lưu Supabase theo lịch vận hành thực tế; cấu hình hiện tại không hứa hẹn backup tự động của gói Free.
-- Giữ một replica: rate limit đang dùng bộ nhớ trong tiến trình. Khi tăng replica, chuyển rate limit sang kho dùng chung trước.
-- Mã tài khoản có thời hạn 1–30 ngày, mặc định 7. Cấp lại khi cần; thu hồi bằng `scripts/revoke-access.mjs ACCOUNT_ID` với MUSUROOM_ENV_FILE trỏ cloud.env.
+Kết quả: `dist/qr/survey.png`, `survey.svg`, `judge.png`, `judge.svg`, `IN_QR_A4.html` và `manifest.json`. Manifest ghi phiên bản, thời điểm kiểm tra và public origin. Survey trỏ `/trai-nghiem.html`; judge trỏ `/giam-khao.html`, không chứa mã truy cập. Dùng SVG trên poster; in A4 ở 100%, QR rộng 44 mm; quét bản in bằng điện thoại trước khi dán.
 
-## Jev tùy chọn
+Khi tạo QR mới trên máy sau deploy, các tệp được đưa vào lần publish/upload kế tiếp nếu muốn cho tải từ `/qr/IN_QR_A4.html` trên website. Trước khi in lại sau thay domain, chạy lại generator với origin thật và cập nhật `PUBLIC_ORIGIN`.
 
-Điền TYPESAFE_API_KEY ở phía server rồi JEV_ENABLED=true. Chưa có key thì tiếp tục dùng phân loại thủ công và thống kê. Rubric tại `backend/services/jev-rubric.mjs`; hướng dẫn và toàn bộ snapshot tài liệu tại `docs/typesafe-ai/`.
+## 5. Xác minh và vận hành
 
-## Nguồn cấu hình
+- Qua HTTPS, mở trang chủ/khảo sát/tri thức/minh bạch/giám khảo. Kiểm tra version bằng `/healthz`.
+- API riêng trả 401 khi chưa đăng nhập. JUDGE không đọc liên hệ ADMIN hoặc kho JSON quản trị. Cookie production có `Secure`, `HttpOnly`, `SameSite=Strict`; POST yêu cầu CSRF. Kiểm tra đăng xuất làm phiên cũ trả 401.
+- Database bật RLS và thu hồi quyền browser trên bảng Musuroom. Production không fallback sang SQLite hoặc lưu tệp lâu dài trong container.
+- Một replica vì rate limit dùng bộ nhớ tiến trình. Khi tăng replica, cần kho điều phối chung cho rate limit.
+- Backup PostgreSQL và Storage theo gói/lịch vận hành thực tế; NDJSON không thay backup. Theo dõi log Railway, lỗi kết nối, pending sync và hạn mã giám khảo.
+- Cấu hình Atlas/Jev theo [kho JSON và hỗ trợ phân loại](MONGODB_JEV.md). Để hai phần này disabled nếu chưa có URI/key; chức năng khảo sát và hồ sơ vẫn hoạt động.
 
-[Railway Express](https://docs.railway.com/guides/express), [kết nối PostgreSQL Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres), [Supabase Storage](https://supabase.com/docs/guides/storage/uploads/standard-uploads), [TypeSafe API](https://docs.typesafe.ai/api).
+## Tài liệu nhà cung cấp
+
+[Railway CLI](https://docs.railway.com/cli), [Railway Express](https://docs.railway.com/guides/express), [Supabase PostgreSQL](https://supabase.com/docs/guides/database/connecting-to-postgres), [Supabase Storage](https://supabase.com/docs/guides/storage/uploads/standard-uploads), [JevAI REST/MCP](https://www.jevai.org/mcp).

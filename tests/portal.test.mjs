@@ -52,9 +52,9 @@ test('Private document downloads authenticate, check hash/size and reject traver
  assert.ok(a.db.prepare("SELECT count(*) n FROM access_audit WHERE action='DOCUMENT_DOWNLOAD'").get().n>0);
 });
 test('Jev requires opt-in, strips email/phone and validates all structured probabilities',async()=>{
- const config=loadConfig({JEV_ENABLED:'true',TYPESAFE_API_KEY:'test-key'});let calls=0;let payload;
+ const config=loadConfig({JEV_ENABLED:'true',JEV_API_KEY:'test-key'});let calls=0;let payload;
  const answer={type:'choice',choice:'aroma',confidence:0.8,probabilities:{color:0.04,aroma:0.8,umami:0.04,aftertaste:0.04,overall:0.04,other:0.04}};
- const mock=async(url,options)=>{calls++;assert.equal(url,'https://api.typesafe.ai/v1/systemone');payload=JSON.parse(options.body);return{ok:true,json:async()=>({answers:{topic:answer}})};};
+ const mock=async(url,options)=>{calls++;assert.equal(url,'https://www.jevai.org/api/v1/decisions');payload=JSON.parse(options.body);assert.equal(payload.model,'typesafe-ai/jev');return{ok:true,json:async()=>({code:0,data:{model:'jev-test',answers:{topic:answer}}})};};
  const classify=createJevClassifier(config,mock);assert.equal((await classify('Mùi thơm',false)).reason,'remote_consent_required');assert.equal(calls,0);
  assert.equal((await classify('Mùi thơm. Liên hệ an@example.com 0901234567',true)).key,'aroma');assert.ok(!JSON.stringify(payload).includes('an@example.com'));assert.ok(!JSON.stringify(payload).includes('0901234567'));
  assert.equal(payload.questions.topic.type,'choice');

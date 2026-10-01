@@ -1,32 +1,27 @@
-# GitHub và Supabase — Musuroom 1
+# GitHub, Railway và Supabase — Musuroom 1
+
+Trạng thái ngày **01.10.2026**, mã nguồn **1.5.0**.
 
 ## GitHub
 
-- Repository công khai: **https://github.com/Jakcasas/musuroom**.
-- Nhánh mặc định: `main`.
-- Có hướng dẫn khởi động, ảnh giao diện Roboto và [mục lục tài liệu](README.md).
-- Bản mã nguồn `1.4.2`; [GitHub Actions](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml) kiểm tra cú pháp/tài nguyên, toàn bộ tests trên Windows/Linux và audit dependencies sản xuất trên Linux. Dependencies và phiên bản pnpm được cố định; actions dùng commit SHA.
-- Lịch sử Git được kiểm tra đối chiếu bí mật thực tế trước khi push bằng `scripts/check-publish.mjs`.
-- Mã nguồn có thể được tải ở **Code > Download ZIP** hoặc clone bằng Git. Mật khẩu database, khóa API, mã giám khảo và dữ liệu thực tế nằm ngoài repository.
+Repository công khai: **https://github.com/Jakcasas/musuroom**, nhánh `main`. README, hướng dẫn triển khai, kiến trúc, REST API và snapshot TypeSafe được lưu cùng mã nguồn. [GitHub Actions](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml) chạy Windows/Linux và audit dependencies production trên Linux. Dependencies, pnpm và action SHA được cố định.
 
-## Supabase đã thiết lập
+Mật khẩu database, URI Atlas, provider key, mã giám khảo, cookie và dữ liệu thực ở `.env`/`data/`, ngoài Git. `scripts/check-publish.mjs` đối chiếu lịch sử Git với các bí mật lưu trên máy trước publish. ZIP mã nguồn dùng `git archive`, không nén toàn bộ thư mục runtime.
 
-- Project hiện có: `hlkzngyuoqzcfhrfkuub`.
-- [Mở Dashboard](https://supabase.com/dashboard/project/hlkzngyuoqzcfhrfkuub).
-- Vùng: Singapore, `ap-southeast-1`.
-- 11 bảng Musuroom, bao gồm ledger migration; RLS bật và không cấp SELECT cho `anon`/`authenticated`.
-- 6 nguồn và 6 bài tri thức được nạp từ mã nguồn. Chưa có khảo sát hoặc đăng ký mẫu thử thực tế trên cloud.
-- Bucket `musuroom-dossier`: `public=false`, giới hạn file 50 MB.
-- Migration bổ sung tạo index cho khóa ngoại hồ sơ mẫu và thu hồi quyền gọi `public.rls_auto_enable()` của các role trình duyệt. Function/event trigger hệ thống vẫn được giữ.
-- Migration `pg-003-sensory-distribution` đã áp dụng ngày 30.09.2026: hàm tổng hợp điểm trả tối đa 49 dòng/đợt/mẫu, không có nội dung góp ý hoặc ID người thử; dùng `SECURITY INVOKER`, search path cố định, không cấp EXECUTE cho PUBLIC/anon/authenticated. Server/service_role được dùng theo phân quyền ứng dụng.
-- Migration `pg-004-product-integrity` đã áp dụng ngày 30.09.2026: 5 CHECK constraints cho hai object chỉ tiêu, ít nhất một chỉ tiêu và các tên được hỗ trợ. Đã xác minh 5 constraints được validate trên project thực. Không xóa dữ liệu hoặc mở quyền trình duyệt.
+## Railway và Supabase đã kiểm tra
 
-Kiểm tra bảo mật và hiệu năng Supabase Advisors ngày 30.09.2026 sau migration pg-004 không có WARN/ERROR. Có 11 INFO [RLS không có policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), là chủ ý chặn Data API của role trình duyệt, và 7 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) trên database mới. Kết quả kiểm thử bản 1.4.2 xem [ghi chú phát hành](RELEASE_NOTES.md).
+- [Ứng dụng Railway](https://musuroom-web-production.up.railway.app) chạy qua HTTPS; `/healthz` trả bản `1.5.0`, database `ok`.
+- Supabase project `hlkzngyuoqzcfhrfkuub`, [Dashboard](https://supabase.com/dashboard/project/hlkzngyuoqzcfhrfkuub), Singapore `ap-southeast-1`.
+- **13 bảng Musuroom** gồm ledger và 2 bảng đồng bộ mới; RLS bật, không cho `anon`/`authenticated` đọc các bảng ứng dụng. Backend kiểm tra role/CSRF và kết nối qua Session pooler 5432 với TLS xác minh CA/hostname.
+- 6 nguồn và 6 bài tri thức. Chưa nạp phiếu cảm quan hoặc đăng ký giả vào cloud. Hai tài khoản cloud có thời hạn và một BRIEF DRAFT đã tạo; bản giới thiệu nằm trong bucket `musuroom-dossier` private, 50 MB/file.
+- pg-003 tổng hợp phân bố cảm quan tối đa 49 dòng/đợt/mẫu; pg-004 kiểm tra cấu trúc/chỉ tiêu đo; pg-005 thêm outbox/revision/lease. Function dùng SECURITY INVOKER, search path cố định; quyền gọi browser bị thu hồi.
+- Đã kiểm tra health, các trang công khai và chặn file cấu hình riêng. Kiểm tra cloud JUDGE/ADMIN, cookie Secure và đăng xuất bằng mã riêng trên máy, không in mã/cookie.
+- QR PNG/SVG và trang A4 tạo sau khi xác minh hai đích công khai. QR chỉ mở trang khảo sát/cổng đăng nhập.
 
-Ứng dụng Express kiểm tra phiên, vai trò và CSRF trước khi đọc dữ liệu riêng. Backend kết nối PostgreSQL bằng Session pooler, xác minh CA và hostname; Storage sử dụng khóa phía server. Frontend không nhận khóa server.
+Supabase Security/Performance Advisors sau pg-005 không có WARN/ERROR. Có 13 INFO [RLS không policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), là chủ ý ngăn role trình duyệt truy cập Data API, và 8 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) trên database ít dữ liệu. Không mở policy chỉ để loại cảnh báo INFO.
 
-## Phần còn cần hoàn tất
+## Atlas và Jev
 
-Mật khẩu trong cấu hình riêng tư của server chưa được PostgreSQL chấp nhận ở lần kiểm tra gần nhất. Plugin Supabase có thể tạo và kiểm tra schema qua OAuth, nhưng phiên này không tự cung cấp mật khẩu cho tiến trình Express. Cần hoàn tất mật khẩu kết nối trước khi chạy server cloud, cấp mã giám khảo cloud và tạo QR tới URL đã hoạt động.
+Code có MongoDB driver, JSON projection, batch/upsert, revision, retry và lease; có Jev Choice để gợi ý chủ đề bài tri thức. URI Atlas và key từ JevAI /agent/keys đã lưu riêng. Atlas đã nhận đủ 6 tài liệu JSON được đọc kiểm chứng, hàng đợi SQL pending=0. JevAI vẫn báo credentials/model access rejected qua MCP, REST 502; cần kiểm tra key/quyền model trước khi xác nhận inference thành công. Runtime chỉ dùng www.jevai.org, model typesafe-ai/jev. [Các bước thiết lập](MONGODB_JEV.md).
 
-Xem các lệnh tiếp theo trong [hướng dẫn Railway + Supabase](DEPLOY_RAILWAY_SUPABASE.md). Bản local dùng SQLite riêng và tiếp tục chạy tại `http://127.0.0.1:8766/`.
+Hướng dẫn cập nhật biến, deploy lại, cấp mã, upload hồ sơ và in QR tại [Railway + Supabase](DEPLOY_RAILWAY_SUPABASE.md). Local dùng SQLite riêng tại `http://127.0.0.1:8766/`.

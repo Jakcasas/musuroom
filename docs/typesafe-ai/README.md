@@ -22,7 +22,9 @@ Kết quả trả nguồn gốc, đường dẫn trang local và đoạn khớp.
 
 ## Quy ước tích hợp trong dự án
 
-### API
+**Cập nhật 01.10.2026:** snapshot bên dưới mô tả API TypeSafe gốc để tham khảo primitive. Runtime Musuroom 1.5.0 sử dụng riêng JevAI Community theo yêu cầu chủ dự án: `https://www.jevai.org/api/v1/decisions`, `JEV_API_KEY` từ [/agent/keys](https://www.jevai.org/agent/keys), model `typesafe-ai/jev`, envelope `code/data`. Không gửi key JevAI này tới endpoint TypeSafe bên dưới. [Hợp đồng REST/MCP JevAI](https://www.jevai.org/mcp), [cấu hình thực tế](../MONGODB_JEV.md).
+
+### API TypeSafe gốc (tài liệu tham khảo)
 
 `POST https://api.typesafe.ai/v1/systemone`, header `Authorization: Bearer <server key>`, JSON `model`, `state`, `questions`. State là dữ liệu cần đánh giá; câu hỏi xác định quyết định. Response `answers` theo tên câu hỏi, `model` thực tế và `usage`. Tên key câu hỏi dùng để ghép response, không phải nội dung suy luận của model.
 

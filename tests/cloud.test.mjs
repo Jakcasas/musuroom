@@ -8,6 +8,7 @@ import { createAccount } from '../backend/security/auth.mjs';
 import { documentStorage } from '../backend/services/document-storage.mjs';
 import { rateLimit } from '../backend/security/rate-limit.mjs';
 import { request as httpRequest } from 'node:http';
+import { projectDocument,dataJobs } from '../backend/services/data-projections.mjs';
 const production={NODE_ENV:'production',PUBLIC_ORIGIN:'https://musuroom.example',DATABASE_PROVIDER:'postgres',DATABASE_URL:'postgresql://postgres:test@localhost/postgres',STORAGE_PROVIDER:'supabase',SUPABASE_URL:'https://test.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test-only-private-key'};
 test('Production fails closed without HTTPS, PostgreSQL and private cloud storage',()=>{
  for(const extra of [{DATABASE_PROVIDER:'sqlite'},{STORAGE_PROVIDER:'local'},{PUBLIC_ORIGIN:''},{PUBLIC_ORIGIN:'http://example.test'},{PUBLIC_ORIGIN:'https://user:secret@example.test'},{PUBLIC_ORIGIN:'https://example.test/path'},{SUPABASE_SERVICE_ROLE_KEY:''}])assert.throws(()=>loadConfig({...production,...extra}));
@@ -18,6 +19,9 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  const db=postgresAdapter({query:(text,values)=>values===undefined?engine.exec(text):engine.query(text,values),end:()=>engine.close()});
  await initializePostgres(db);await initializePostgres(db);
  assert.equal((await db.prepare('SELECT count(*)::integer n FROM knowledge_articles').get()).n,6);
+ assert.equal((await dataJobs(db)).length,6);
+ assert.equal((await engine.query("SELECT has_table_privilege('anon','data_sync_jobs','SELECT') AS allowed")).rows[0].allowed,false);
+ assert.equal((await engine.query("SELECT has_table_privilege('authenticated','data_sync_state','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','judge_accounts','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','unrelated_table','SELECT') AS allowed")).rows[0].allowed,true);
  assert.equal((await engine.query("SELECT relrowsecurity FROM pg_class WHERE relname='sample_requests'")).rows[0].relrowsecurity,true);
@@ -51,10 +55,12 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  await db.prepare("UPDATE quality_documents SET doc_type='COA' WHERE id=?").run(evidence);
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,201);assert.equal((await(await call('/api/v1/product/batches')).json()).count,0);
  await db.prepare("UPDATE product_samples SET publication_status='PUBLIC' WHERE sample_code=?").run(sample.sample_code);
+ const productJob=(await dataJobs(db,{type:'product'}))[0];assert.equal((await projectDocument(db,productJob,'cloud-test')).data.sample_code,sample.sample_code);
  const published=await(await call('/api/v1/product/batches')).json();assert.equal(published.count,1);assert.equal(published.items[0].metrics.water_activity,0.4);assert.equal((await(await call('/api/v1/product/nutrition')).json()).available,true);
  await assert.rejects(db.prepare('UPDATE product_samples SET metrics_json=? WHERE sample_code=?').run('[]',sample.sample_code));
  await assert.rejects(db.prepare('UPDATE product_samples SET metrics_json=? WHERE sample_code=?').run('{"constructor":1}',sample.sample_code));
  await db.prepare("UPDATE quality_documents SET evidence_status='DRAFT' WHERE id=?").run(evidence);assert.equal((await(await call('/api/v1/product/batches')).json()).count,0);
+ const withdrawn=(await dataJobs(db,{type:'product'}))[0];assert.ok(withdrawn.revision>productJob.revision);assert.equal((await projectDocument(db,withdrawn,'cloud-test')).data,null);
  await db.prepare("UPDATE quality_documents SET evidence_status='FINAL' WHERE id=?").run(evidence);
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,409);assert.equal((await call('/api/v1/admin/product-samples','POST',{...sample,sample_code:'OTHER',metrics:{water_activity:2}},operator)).status,422);
  assert.equal((await call('/api/v1/auth/logout','POST',{},signed)).status,204);assert.equal((await call('/api/v1/judge/dossier','GET',undefined,signed)).status,401);

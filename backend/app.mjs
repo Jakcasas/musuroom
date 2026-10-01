@@ -12,6 +12,7 @@ import { v1Router } from './routes/v1.mjs';
 import { createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
 import { projectRouter } from './routes/project.mjs';
+import { dataRouter } from './routes/data.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
 import { calculate } from '../dist/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
@@ -85,6 +86,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   });
   app.use('/api/v1', judgeRouter(db,security,config,fetchImpl));
   app.use('/api/v1', projectRouter(db,security,config));
+  app.use('/api/v1', dataRouter(db,security,config,fetchImpl));
   app.use('/api/v1', v1Router(db, authorize, config, fetchImpl, security.requireReviewer, complete));
   app.use('/api', (req, res) => res.status(404).json({ error: 'endpoint_not_found' }));
   app.use((req, res, next) => ['GET', 'HEAD'].includes(req.method) ? next() : res.status(405).set('Allow', 'GET, HEAD').json({ error: 'method_not_allowed' }));
@@ -100,6 +102,6 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
 export function createApp(options) {
   const app = createApplication(options);
   const server = createServer(app);
-  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve(app.locals.db.close()).then(resolve,reject)));
+  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve().then(()=>server.stopDataWorker?.()).then(()=>app.locals.db.close()).then(resolve,reject)));
   return server;
 }

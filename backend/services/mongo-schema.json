@@ -1,0 +1,21 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": ["_id", "source", "type", "resource_id", "active", "data", "schema_version", "source_revision", "content_hash", "app_version", "projected_at"],
+    "additionalProperties": false,
+    "properties": {
+      "_id": {"bsonType": "string"},
+      "source": {"bsonType": "string"},
+      "type": {"enum": ["knowledge", "sensory", "product"]},
+      "resource_id": {"bsonType": "string"},
+      "active": {"bsonType": "bool"},
+      "data": {"bsonType": ["object", "null"]},
+      "schema_version": {"enum": [1]},
+      "source_revision": {"bsonType": ["int", "long", "double"], "minimum": 1},
+      "content_hash": {"bsonType": "string", "pattern": "^[a-f0-9]{64}$"},
+      "app_version": {"bsonType": "string"},
+      "projected_at": {"bsonType": "string"},
+      "jev": {"bsonType": "object"}
+    }
+  }
+}

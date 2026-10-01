@@ -1,7 +1,9 @@
 import { element, number, date, request, feedback, radar } from './portal-ui.js';
+import { dataWorkspace } from './data-workspace.js';
 const $=id=>document.getElementById(id);
 let auth=null, groups=[], offset=0, expiryTimer, selectionVersion=0;
 function clearSession(message='') {
+ dataPanel.clear();
  auth=null; clearTimeout(expiryTimer); selectionVersion++; groups=[]; offset=0; $('access-code').value='';
  $('dashboard').hidden=true; $('login-panel').hidden=false;
  for(const id of ['documents','metric-rows','radar','lead-rows','jev-result','insight-result','welcome','session-info','project-note','portal-feedback'])$(id).replaceChildren();
@@ -9,6 +11,7 @@ function clearSession(message='') {
  feedback($('login-feedback'),message,Boolean(message));
 }
 function failed(error,target=$('portal-feedback')) { if(error.status===401)clearSession(error.message);else feedback(target,error.message||'Không thể kết nối máy chủ. Hãy thử lại.',true); }
+const dataPanel=dataWorkspace(failed);
 function selected(){const group=groups[Number($('group-select').value)];return group?{session_code:group.session_code,sample_code:group.sample_code}:null;}
 async function metrics(){
  const selection=selected(); if(!selection)return; const version=++selectionVersion;
@@ -43,7 +46,7 @@ async function showSession(session){
  for(const input of $('jev-form').querySelectorAll('textarea,input,button'))input.disabled=!dossier.jev_enabled;
  groups=result.items;$('group-select').replaceChildren();groups.forEach((g,i)=>{const option=element('option',`${g.session_code} / ${g.sample_code} (${g.count} phiếu)`);option.value=String(i);$('group-select').append(option);});$('group-select').disabled=!groups.length;
  $('analytics-empty').hidden=false;$('analytics-panel').hidden=true;if(groups.length)await metrics();else $('analytics-empty').textContent='Chưa có phiếu khảo sát. Kết quả sẽ xuất hiện sau khi nhận phiếu hợp lệ.';
- if(session.user.role==='ADMIN')await loadLeads();
+ if(session.user.role==='ADMIN'){await loadLeads();if(auth)await dataPanel.show(session);}
  }catch(error){failed(error);}
 }
 $('login-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;const access_code=$('access-code').value;$('access-code').value='';feedback($('login-feedback'),'Đang xác thực…');try{await showSession(await request('/api/v1/judge/verify',{method:'POST',body:{access_code}}));}catch(error){failed(error,$('login-feedback'));}finally{button.disabled=false;}});

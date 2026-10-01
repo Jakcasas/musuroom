@@ -1,6 +1,23 @@
-# Musuroom 1 — bản mã nguồn 1.4.2
+# Musuroom 1 — bản mã nguồn 1.5.0
 
-Ngày cập nhật: **30.09.2026**.
+Ngày cập nhật: **01.10.2026**.
+
+## Bản 1.5.0
+
+- Railway chạy qua HTTPS, PostgreSQL xác thực thành công với Supabase Singapore; private Storage đã kiểm tra và BRIEF DRAFT đã upload.
+- Sửa lỗi generator QR giữ cứng phiên bản 1.4.0; dùng phiên bản package hiện tại và kiểm tra health/database/trang đích trước khi tạo PNG/SVG/A4/manifest.
+- Thêm kho JSON trong cổng ADMIN: lọc nhóm, phân trang, xem bản ghi, xuất JSON trang và preview yêu cầu Jev.
+- Thêm outbox trong SQLite/PostgreSQL, revision, lease và worker Atlas; chỉ mirror tri thức, thống kê tổng hợp và mẫu đo được công bố. Upsert có điều kiện giữ revision mới; tombstone loại nội dung đã rút.
+- Thêm NDJSON export, sync CLI, cloud preflight/configure/deploy; CLI Railway chọn rõ project/service/production, giữ giới hạn AI/auth và chuyển secret qua stdin. Cập nhật Docker ignore và kiểm tra lịch sử cho URI Atlas.
+- Dùng chung HTTP client Jev với deadline/body limit/retry hữu hạn; rubric tri thức, confidence và cờ cần xem lại. Enrichment tự động mặc định false.
+- Migration pg-005 áp dụng lên Supabase thật: 13 bảng RLS, 6 jobs pending; Advisors chỉ có INFO. Cloud JUDGE/ADMIN, cookie Secure và logout đã kiểm tra; không nạp phiếu/đăng ký giả.
+- **47/47 tests** đã đạt trên máy; `pnpm check` và production dependency audit đạt. SQLite/PGlite, provider/Mongo writer mock; đã đồng bộ và đọc kiểm chứng 6 tài liệu Atlas thật; JevAI còn từ chối key/quyền model; chưa có benchmark Big Data hoặc inference thành công.
+
+Hướng dẫn [triển khai](DEPLOY_RAILWAY_SUPABASE.md), [Atlas/Jev](MONGODB_JEV.md), [API](API.md).
+
+---
+
+## Lịch sử: bản 1.4.2 (30.09.2026)
 
 ## Hoàn thiện bản 1.4.2
 

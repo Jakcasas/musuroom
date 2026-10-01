@@ -7,10 +7,11 @@ const secrets = [];
 for (const path of ['.env', 'data/cloud.env']) {
   if (!existsSync(path)) continue;
   const values = parseEnv(readFileSync(path, 'utf8'));
-  for (const key of ['DATABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'TYPESAFE_API_KEY', 'OPENROUTER_API_KEY', 'API_WRITE_TOKEN']) {
+  for (const key of ['DATABASE_URL', 'MONGODB_URI', 'SUPABASE_SERVICE_ROLE_KEY', 'TYPESAFE_API_KEY', 'JEV_API_KEY', 'OPENROUTER_API_KEY', 'API_WRITE_TOKEN']) {
     if (values[key]?.length > 12) secrets.push(values[key]);
   }
   if (values.DATABASE_URL) secrets.push(decodeURIComponent(new URL(values.DATABASE_URL).password));
+  if (values.MONGODB_URI) secrets.push(decodeURIComponent(new URL(values.MONGODB_URI).password));
 }
 for (const path of ['data/judge-access.json', 'data/admin-access.json', 'data/cloud-judge-access.json', 'data/cloud-admin-access.json']) {
   if (!existsSync(path)) continue;

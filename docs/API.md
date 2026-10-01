@@ -153,6 +153,21 @@ Hỏi đáp và nhận xét chia sẻ tối đa 2 lời gọi OpenRouter đồng
 
 Trích dẫn chấp nhận `[2]` hoặc `[1, 2]`; mọi mã trích dẫn được nhận diện phải có trong tập nguồn truy xuất. Kiểm tra này không xác minh nội dung từng nhận định. Cấu hình thiếu key/model, còn placeholder hoặc tham số ngoài khoảng cho phép sẽ khiến server từ chối khởi động; `/api/status.aiEnabled` không phải kiểm tra kết nối provider trực tiếp.
 
-## Mã lỗi
+## Kho JSON dành cho ADMIN
+
+Các endpoint `/api/v1/admin/data/*` yêu cầu role ADMIN; POST dùng CSRF của phiên. Chưa đăng nhập: 401; JUDGE: 403. Response không chứa URI Atlas, mật khẩu hoặc key.
+
+| Endpoint | Request / response |
+|---|---|
+| GET `/api/v1/admin/data/status` | `mongo_enabled`, `jev_enabled`, `jev_enrichment`, `source`, `total`, `pending`, `last_completed_at`, `last_error_code`, `last_synced_count`, `batch_size` |
+| GET `/api/v1/admin/data/documents?limit=25&after=knowledge:umami&type=knowledge` | `items`, `next_cursor`, `limit`; limit 1–100, type tùy chọn knowledge/sensory/product, after tối đa 250 ký tự |
+| POST `/api/v1/admin/data/jev-preview` | `{ "article_id": "umami" }` → yêu cầu `model/state/questions`; chưa gọi Jev |
+| POST `/api/v1/admin/data/classify` | `{ "article_id": "umami", "allow_remote": true }` → `article_id`, mode; Jev hợp lệ thêm topic/confidence/probabilities/model/requires_review/rubric_version |
+
+Preview/classify chỉ chọn bài tri thức đang tồn tại. Classify có giới hạn 5 lần/phút/IP sau xác thực, thiếu đồng ý trả 422; thiếu cấu hình hoặc lỗi provider trả `mode=manual`. Topic thuộc ingredients/flavor/safety/methods/other. Response là đề xuất, không sửa bản ghi gốc. `requires_review=true` nếu không rõ chủ đề hoặc confidence dưới ngưỡng.
+
+JSON đọc projection từ SQL, không phải truy vấn trực tiếp Atlas. Tải toàn bộ bằng CLI NDJSON để xử lý từng trang và giữ giới hạn bộ nhớ. Chi tiết schema/cấu hình ở [MongoDB + Jev](MONGODB_JEV.md).
+
+## Mã lỗi HTTP
 
 400: query/JSON/URL không hợp lệ. 401: thiếu hoặc sai token. 403: đường dẫn, host hoặc origin không được phép. 404: không tồn tại. 405: method static không hỗ trợ. 413: body quá lớn. 415: sai Content-Type. 422: dữ liệu không hợp lệ. 429: vượt tần suất. 500: lỗi nội bộ (không trả stack trace hoặc secret).

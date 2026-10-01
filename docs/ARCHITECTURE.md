@@ -1,4 +1,4 @@
-# Kiến trúc Musuroom 1 (mã nguồn 1.4.2)
+# Kiến trúc Musuroom 1 (mã nguồn 1.5.0)
 
 ## Luồng ứng dụng
 
@@ -47,6 +47,8 @@ data/                      SQLite runtime, không đưa vào Git
 ```
 
 ## Database
+
+Migration 006/pg-005 thêm `data_sync_jobs` và `data_sync_state`. Trigger đưa khóa tài nguyên/revision vào hàng đợi trong giao dịch thay đổi nguồn. Worker đọc projection theo trang, mirror JSON vào Atlas rồi xác nhận revision SQL; lease loại xử lý trùng. API quản trị có role/CSRF riêng. [Luồng, schema, dữ liệu được chọn và phục hồi](MONGODB_JEV.md).
 
 ```mermaid
 erDiagram

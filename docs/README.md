@@ -14,6 +14,8 @@
 
 ## Cấu trúc mã nguồn
 
+[Kho JSON, MongoDB Atlas và Jev](MONGODB_JEV.md): cấu hình ngoài Git, đồng bộ tăng dần, xuất dữ liệu và kiểm tra đề xuất.
+
 ```text
 backend/               Express, xác thực, API và database adapters
 dist/                  Website, JavaScript, CSS và font Roboto

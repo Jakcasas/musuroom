@@ -9,3 +9,5 @@
 !dist/**
 !supabase
 !supabase/**
+supabase/.temp
+supabase/.branches
