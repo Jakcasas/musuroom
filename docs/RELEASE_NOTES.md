@@ -7,6 +7,7 @@ Ngày cập nhật: **01.10.2026**.
 - Thêm 4 luồng phù hợp với hình tham khảo: Guardrails, Reranking, Bulk labeling và Confidence gate. [Hướng dẫn đầy đủ](JEV_WORKFLOWS.md).
 - Lô tối đa 5 bài dùng nhiều câu hỏi trong một yêu cầu quyết định. Guarded records không gửi; phản hồi lỗi xử lý độc lập theo từng bài.
 - Kho tri thức có thao tác sắp xếp cùng Jev với đồng ý rõ ràng; kiểm tra Score và giữ nguồn/ID của bài. Phản hồi thấp ngưỡng hoặc sai schema giữ baseline.
+- Khóa các ô tìm kiếm trong lúc tải kho ban đầu, tránh mất từ khóa được nhập trước khi giao diện sẵn sàng.
 - Bảng đề xuất riêng có source revision/hash, version quyết định và trạng thái đối chiếu; ADMIN/CSRF/audit và chống xác nhận đề xuất đã cũ. RLS và quyền browser bị chặn.
 - Tích hợp thêm MCP chính thức của JevAI; không gửi key đến provider khác. Hai lời gọi đồng thời dùng chung giới hạn trong tiến trình.
 - **57/57 tests** đạt trên máy, gồm lỗi từng bài trong lô, consent, low-confidence, invalid probabilities, stale review, quyền/CSRF và replay SQL trống. Lịch sử Supabase **6/6**, không missing/pending/different; Advisors không có WARN/ERROR.

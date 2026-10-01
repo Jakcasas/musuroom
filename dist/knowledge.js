@@ -2,6 +2,8 @@ import { articles as snapshot, updated } from './knowledge-data.js';
 import { searchArticles } from './core.js';
 let articles = snapshot;
 let databaseOnline = false;
+const loadingControls=document.querySelectorAll('#search-form input,#search-form select,#search-form button');
+for(const control of loadingControls)control.disabled=true;
 try {
   const response = await fetch('/api/knowledge', { signal: AbortSignal.timeout(4000) });
   if (!response.ok) throw new Error('API unavailable');
@@ -9,6 +11,7 @@ try {
   if (!Array.isArray(data.items)) throw new Error('Invalid data');
   articles = data.items; databaseOnline = true;
 } catch { /* Static library remains readable when the API is unavailable. */ }
+for(const control of loadingControls)control.disabled=false;
 const input = document.querySelector('#search');
 const category = document.querySelector('#category');
 const grid = document.querySelector('#articles');
