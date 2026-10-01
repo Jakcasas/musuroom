@@ -16,4 +16,5 @@ test('Local fallback handles Vietnamese words and ambiguity, exposes no false co
  const document={type:'knowledge',active:true,data:{title:'Hoạt độ nước',body:'Water activity and food safety',summary:'',limitation:'',tags:[]}};
  const result=await createKnowledgeClassifier(config,noRemote)(document,false);assert.equal(result.mode,'local');assert.equal(result.topic,'safety');assert.equal(result.reason,'remote_consent_required');assert.equal(result.requires_review,true);
  assert.equal(localKnowledgeClassification(document,'test').confidence,null);
+ assert.equal(localKnowledgeClassification({data:{title:'Cân bằng vật chất cho mẻ thử',body:'nguyên liệu nấm ăn, nấm hương và mushroom',tags:[]}},'test').topic,'methods');
 });

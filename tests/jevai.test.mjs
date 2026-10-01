@@ -13,6 +13,15 @@ test('Deployment verification ignores old successful releases with the same vers
  assert.equal(deploymentReady([{id,status:'SUCCESS'}],id),true);
  assert.throws(()=>deploymentReady([{id,status:'FAILED'}],id));
 });
+test('Official JevAI MCP transport uses only jev_decide and sanitizes credential rejection',async()=>{
+ const config=loadConfig({JEV_ENABLED:'true',JEV_API_KEY:'fixture-private-key',JEV_TRANSPORT:'mcp'});assert.throws(()=>loadConfig({JEV_TRANSPORT:'other'}));
+ let error=false;
+ const evaluate=createJevEvaluator(config,async(url,options)=>{
+  assert.equal(url,'https://www.jevai.org/api/mcp');const request=JSON.parse(options.body);assert.equal(request.method,'tools/call');assert.equal(request.params.name,'jev_decide');assert.equal(request.params.arguments.model,'typesafe-ai/jev');
+  return Response.json({jsonrpc:'2.0',id:1,result:error?{isError:true,content:[{type:'text',text:'Request credentials or model access rejected: fixture-private-key'}]}:{structuredContent:{code:0,data:{model:'jev-fixture',answers:{}}}}});
+ });
+ const request={model:config.jevModel,state:'public',questions:{}};assert.equal((await evaluate(request)).data.model,'jev-fixture');error=true;const result=await evaluate(request);assert.equal(result.reason,'jev_auth_failed');assert.ok(!JSON.stringify(result).includes('fixture-private-key'));
+});
 test('Only JevAI Community receives its key; model and response envelope are validated without provider fallback',async()=>{
  const config=loadConfig({JEV_ENABLED:'true',JEV_API_KEY:'fixture-private-key'});assert.equal(config.jevModel,'typesafe-ai/jev');assert.throws(()=>loadConfig({JEV_MODEL:'other/provider'}));
  let calls=0;const evaluate=createJevEvaluator(config,async(url,options)=>{calls++;assert.equal(url,'https://www.jevai.org/api/v1/decisions');assert.equal(options.headers.Authorization,'Bearer fixture-private-key');assert.equal(options.redirect,'error');return Response.json({code:0,data:{model:'typesafe-ai/jev',answers:{}}});});

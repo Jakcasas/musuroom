@@ -55,13 +55,13 @@ Chạy lại `data:sync` để xử lý các batch còn chờ. Khi Railway đã 
 
 ## Jev cho tri thức
 
-[Jev](https://docs.typesafe.ai/introduction) hỗ trợ quyết định có kiểu, ở đây dùng [Choice](https://docs.typesafe.ai/primitives/choice) để gợi ý chủ đề. Nó không huấn luyện lại mã nguồn hoặc tự xác nhận an toàn thực phẩm. Backend chỉ gọi JevAI Community: `POST https://www.jevai.org/api/v1/decisions`, key từ [/agent/keys](https://www.jevai.org/agent/keys), model cố định `typesafe-ai/jev`. Key này không gửi đến API TypeSafe trực tiếp hoặc provider khác. [REST/MCP JevAI](https://www.jevai.org/mcp) mô tả `jev_decide`; HTTP thành công dùng envelope `code=0`, `data` chứa kết quả có kiểu. Playground dùng để xem/thử yêu cầu.
+[Jev](https://docs.typesafe.ai/introduction) hỗ trợ quyết định có kiểu, ở đây dùng [Choice](https://docs.typesafe.ai/primitives/choice) để gợi ý chủ đề. Nó không huấn luyện lại mã nguồn hoặc tự xác nhận an toàn thực phẩm. Backend chỉ gọi JevAI Community: REST `POST https://www.jevai.org/api/v1/decisions` hoặc MCP `POST https://www.jevai.org/api/mcp` theo `JEV_TRANSPORT`, key từ [/agent/keys](https://www.jevai.org/agent/keys), model cố định `typesafe-ai/jev`. Key này không gửi đến API TypeSafe trực tiếp hoặc provider khác. [REST/MCP JevAI](https://www.jevai.org/mcp) mô tả `jev_decide`; HTTP thành công dùng envelope `code=0`, `data` chứa kết quả có kiểu. Playground dùng để xem/thử yêu cầu.
 
 Trong cổng ADMIN, chọn bài tri thức → **Xem yêu cầu Jev** → xem `state/questions` JSON. Nội dung gồm tiêu đề, tóm tắt, thân bài đã giới hạn và hạn chế áp dụng; không kèm dữ liệu cá nhân hoặc key. Khi đồng ý gửi, **Gợi ý chủ đề** trả nhãn thuộc rubric cố định, confidence và phân bố xác suất. Nhãn `other`, confidence dưới ngưỡng hoặc phản hồi không hợp lệ cần người vận hành xem lại. Confidence là tín hiệu của mô hình, chưa được hiệu chuẩn trên bộ đánh giá Musuroom.
 
 Chạy **CAU_HINH_JEV.cmd** để lưu `JEV_API_KEY` từ JevAI /agent/keys phía server. `JEV_MODEL=typesafe-ai/jev`; backend không cho chọn model khác. `JEV_ENABLED=true` cho phép phân loại theo thao tác người dùng. Đồng bộ tự động chỉ gọi Jev khi thêm `MONGO_JEV_ENRICHMENT=true`; mặc định false để người vận hành quyết định phạm vi và chi phí. Chỉ bài tri thức được gửi trong worker; không tự đổi category, điểm cảm quan hoặc quyền truy cập.
 
-Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời gọi theo `AI_TIMEOUT_MS`, tối đa 2 lời gọi đồng thời mỗi evaluator. Chỉ retry một lần khi 429/529 và Retry-After tối đa 3 giây. Thiếu key, lỗi/timeout hoặc lựa chọn ngoài rubric trả `mode=local` theo luật từ khóa, confidence/probabilities=null và requires_review=true; các API khảo sát vẫn hoạt động.
+Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời gọi theo `AI_TIMEOUT_MS`, tối đa 2 lời gọi đồng thời chung cho mỗi tiến trình server. Chỉ retry một lần khi 429/529 và Retry-After tối đa 3 giây. Thiếu key, lỗi/timeout hoặc lựa chọn ngoài rubric trả `mode=local` theo luật từ khóa, confidence/probabilities=null và requires_review=true; các API khảo sát vẫn hoạt động.
 
 | Biến | Mặc định | Mục đích |
 |---|---|---|
@@ -86,3 +86,5 @@ Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File 
 ## Trạng thái đồng bộ trên Railway
 
 Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.
+
+Bản 1.6.0: [4 luồng Jev, lô phân loại và hàng chờ đối chiếu](JEV_WORKFLOWS.md).

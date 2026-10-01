@@ -18,6 +18,11 @@ const status = document.createElement('p'); status.className = 'library-data-sta
 status.textContent = databaseOnline ? 'Kho tri thức đang đọc từ database Musuroom.' : 'Đang dùng bản dữ liệu đi kèm website; chưa kết nối được database.';
 document.querySelector('.library-note').prepend(status);
 const node = (tag, text, className) => { const e = document.createElement(tag); if (text) e.textContent = text; if (className) e.className = className; return e; };
+const consentLabel=node('label','','check-label'),consent=node('input');consent.type='checkbox';consentLabel.append(consent,document.createTextNode(' Tôi đồng ý gửi từ khóa và tối đa 5 bài đang tìm được đến JevAI để sắp xếp mức liên quan.'));
+const rankButton=node('button','Sắp xếp cùng Jev →','text-button');rankButton.type='button';
+const rankStatus=node('p','','small');rankStatus.setAttribute('role','status');rankStatus.setAttribute('aria-live','polite');
+form.append(consentLabel,rankButton,rankStatus);
+let searchVersion=0,rankingController;
 for (const value of [...new Set(articles.map(a => a.category))]) {
   const option = node('option', value); option.value = value; category.append(option);
 }
@@ -36,8 +41,9 @@ function card(a, selected) {
   const permalink = node('a', 'Liên kết bài', 'share-link'); permalink.href = `tri-thuc.html?doc=${encodeURIComponent(a.id)}`;
   actions.append(link, permalink); source.append(actions); card.append(source); return card;
 }
-function render(selectedId = '') {
-  const results = searchArticles(articles, input.value, category.value);
+function render(selectedId = '', ranked) {
+  const results = ranked || searchArticles(articles, input.value, category.value);
+  rankButton.disabled=!databaseOnline||input.value.trim().length<2||results.length<2||!consent.checked;
   grid.replaceChildren();
   count.textContent = `${results.length} / ${articles.length} bài viết` + (input.value.trim() ? ` cho “${input.value.trim()}”` : ' trong kho tri thức');
   if (!results.length) { const empty = node('div', '', 'empty'); empty.append(node('h2', 'Chưa tìm thấy bài phù hợp'), node('p', 'Thử từ khóa ngắn hơn, ví dụ “nấm”, “umami”, hoặc xóa bộ lọc chủ đề.')); grid.append(empty); }
@@ -55,15 +61,26 @@ function restore() {
   else if (id) count.textContent += ' · Liên kết bài không tồn tại; đang hiển thị thư viện.';
 }
 function search() {
+  searchVersion++;rankingController?.abort();rankStatus.textContent='';
   const params = new URLSearchParams();
   if (input.value.trim()) params.set('q', input.value.trim());
   if (category.value) params.set('category', category.value);
   history.replaceState(null, '', location.pathname + (params.size ? `?${params}` : ''));
   render();
 }
+consent.addEventListener('change',()=>render());
+rankButton.addEventListener('click',async()=>{
+ const version=++searchVersion;rankingController?.abort();rankingController=new AbortController();rankButton.disabled=true;rankStatus.textContent='Đang đối chiếu mức liên quan…';
+ try{
+  const response=await fetch('/api/knowledge/rerank',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:input.value.trim(),category:category.value,allow_remote:consent.checked}),signal:AbortSignal.any([rankingController.signal,AbortSignal.timeout(65000)])});
+  if(!response.ok)throw Error('unavailable');const data=await response.json();if(version!==searchVersion)return;
+  render('',data.items);rankStatus.textContent=data.mode==='jev'?`Đã sắp xếp ${data.reranked_count} bài cùng Jev. Đọc nguồn gốc để đối chiếu nội dung.`:'Giữ thứ tự tìm kiếm hiện tại: Jev chưa trả đề xuất đủ tin cậy hoặc chưa sẵn sàng.';
+ }catch{if(version===searchVersion)rankStatus.textContent='Chưa thể sắp xếp cùng Jev. Các bài và nguồn tham khảo vẫn sẵn sàng.';}
+ finally{if(version===searchVersion)rankButton.disabled=!consent.checked;}
+});
 input.addEventListener('input', search);
 category.addEventListener('change', search);
 form.addEventListener('submit', event => { event.preventDefault(); search(); });
 form.addEventListener('reset', () => { input.value = ''; category.value = ''; search(); });
-window.addEventListener('popstate', restore);
+window.addEventListener('popstate',()=>{searchVersion++;rankingController?.abort();rankStatus.textContent='';restore();});
 restore();

@@ -40,3 +40,9 @@ Theo dõi cả **Supabase Preview**, **verify (ubuntu-24.04)** và **verify (win
 ## Kết quả xác minh 01.10.2026
 
 Commit `2cd48c3` đã có cả 3 check success: Supabase Preview và verify Windows/Linux. Nhánh Supabase chuyển MIGRATIONS_FAILED → FUNCTIONS_DEPLOYED, project ACTIVE_HEALTHY. Railway health trả 1.5.1/database=ok. Production có 13 bảng RLS, 6 bài tri thức, không có phiếu/đăng ký giả.
+# Bổ sung bản 1.6.0
+
+Migration mới `20261001143510_knowledge_decision_reviews.sql` đã áp dụng qua Supabase MCP. Tệp ban đầu được tạo bằng Supabase CLI `migration new knowledge_decision_reviews`, sau đó đổi sang version thực tế do MCP cấp để khớp history. 5 migration cũ giữ nguyên. `pnpm db:check-history` xác nhận 6 local/6 remote, không missing/pending/different.
+
+Bảng đề xuất bật RLS và chặn PUBLIC/anon/authenticated; Express đọc bằng kết nối PostgreSQL phía server và kiểm tra ADMIN/CSRF. Không tạo policy public chỉ để làm hết thông báo INFO của Advisors.
+

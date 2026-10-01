@@ -40,6 +40,7 @@ export function loadConfig(env = process.env) {
   if (jevEnabled && !jevKey) throw new Error('JEV_ENABLED requires a JevAI JEV_API_KEY from /agent/keys');
   if(jevEnabled && (/\s/.test(jevKey)||jevKey.length>512||/^(?:YOUR_|DIEN_|<|\[)/.test(jevKey)))throw new Error('Replace the JevAI placeholder with a server-only key.');
   const jevModel='typesafe-ai/jev'; if(env.JEV_MODEL&&!['typesafe-ai/jev','jev-latest'].includes(env.JEV_MODEL))throw new Error('Only the JevAI typesafe-ai/jev model is supported');
+  const jevTransport=env.JEV_TRANSPORT||'rest';if(!['rest','mcp'].includes(jevTransport))throw new Error('Invalid JEV_TRANSPORT');
   for(const key of ['MONGO_ENABLED','MONGO_JEV_ENRICHMENT'])if(env[key]&&!['true','false'].includes(env[key]))throw new Error('Invalid '+key);
   const mongoEnabled=env.MONGO_ENABLED==='true', mongoUri=env.MONGODB_URI||'', mongoEnrichment=env.MONGO_JEV_ENRICHMENT==='true';
   const mongoDatabase=env.MONGODB_DATABASE||'musuroom', mongoSource=env.MONGO_SOURCE_ID||(production?'musuroom-production':'musuroom-local');
@@ -48,5 +49,6 @@ export function loadConfig(env = process.env) {
   if(mongoEnrichment&&(!mongoEnabled||!jevEnabled))throw new Error('MongoDB enrichment requires MongoDB and Jev configuration');
   const mongoControls={mongoEnabled,mongoUri,mongoDatabase,mongoSource,mongoEnrichment,mongoBatchSize:integer('MONGO_SYNC_BATCH_SIZE',25,1,100),mongoSyncMs:integer('MONGO_SYNC_INTERVAL_MS',60000,10000,3600000),mongoJevMax:integer('MONGO_JEV_MAX_PER_RUN',10,1,20),jevMinConfidence:Number(env.JEV_MIN_CONFIDENCE||0.65)};
   if(!Number.isFinite(mongoControls.jevMinConfidence)||mongoControls.jevMinConfidence<0||mongoControls.jevMinConfidence>1)throw new Error('Invalid JEV_MIN_CONFIDENCE');
+  mongoControls.jevTransport=jevTransport;
   return Object.freeze({ ...aiControls, ...mongoControls, production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, jevKey, jevModel, documentRoot: resolve(projectRoot, 'data/dossier') });
 }

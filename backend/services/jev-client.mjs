@@ -5,27 +5,36 @@ export function validChoice(answer,criteria) {
  const keys=Object.keys(criteria), probabilities=answer.probabilities;
  return Object.keys(probabilities).length===keys.length&&keys.every(key=>Object.hasOwn(probabilities,key)&&Number.isFinite(probabilities[key])&&probabilities[key]>=0&&probabilities[key]<=1)&&Math.abs(keys.reduce((sum,key)=>sum+probabilities[key],0)-1)<=0.01&&probabilities[answer.choice]>=Math.max(...keys.map(key=>probabilities[key]));
 }
+const concurrency=new WeakMap();
 export function createJevEvaluator(config,fetchImpl=fetch) {
- let active=0;
+ if(!concurrency.has(config))concurrency.set(config,{active:0});
+ const pool=concurrency.get(config);
  return async request=>{
   if(!config.jevEnabled)return{reason:'jev_disabled'};
   if(request.model!=='typesafe-ai/jev')return{reason:'unsupported_model'};
-  if(active>=2)return{reason:'jev_busy'};
-  const body=JSON.stringify(request);if(Buffer.byteLength(body)>20000)return{reason:'context_too_large'};
-  active++;
+  if(pool.active>=2)return{reason:'jev_busy'};
+  const mcp=config.jevTransport==='mcp';
+  const body=JSON.stringify(mcp?{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'jev_decide',arguments:request}}:request);if(Buffer.byteLength(body)>20000)return{reason:'context_too_large'};
+  pool.active++;
   try{return await withProviderDeadline(async signal=>{
    let response;
    for(let attempt=0;attempt<2;attempt++){
-    response=await fetchImpl('https://www.jevai.org/api/v1/decisions',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.jevKey}`,'Content-Type':'application/json'},signal,body});
+    response=await fetchImpl(mcp?'https://www.jevai.org/api/mcp':'https://www.jevai.org/api/v1/decisions',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.jevKey}`,'Content-Type':'application/json'},signal,body});
     if(attempt||![429,529].includes(response.status))break;
     const header=response.headers?.get('retry-after'),seconds=header==null?1:Number(header);
     if(!Number.isFinite(seconds)||seconds<0||seconds>3)break;
     await response.body?.cancel();const{setTimeout}=await import('node:timers/promises');await setTimeout(Math.max(250,seconds*1000),undefined,{signal});
    }
    if(!response.ok){response.body?.cancel?.().catch(()=>{});return{reason:response.status===401||response.status===403?'jev_auth_failed':response.status===429?'jev_rate_limited':'provider_unavailable'};}
-   const envelope=await readProviderJson(response,signal);
+   let envelope=await readProviderJson(response,signal);
+   if(mcp){
+    if(envelope.jsonrpc!=='2.0'||envelope.id!==1||envelope.error||!envelope.result)return{reason:'invalid_response'};
+    if(envelope.result.isError){const message=(envelope.result.content||[]).filter(item=>item.type==='text').map(item=>item.text).join(' ').slice(0,2000);return{reason:/credentials|model access|unauthorized|authentication/i.test(message)?'jev_auth_failed':'provider_unavailable'};}
+    envelope=envelope.result.structuredContent;
+   }
+   if(!envelope||typeof envelope!=='object')return{reason:'invalid_response'};
    if(envelope.code!==0||!envelope.data||typeof envelope.data!=='object')return{reason:'invalid_response'};
    return{data:envelope.data};
-  },config.timeout);}catch{return{reason:'provider_unavailable'};}finally{active--;}
+  },config.timeout);}catch{return{reason:'provider_unavailable'};}finally{pool.active--;}
  };
 }

@@ -17,12 +17,12 @@ test('Supabase Preview replays committed migrations on an empty database without
  try{
   const directory=resolve(import.meta.dirname,'../supabase/migrations'),files=readdirSync(directory).filter(file=>file.endsWith('.sql')).sort();
   for(const file of files){assert.match(file,/^\d{14}_\w+\.sql$/);await engine.exec('BEGIN');try{await engine.exec(readFileSync(resolve(directory,file),'utf8'));await engine.exec('COMMIT');}catch(error){await engine.exec('ROLLBACK');throw error;}}
-  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,5);
+  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,files.length);
   await engine.query("INSERT INTO public.sources(id,citation,url,publication_year,evidence_type,access_scope,reviewed_at) VALUES(99,'Preserve existing fixture','https://example.invalid',2026,'Test','public','2026-10-01')");
   const db=postgresAdapter({query:(text,values)=>values===undefined?engine.exec(text):engine.query(text,values)});
   await initializePostgres(db);await initializePostgres(db);
   assert.equal((await engine.query('SELECT citation FROM public.sources WHERE id=99')).rows[0].citation,'Preserve existing fixture');
-  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,5);
+  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,files.length);
   assert.equal((await engine.query("SELECT relrowsecurity FROM pg_class WHERE relname='data_sync_jobs'")).rows[0].relrowsecurity,true);
  }finally{await engine.close();}
 });
@@ -37,6 +37,8 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  assert.equal((await db.prepare('SELECT count(*)::integer n FROM knowledge_articles').get()).n,6);
  assert.equal((await dataJobs(db)).length,6);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','data_sync_jobs','SELECT') AS allowed")).rows[0].allowed,false);
+ assert.equal((await engine.query("SELECT has_table_privilege('anon','knowledge_decision_reviews','SELECT') AS allowed")).rows[0].allowed,false);
+ assert.equal((await engine.query("SELECT has_table_privilege('authenticated','knowledge_decision_reviews','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('authenticated','data_sync_state','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','judge_accounts','SELECT') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT has_table_privilege('anon','unrelated_table','SELECT') AS allowed")).rows[0].allowed,true);

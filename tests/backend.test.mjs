@@ -29,7 +29,7 @@ test('Migrations and seeds are idempotent; database enforces foreign keys', () =
     seedDatabase(db);
     assert.equal(db.prepare('SELECT count(*) n FROM knowledge_articles').get().n, 6);
     assert.equal(db.prepare('SELECT title FROM knowledge_articles WHERE id=?').get('umami').title, 'Persisted test title');
-  assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n, 6);
+  assert.equal(db.prepare('SELECT count(*) n FROM schema_migrations').get().n, 7);
   } finally { db.close(); }
 });
 test('Knowledge API reads sources from database and handles invalid queries', async t => {

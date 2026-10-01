@@ -13,6 +13,7 @@ import { createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
 import { projectRouter } from './routes/project.mjs';
 import { dataRouter } from './routes/data.mjs';
+import { createKnowledgeReranker } from './services/knowledge-reranker.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
 import { calculate } from '../dist/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
@@ -25,6 +26,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   const batches = batchRepository(db);
   const complete = createModelGateway(config, fetchImpl);
   const answer = createAssistant(config, knowledge, fetchImpl, complete);
+  const rerank = createKnowledgeReranker(config,fetchImpl);
   app.locals.db = db;
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
@@ -52,6 +54,11 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.use(express.json({ limit: '16kb', strict: true }));
   app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ ...releaseInfo, database: 'ok' }); });
   app.get('/api/status', async (req, res) => res.json({ ...releaseInfo, aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
+  app.post('/api/knowledge/rerank',rateLimit(5,'search_rate_limit'),async(req,res)=>{
+    const {query,category='',allow_remote}=req.body||{};
+    if(typeof query!=='string'||query.trim().length<2||query.length>200||typeof category!=='string'||category.length>100||typeof allow_remote!=='boolean')return res.status(422).json({error:'invalid_rerank_request'});
+    res.json(await rerank(query.trim(),await knowledge.search(query.trim(),category),allow_remote));
+  });
   app.get('/api/knowledge', async (req, res) => {
     const q = req.query.q ?? ''; const category = req.query.category ?? '';
     if (typeof q !== 'string' || q.length > 200 || typeof category !== 'string' || category.length > 100) return res.status(400).json({ error: 'invalid_query' });
