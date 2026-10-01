@@ -1,3 +1,4 @@
+CREATE TABLE schema_migrations(version TEXT PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text);
 CREATE TABLE sources (
   id INTEGER PRIMARY KEY,
   citation TEXT NOT NULL,
@@ -129,3 +130,4 @@ REVOKE ALL ON TABLE product_samples FROM PUBLIC;
 ALTER TABLE schema_migrations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE schema_migrations FROM PUBLIC;
 DO $$ BEGIN IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN REVOKE ALL ON TABLE sources,knowledge_articles,batches,sensory_evaluations,sample_requests,judge_accounts,auth_sessions,quality_documents,access_audit,product_samples,schema_migrations FROM anon; END IF; IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN REVOKE ALL ON TABLE sources,knowledge_articles,batches,sensory_evaluations,sample_requests,judge_accounts,auth_sessions,quality_documents,access_audit,product_samples,schema_migrations FROM authenticated; END IF; END $$;
+INSERT INTO schema_migrations(version) VALUES('pg-001-musuroom-1');

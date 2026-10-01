@@ -33,3 +33,6 @@ BEGIN
     GRANT EXECUTE ON FUNCTION public.musuroom_sensory_distribution(text,text) TO service_role;
   END IF;
 END $$;
+
+
+INSERT INTO public.schema_migrations(version) VALUES('pg-003-sensory-distribution') ON CONFLICT(version) DO NOTHING;

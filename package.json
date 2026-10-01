@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -22,7 +22,8 @@
     "data:sync": "node scripts/sync-mongo.mjs",
     "schema:postgres": "node scripts/build-postgres-schema.mjs",
     "check": "node scripts/check-project.mjs",
-    "test": "node --test --test-isolation=none tests/*.test.mjs"
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "db:check-history": "node scripts/check-migration-history.mjs"
   },
   "engines": {
     "node": ">=24"

@@ -1,6 +1,6 @@
 # Kho dữ liệu JSON và hỗ trợ phân loại Jev
 
-Musuroom 1, mã nguồn **1.5.0**. PostgreSQL giữ dữ liệu gốc; Atlas lưu bản JSON để truy vấn và phân tích. Ngày 01.10.2026, database Supabase có 6 bài tri thức; đã đồng bộ và đọc kiểm chứng đủ 6 tài liệu trên Atlas, không còn công việc chờ. URI/key đã lưu riêng. JevAI vẫn báo credentials/model access rejected qua MCP chính thức (REST 502); chưa có inference Jev thành công. Bộ JSON cloud đã xuất cục bộ trong `data/exports/`, ngoài Git.
+Musuroom 1, mã nguồn **1.5.1**. PostgreSQL giữ dữ liệu gốc; Atlas lưu bản JSON để truy vấn và phân tích. Ngày 01.10.2026, database Supabase có 6 bài tri thức; đã đồng bộ và đọc kiểm chứng đủ 6 tài liệu trên Atlas, không còn công việc chờ. URI/key đã lưu riêng. JevAI vẫn báo credentials/model access rejected qua MCP chính thức (REST 502); chưa có inference Jev thành công. Bộ JSON cloud đã xuất cục bộ trong `data/exports/`, ngoài Git.
 
 ## Luồng xử lý
 

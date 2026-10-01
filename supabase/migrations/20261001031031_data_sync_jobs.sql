@@ -57,3 +57,6 @@ CREATE TRIGGER sync_evidence AFTER UPDATE ON public.quality_documents FOR EACH R
 INSERT INTO public.data_sync_jobs(job_key,resource_type,resource_id) SELECT 'knowledge:'||id,'knowledge',id FROM public.knowledge_articles;
 INSERT INTO public.data_sync_jobs(job_key,resource_type,resource_id) SELECT DISTINCT 'sensory:'||session_code||':'||sample_code,'sensory',session_code||':'||sample_code FROM public.sensory_evaluations;
 INSERT INTO public.data_sync_jobs(job_key,resource_type,resource_id) SELECT 'product:'||id,'product',id FROM public.product_samples;
+
+
+INSERT INTO public.schema_migrations(version) VALUES('pg-005-data-sync-jobs') ON CONFLICT(version) DO NOTHING;

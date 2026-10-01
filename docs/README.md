@@ -3,8 +3,9 @@
 | Bạn muốn làm gì? | Tài liệu |
 |---|---|
 | Chạy website và xem các trang | [README dự án](../README.md) |
-| Xem các lỗi đã sửa và cải tiến ở bản 1.5.0 | [Ghi chú phát hành](RELEASE_NOTES.md) |
+| Xem các lỗi đã sửa và cải tiến ở bản 1.5.1 | [Ghi chú phát hành](RELEASE_NOTES.md) |
 | Xem repository và trạng thái Supabase | [GitHub + Supabase](GITHUB_SUPABASE.md) |
+| Sửa Supabase Preview và kiểm tra lịch sử migration | [Lịch sử migration](SUPABASE_MIGRATIONS.md) |
 | Deploy Railway và in QR | [Triển khai cloud](DEPLOY_RAILWAY_SUPABASE.md) |
 | Xem API khảo sát, thống kê và đăng ký mẫu | [REST API](API.md) |
 | Cấp mã giám khảo và thêm hồ sơ | [Cổng giám khảo](JUDGE_PORTAL.md) |

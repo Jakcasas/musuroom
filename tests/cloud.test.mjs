@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PGlite } from '@electric-sql/pglite';
+import { readdirSync,readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { postgresAdapter,initializePostgres } from '../backend/db/postgres.mjs';
 import { createApp } from '../backend/app.mjs';
 import { loadConfig } from '../backend/config.mjs';
@@ -10,6 +12,20 @@ import { rateLimit } from '../backend/security/rate-limit.mjs';
 import { request as httpRequest } from 'node:http';
 import { projectDocument,dataJobs } from '../backend/services/data-projections.mjs';
 const production={NODE_ENV:'production',PUBLIC_ORIGIN:'https://musuroom.example',DATABASE_PROVIDER:'postgres',DATABASE_URL:'postgresql://postgres:test@localhost/postgres',STORAGE_PROVIDER:'supabase',SUPABASE_URL:'https://test.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test-only-private-key'};
+test('Supabase Preview replays committed migrations on an empty database without server bootstrap, then server startup preserves existing rows',async()=>{
+ const engine=new PGlite();
+ try{
+  const directory=resolve(import.meta.dirname,'../supabase/migrations'),files=readdirSync(directory).filter(file=>file.endsWith('.sql')).sort();
+  for(const file of files){assert.match(file,/^\d{14}_\w+\.sql$/);await engine.exec('BEGIN');try{await engine.exec(readFileSync(resolve(directory,file),'utf8'));await engine.exec('COMMIT');}catch(error){await engine.exec('ROLLBACK');throw error;}}
+  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,5);
+  await engine.query("INSERT INTO public.sources(id,citation,url,publication_year,evidence_type,access_scope,reviewed_at) VALUES(99,'Preserve existing fixture','https://example.invalid',2026,'Test','public','2026-10-01')");
+  const db=postgresAdapter({query:(text,values)=>values===undefined?engine.exec(text):engine.query(text,values)});
+  await initializePostgres(db);await initializePostgres(db);
+  assert.equal((await engine.query('SELECT citation FROM public.sources WHERE id=99')).rows[0].citation,'Preserve existing fixture');
+  assert.equal((await engine.query('SELECT count(*)::int AS n FROM public.schema_migrations')).rows[0].n,5);
+  assert.equal((await engine.query("SELECT relrowsecurity FROM pg_class WHERE relname='data_sync_jobs'")).rows[0].relrowsecurity,true);
+ }finally{await engine.close();}
+});
 test('Production fails closed without HTTPS, PostgreSQL and private cloud storage',()=>{
  for(const extra of [{DATABASE_PROVIDER:'sqlite'},{STORAGE_PROVIDER:'local'},{PUBLIC_ORIGIN:''},{PUBLIC_ORIGIN:'http://example.test'},{PUBLIC_ORIGIN:'https://user:secret@example.test'},{PUBLIC_ORIGIN:'https://example.test/path'},{SUPABASE_SERVICE_ROLE_KEY:''}])assert.throws(()=>loadConfig({...production,...extra}));
  assert.equal(loadConfig(production).host,'0.0.0.0');

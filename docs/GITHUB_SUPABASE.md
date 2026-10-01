@@ -1,6 +1,6 @@
 # GitHub, Railway và Supabase — Musuroom 1
 
-Trạng thái ngày **01.10.2026**, mã nguồn **1.5.0**.
+Trạng thái ngày **01.10.2026**, mã nguồn **1.5.1**.
 
 ## GitHub
 
@@ -10,7 +10,7 @@ Mật khẩu database, URI Atlas, provider key, mã giám khảo, cookie và d�
 
 ## Railway và Supabase đã kiểm tra
 
-- [Ứng dụng Railway](https://musuroom-web-production.up.railway.app) chạy qua HTTPS; `/healthz` trả bản `1.5.0`, database `ok`.
+- [Ứng dụng Railway](https://musuroom-web-production.up.railway.app) chạy qua HTTPS; `/healthz` trả bản `1.5.1`, database `ok`.
 - Supabase project `hlkzngyuoqzcfhrfkuub`, [Dashboard](https://supabase.com/dashboard/project/hlkzngyuoqzcfhrfkuub), Singapore `ap-southeast-1`.
 - **13 bảng Musuroom** gồm ledger và 2 bảng đồng bộ mới; RLS bật, không cho `anon`/`authenticated` đọc các bảng ứng dụng. Backend kiểm tra role/CSRF và kết nối qua Session pooler 5432 với TLS xác minh CA/hostname.
 - 6 nguồn và 6 bài tri thức. Chưa nạp phiếu cảm quan hoặc đăng ký giả vào cloud. Hai tài khoản cloud có thời hạn và một BRIEF DRAFT đã tạo; bản giới thiệu nằm trong bucket `musuroom-dossier` private, 50 MB/file.
@@ -30,4 +30,4 @@ Hướng dẫn cập nhật biến, deploy lại, cấp mã, upload hồ sơ và
 
 Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.
 
-Bản có local-classifier đã đạt 49/49 tests và GitHub Actions Windows/Linux; API local fallback được kiểm tra thật trên Railway. Atlas có 6 JSON kèm nhãn local/keyword_rules, requires_review=true; đây không phải kết quả Jev inference.
+Bản có local-classifier đã đạt 50/50 tests và GitHub Actions Windows/Linux; API local fallback được kiểm tra thật trên Railway. Atlas có 6 JSON kèm nhãn local/keyword_rules, requires_review=true; đây không phải kết quả Jev inference.

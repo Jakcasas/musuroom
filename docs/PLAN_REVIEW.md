@@ -12,7 +12,7 @@ Nguồn yêu cầu tham khảo: `ke_hoach_web_server_bot_gia_vi_nam.md` trong Do
 | Overview, batch, nutrition | Bổ sung 3 API, bảng mẫu đo, trang minh-bach.html và CLI nhập dữ liệu; guard SQLite/PostgreSQL kiểm tra cấu trúc | Chỉ công bố mẫu có minh chứng FINAL COA/REPORT; chưa có dinh dưỡng/đối chứng thì nêu rõ thiếu dữ liệu |
 | Kho tri thức | 6 bài/nguồn với tìm kiếm tiếng Việt, liên kết và giới hạn áp dụng | Không tự đồng nhất tài liệu nghiên cứu với kiểm nghiệm sản phẩm |
 | Jev | Choice phân loại góp ý, opt-in gửi đoạn văn, lọc email/điện thoại, xác minh schema, retry có hạn, fallback | JevAI /agent/keys: cần quyền model hợp lệ và đánh giá nhãn tiếng Việt trước sử dụng thực tế |
-| Railway + Supabase | Railway 1.5.0 Healthy qua HTTPS; PostgreSQL và private Storage đã kết nối; kiểm tra role/logout trên cloud thật | Theo dõi vận hành, backup và chi phí theo gói |
+| Railway + Supabase | Railway 1.5.1 Healthy qua HTTPS; PostgreSQL và private Storage đã kết nối; kiểm tra role/logout trên cloud thật | Theo dõi vận hành, backup và chi phí theo gói |
 | QR bao bì/poster | SVG/PNG/A4 tạo sau khi kiểm tra app/version/database và trang đích thật | Quét bản in bằng điện thoại trước khi dán |
 | Kho JSON, Atlas và Jev | Thêm phân trang/export, outbox/revision/lease, MongoDB schema, upsert và typed Choice tri thức | Atlas đã nhận 6 JSON, SQL pending=0; cần kiểm tra quyền model/key JevAI; chưa có benchmark Big Data |
 
@@ -23,6 +23,6 @@ Nguồn yêu cầu tham khảo: `ke_hoach_web_server_bot_gia_vi_nam.md` trong Do
 3. Production sử dụng PostgreSQL + private Storage, không lưu dữ liệu lâu dài vào filesystem container.
 4. Rate limit riêng mỗi IP, map có giới hạn; một replica. Toàn bộ API cũ chuyển sang bất đồng bộ để hỗ trợ PostgreSQL.
 5. Snapshot 111 trang TypeSafe, manifest SHA-256, bản gốc đầy đủ và tìm kiếm offline được lưu cùng dự án.
-6. 49 bài kiểm thử thành công: thêm hàng đợi/revision/lease, JSON/Jev ADMIN và preflight/QR. Đã kiểm tra thêm xác thực/phân quyền/đăng xuất trên Railway thật; chưa thay thế đo cảm quan hoặc đánh giá Atlas/Jev thực tế.
+6. 50 bài kiểm thử thành công: thêm hàng đợi/revision/lease, JSON/Jev ADMIN và preflight/QR. Đã kiểm tra thêm xác thực/phân quyền/đăng xuất trên Railway thật; chưa thay thế đo cảm quan hoặc đánh giá Atlas/Jev thực tế.
 7. GitHub Actions kiểm tra Windows/Linux; khóa phiên bản dependencies; rà lịch sử Git đối chiếu bí mật trước khi publish. Form khóa trong lúc gửi, chống thao tác reset xung đột và giữ mã đợt/mẫu từ QR khi tạo phiếu mới.
 8. Jev giới hạn deadline/64 KiB; OpenRouter có giới hạn đồng thời/cooldown. Thiếu key hoặc lỗi dịch vụ vẫn có tra cứu nguồn, thống kê và phân loại thủ công.

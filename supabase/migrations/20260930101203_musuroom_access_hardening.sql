@@ -25,3 +25,4 @@ BEGIN
     END IF;
   END IF;
 END $$;
+INSERT INTO public.schema_migrations(version) VALUES('pg-002-access-hardening') ON CONFLICT(version) DO NOTHING;

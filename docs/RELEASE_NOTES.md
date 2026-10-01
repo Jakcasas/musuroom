@@ -1,8 +1,18 @@
-# Musuroom 1 — bản mã nguồn 1.5.0
+# Musuroom 1 — bản mã nguồn 1.5.1
 
 Ngày cập nhật: **01.10.2026**.
 
-## Bản 1.5.0
+## Bản 1.5.1
+
+- Sửa Supabase Preview thất bại do cả 5 version migration trong Git lệch với lịch sử Supabase. Khôi phục đúng tên và SQL đã áp dụng, gồm bước tạo ledger trong migration ban đầu.
+- Trình chạy PostgreSQL nhận biết ledger đã tồn tại; startup không chạy lại migration được Supabase áp dụng, vẫn seed tri thức idempotent.
+- Generator schema chỉ tạo candidate ngoài Git, không ghi đè lịch sử. `pnpm check` chặn version sai format hoặc trùng; `pnpm db:check-history` so sánh version/name/nội dung SQL với Supabase.
+- **50/50 tests** đã đạt trên máy, gồm replay mọi migration trên database trống mà không dựa vào server bootstrap và giữ dữ liệu có sẵn qua startup. Đối chiếu cloud: 5/5 migrations, không missing/pending/different.
+- Security/Performance Advisors chỉ có INFO: RLS thiếu policy là chủ ý chặn browser roles; 7 index chưa sử dụng chưa phải lý do bỏ index cần cho tải lớn.
+
+[Chi tiết sửa lịch sử migration](SUPABASE_MIGRATIONS.md).
+
+## Lịch sử: bản 1.5.0
 
 - Sửa `.railwayignore` để giữ ảnh PNG trong `dist/qr`; bản upload CLI trước đó có trang A4/SVG nhưng thiếu ảnh PNG. Kiểm tra lại ảnh QR thật sau deploy.
 
