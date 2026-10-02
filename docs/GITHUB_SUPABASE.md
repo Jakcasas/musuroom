@@ -31,4 +31,4 @@ Hướng dẫn cập nhật biến, deploy lại, cấp mã, upload hồ sơ và
 
 Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.
 
-Bản có local-classifier đã đạt 50/50 tests và GitHub Actions Windows/Linux; API local fallback được kiểm tra thật trên Railway. Atlas có 6 JSON kèm nhãn local/keyword_rules, requires_review=true; đây không phải kết quả Jev inference.
+Bản 1.7.0 đã đạt 59/59 tests; API preview hai bài và bộ lọc pending được kiểm tra trên Railway, chặn anonymous (401) và thiếu CSRF (403). Không thay đổi trạng thái đối chiếu của dữ liệu thật trong phép kiểm tra. Atlas có 6 JSON kèm nhãn local/keyword_rules, requires_review=true; đây không phải kết quả Jev inference.

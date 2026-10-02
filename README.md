@@ -22,7 +22,7 @@ node server.mjs
 
 Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và setup, có thể dùng `MO_MUSUROOM.cmd` để chạy nền. Setup tạo cấu hình riêng tư; server tự tạo database local và nạp kho tri thức.
 
-**Trạng thái ngày 02.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.7.0`, PostgreSQL `ok`. Supabase Singapore có 14 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP chính thức. Chưa có inference thành công; giao diện dùng luật từ khóa cục bộ khi dịch vụ không đáp ứng.
+**Trạng thái ngày 02.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.7.0`, PostgreSQL `ok`. Supabase Singapore có 14 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON khi đồng bộ từ máy này. Worker Railway được cấu hình nhưng hiện báo `atlas_network_unavailable`; đồng bộ tự động trên cloud chưa được xác nhận. JevAI vẫn từ chối credentials/model access qua MCP chính thức. Chưa có inference thành công; giao diện dùng luật từ khóa cục bộ khi dịch vụ không đáp ứng.
 
 Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.7.0`. Local chạy SQLite; cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
 
