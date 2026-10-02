@@ -71,7 +71,7 @@ function search() {
   history.replaceState(null, '', location.pathname + (params.size ? `?${params}` : ''));
   render();
 }
-consent.addEventListener('change',()=>render());
+consent.addEventListener('change',()=>{searchVersion++;rankingController?.abort();rankStatus.textContent='';render();});
 rankButton.addEventListener('click',async()=>{
  const version=++searchVersion;rankingController?.abort();rankingController=new AbortController();rankButton.disabled=true;rankStatus.textContent='Đang đối chiếu mức liên quan…';
  try{

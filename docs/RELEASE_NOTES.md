@@ -1,6 +1,15 @@
-# Musuroom 1 — bản mã nguồn 1.6.0
+# Musuroom 1 — bản mã nguồn 1.7.0
 
-Ngày cập nhật: **01.10.2026**.
+Ngày cập nhật: **02.10.2026**.
+
+## Bản 1.7.0
+
+- Chọn cụ thể 1–5 bài để phân loại theo lô; giới hạn lựa chọn và đặt lại đồng ý khi thay đổi bài.
+- API xem trước lô dùng cùng request builder với inference, ngân sách JSON UTF-8 18.000 bytes; rút gọn theo Unicode code points, không tách surrogate. Nội dung bị guard không được gửi.
+- Hàng đề xuất có bộ lọc trạng thái/stale, chi tiết lý do/confidence, phân trang trước/sau và xuất JSON theo bộ lọc. SQL dùng danh sách filter cố định.
+- Hủy chờ sắp xếp khi bỏ đồng ý, ngăn phản hồi đến muộn đổi thứ tự nguồn. Khóa thao tác đang xử lý và loại phản hồi của phiên đã đổi.
+- **59/59 tests** đạt; kiểm tra giao diện chọn bài, preview, đối chiếu/lọc và hủy sắp xếp trong fixture riêng. Thành công provider là mock, chưa xác thực inference JevAI thật.
+- Không thay đổi schema hoặc migration Supabase; giữ thông tin đăng nhập ngoài Git.
 
 ## Bản 1.6.0
 

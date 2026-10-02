@@ -62,6 +62,9 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  const classified=await call('/api/v1/admin/data/classify-batch','POST',{article_ids:['umami'],allow_remote:false},operator);assert.equal(classified.status,200);assert.equal((await classified.json()).jev_requests,0);
  const reviews=await(await call('/api/v1/admin/data/reviews','GET',undefined,operator)).json();assert.equal(reviews.items.length,1);assert.equal(reviews.items[0].stale,false);
  assert.equal((await call('/api/v1/admin/data/review','POST',{article_id:'umami',decision_version:reviews.items[0].decision_version,status:'confirmed'},operator)).status,200);
+ const filtered=await(await call('/api/v1/admin/data/reviews?filter=confirmed','GET',undefined,operator)).json();assert.equal(filtered.items.length,1);assert.equal(filtered.items[0].article_id,'umami');
+ assert.equal((await(await call('/api/v1/admin/data/reviews?filter=pending','GET',undefined,operator)).json()).items.length,0);
+ const batchPreview=await(await call('/api/v1/admin/data/jev-batch-preview','POST',{article_ids:['umami']},operator)).json();assert.equal(batchPreview.articles[0].article_id,'umami');assert.ok(batchPreview.request_bytes<=18000);
  assert.equal((await call('/api/v1/admin/data/review','POST',{article_id:'umami',decision_version:reviews.items[0].decision_version,status:'rejected'},operator)).status,409);
  const score={session_code:'PG-ROUND',sample_code:'PG-MUSH',tester_type:'CONSUMER',color_score:1,aroma_score:1,umami_taste_score:1,aftertaste_score:1,overall_acceptance:1,submission_key:'11111111-1111-4111-8111-111111111111'};
  const responses=await Promise.all([call('/api/v1/sensory/submit','POST',score),call('/api/v1/sensory/submit','POST',score)]);assert.deepEqual(responses.map(x=>x.status).sort(),[200,201]);

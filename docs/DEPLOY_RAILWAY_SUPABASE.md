@@ -1,9 +1,9 @@
 # Triển khai Musuroom 1 — Railway + Supabase
 
-## Bản đang chạy, ngày 01.10.2026
+## Bản đang chạy, ngày 02.10.2026
 
 - Ứng dụng: **https://musuroom-web-production.up.railway.app**.
-- Health `/healthz`: `app=musuroom`, `version=1.6.0`, `database=ok`.
+- Health `/healthz`: `app=musuroom`, `version=1.7.0`, `database=ok`.
 - Railway project `Musuroom 1`: `2fb171d1-803d-4f5e-93cc-94837e2f42d4`; service `musuroom-web`: `1bb6900a-64d2-47c9-be06-648f6139ff6e`; environment `production`.
 - Supabase project `hlkzngyuoqzcfhrfkuub`: PostgreSQL, 14 bảng Musuroom, 6 bài/nguồn tri thức; bucket `musuroom-dossier` riêng tư, tối đa 50 MB/file.
 - Singapore: Supabase `ap-southeast-1`, Railway `asia-southeast1-eqsg3a`, một replica. [Các vùng Supabase](https://supabase.com/docs/guides/platform/regions), [các vùng Railway](https://docs.railway.com/deployments/regions). Chưa đo benchmark độ trễ thực tế từ Việt Nam.

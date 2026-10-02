@@ -15,5 +15,12 @@ for(const score of [5,7,9])insert.run('fixture-'+score,'TEST-ONLY','NAM-01','CON
 db.prepare('INSERT INTO sample_requests(id,full_name,contact,contact_normalized,organization_type,dietary_preference,consent_at) VALUES(?,?,?,?,?,?,?)').run('fixture-lead','Người dùng kiểm thử','test@example.invalid','test@example.invalid','INDIVIDUAL','NONE',new Date().toISOString());
 const delay=Math.min(5000,Math.max(0,Number(process.env.UI_FIXTURE_DELAY_MS)||0));
 const fixtureDb=delay?{prepare(sql){const statement=db.prepare(sql);return{all:statement.all.bind(statement),get:statement.get.bind(statement),async run(...values){if(/^INSERT INTO (?:sensory_evaluations|sample_requests)/.test(sql))await new Promise(resolve=>setTimeout(resolve,delay));return statement.run(...values);}};},close:()=>db.close()}:db;
-const server=createApp({database:fixtureDb,config:{...loadConfig({DATABASE_PATH:':memory:'}),documentRoot:resolve(projectRoot,'tests/fixtures')}});
+const mockJev=process.env.UI_FIXTURE_JEV==='true';
+const fetchImpl=mockJev?async(url,init)=>{
+ if(url!=='https://www.jevai.org/api/v1/decisions')throw Error('Fixture forbids real provider requests');
+ await new Promise(resolve=>setTimeout(resolve,1500));const body=JSON.parse(init.body);
+ const answers=Object.fromEntries(Object.entries(body.questions).map(([key,question],index)=>[key,question.type==='score'?{type:'score',score:index===0?0:2,confidence:1,probabilities:{'0':index===0?1:0,'1':0,'2':index===0?0:1}}:{type:'choice',choice:Object.keys(question.criteria)[0],confidence:1,probabilities:Object.fromEntries(Object.keys(question.criteria).map((name,i)=>[name,i===0?1:0]))}]));
+ return Response.json({code:0,data:{model:'jev-fixture-only',answers}});
+}:undefined;
+const server=createApp({database:fixtureDb,fetchImpl,config:{...loadConfig({DATABASE_PATH:':memory:',...(mockJev?{JEV_ENABLED:'true',JEV_API_KEY:'fixture-only-key'}:{})}),documentRoot:resolve(projectRoot,'tests/fixtures')}});
 server.listen(8767,'127.0.0.1',()=>console.log('Disposable UI fixture at http://127.0.0.1:8767'));

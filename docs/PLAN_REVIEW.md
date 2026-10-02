@@ -12,8 +12,8 @@ Nguồn yêu cầu tham khảo: `ke_hoach_web_server_bot_gia_vi_nam.md` trong Do
 | Overview, batch, nutrition | Bổ sung 3 API, bảng mẫu đo, trang minh-bach.html và CLI nhập dữ liệu; guard SQLite/PostgreSQL kiểm tra cấu trúc | Chỉ công bố mẫu có minh chứng FINAL COA/REPORT; chưa có dinh dưỡng/đối chứng thì nêu rõ thiếu dữ liệu |
 | Kho tri thức | 6 bài/nguồn với tìm kiếm tiếng Việt, liên kết và giới hạn áp dụng | Không tự đồng nhất tài liệu nghiên cứu với kiểm nghiệm sản phẩm |
 | Jev | Choice phân loại góp ý, opt-in gửi đoạn văn, lọc email/điện thoại, xác minh schema, retry có hạn, fallback | JevAI /agent/keys: cần quyền model hợp lệ và đánh giá nhãn tiếng Việt trước sử dụng thực tế |
-| Bổ sung Jev 1.6.0 | Guardrails, Score reranking với nguồn cố định, lô 5 bài và confidence gate; bảng đối chiếu có chống stale/audit/ADMIN/CSRF | [Cách sử dụng và giới hạn](JEV_WORKFLOWS.md); key hiện chưa có inference thành công |
-| Railway + Supabase | Railway 1.6.0 Healthy qua HTTPS; PostgreSQL và private Storage đã kết nối; kiểm tra role/logout trên cloud thật | Theo dõi vận hành, backup và chi phí theo gói |
+| Bổ sung Jev 1.7.0 | Guardrails, Score reranking với nguồn cố định, lô 5 bài và confidence gate; bảng đối chiếu có chống stale/audit/ADMIN/CSRF | [Cách sử dụng và giới hạn](JEV_WORKFLOWS.md); key hiện chưa có inference thành công |
+| Railway + Supabase | Railway 1.7.0 Healthy qua HTTPS; PostgreSQL và private Storage đã kết nối; kiểm tra role/logout trên cloud thật | Theo dõi vận hành, backup và chi phí theo gói |
 | QR bao bì/poster | SVG/PNG/A4 tạo sau khi kiểm tra app/version/database và trang đích thật | Quét bản in bằng điện thoại trước khi dán |
 | Kho JSON, Atlas và Jev | Thêm phân trang/export, outbox/revision/lease, MongoDB schema, upsert và typed Choice tri thức | Atlas đã nhận 6 JSON, SQL pending=0; cần kiểm tra quyền model/key JevAI; chưa có benchmark Big Data |
 

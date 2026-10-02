@@ -171,11 +171,12 @@ JSON đọc projection từ SQL, không phải truy vấn trực tiếp Atlas. T
 ## Mã lỗi HTTP
 
 400: query/JSON/URL không hợp lệ. 401: thiếu hoặc sai token. 403: đường dẫn, host hoặc origin không được phép. 404: không tồn tại. 405: method static không hỗ trợ. 413: body quá lớn. 415: sai Content-Type. 422: dữ liệu không hợp lệ. 429: vượt tần suất. 500: lỗi nội bộ (không trả stack trace hoặc secret).
-# API Jev và đối chiếu — 1.6.0
+## API Jev và đối chiếu — 1.7.0
 
 - `POST /api/knowledge/rerank`: `{query, category?: "", allow_remote: boolean}`. Query 2–200 ký tự, category ≤100. Trả `{items, mode, reason, reranked_count}`; chỉ đổi thứ tự tối đa 5 kết quả đã khớp. Mode `lexical` khi không gửi/guard/provider lỗi/score thấp hoặc không hợp lệ; mode `jev` khi tất cả score đạt ngưỡng.
+- `POST /api/v1/admin/data/jev-batch-preview`: `{article_ids: [1–5 slug khác nhau]}`. ADMIN + CSRF; trả `{request, request_bytes, payload_budget_bytes, articles, notice}`. Mỗi article có `remote_eligible`, `reason`, `truncated`; các bài bị guard được loại khỏi request. Không gọi Jev. Budget JSON UTF-8 18.000 bytes trước MCP envelope. 422 nếu lô sai/trùng ID, 404 nếu thiếu bài.
 - `POST /api/v1/admin/data/classify-batch`: `{article_ids: [1–5 slug khác nhau], allow_remote: boolean}`. ADMIN + CSRF. Trả `{items, jev_requests}`; quyết định theo từng bài được lưu ở bảng riêng. Lô sai cấu trúc 422; bài không tồn tại 404, chưa gửi Jev.
-- `GET /api/v1/admin/data/reviews?after=<article_id>&limit=25`: ADMIN, keyset pagination 1–100. Trả `items`, `next_cursor`; mỗi item có `decision`, `source_revision`, `decision_version`, `review_status`, `stale`.
+- `GET /api/v1/admin/data/reviews?after=<article_id>&limit=25&filter=pending`: ADMIN, keyset pagination 1–100. Filter tùy chọn `all` (mặc định), `pending`, `confirmed`, `rejected`, `stale`; query sai/ngoài danh sách trả 400. Trả `items`, `next_cursor`, `filter`; mỗi item có `decision`, `source_revision`, `decision_version`, `review_status`, `stale`.
 - `POST /api/v1/admin/data/review`: `{article_id, decision_version, status: "confirmed"|"rejected"}`. ADMIN + CSRF. Chỉ chấp nhận bản pending có source revision hiện tại; lỗi 409 nếu bài/đề xuất đã đổi hoặc đã đối chiếu.
 
 Phân loại đơn cũng lưu đề xuất. `requires_review`/`gate` là tín hiệu của chính sách ứng dụng, không xác nhận tính đúng đắn hay cấp quyền. Xem [giới hạn và cấu hình](JEV_WORKFLOWS.md).

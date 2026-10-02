@@ -22,13 +22,13 @@ node server.mjs
 
 Mở **http://127.0.0.1:8766/**. Trên Windows, sau khi cài dependencies và setup, có thể dùng `MO_MUSUROOM.cmd` để chạy nền. Setup tạo cấu hình riêng tư; server tự tạo database local và nạp kho tri thức.
 
-**Trạng thái ngày 01.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.6.0`, PostgreSQL `ok`. Supabase Singapore có 14 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP chính thức. Chưa có inference thành công; giao diện dùng luật từ khóa cục bộ khi dịch vụ không đáp ứng.
+**Trạng thái ngày 02.10.2026:** [website Railway](https://musuroom-web-production.up.railway.app) đã hoạt động qua HTTPS, phiên bản `1.7.0`, PostgreSQL `ok`. Supabase Singapore có 14 bảng, 6 bài tri thức và bucket hồ sơ riêng tư. QR được tạo sau khi kiểm tra hai trang đích thật. URI Atlas và key JevAI đã lưu riêng. Atlas đã nhận và được đọc kiểm chứng đủ 6 tài liệu JSON, hàng đợi không còn bản ghi chờ. Worker Atlas được cấu hình trên Railway. JevAI vẫn từ chối credentials/model access qua MCP chính thức. Chưa có inference thành công; giao diện dùng luật từ khóa cục bộ khi dịch vụ không đáp ứng.
 
-Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.6.0`. Local chạy SQLite; cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
+Bản phát hành sản phẩm **Musuroom 1**, phiên bản mã nguồn `1.7.0`. Local chạy SQLite; cloud Railway + Supabase sử dụng PostgreSQL và private Storage. [Các cải tiến mới](docs/RELEASE_NOTES.md).
 
 ## Kho dữ liệu và hỗ trợ phân tích
 
-**1.6.0 — Hỗ trợ quyết định cùng Jev:** [4 luồng mới và hướng dẫn sử dụng](docs/JEV_WORKFLOWS.md): kiểm tra đầu vào, sắp xếp nguồn theo mức liên quan, phân loại tối đa 5 bài/lô và hàng chờ đối chiếu theo độ tin cậy. Đề xuất được lưu riêng, có kiểm tra revision và audit; nội dung nguồn không tự thay đổi. Giao thức MCP chính thức của JevAI đã được tích hợp, key vẫn chỉ lưu ở server.
+**1.7.0 — Quản lý đề xuất rõ ràng hơn:** Chọn cụ thể 1–5 bài, xem trước JSON của lô, lọc trạng thái đối chiếu, mở lý do phân loại và tải đề xuất. Hủy sắp xếp khi bỏ đồng ý, tránh phản hồi đến muộn thay đổi kết quả. [4 luồng mới và hướng dẫn sử dụng](docs/JEV_WORKFLOWS.md): kiểm tra đầu vào, sắp xếp nguồn theo mức liên quan, phân loại tối đa 5 bài/lô và hàng chờ đối chiếu theo độ tin cậy. Đề xuất được lưu riêng, có kiểm tra revision và audit; nội dung nguồn không tự thay đổi. Giao thức MCP chính thức của JevAI đã được tích hợp, key vẫn chỉ lưu ở server.
 
 Cổng ADMIN có thêm kho JSON: lọc nhóm dữ liệu, phân trang, xem từng bản ghi, tải JSON trang hiện tại và xem yêu cầu Jev trước khi gửi. Đồng bộ Atlas dùng hàng đợi có revision trong SQL, batch/upsert và xử lý thử lại. Bản JSON chỉ chọn tri thức, thống kê cảm quan tổng hợp và mẫu đo đã công bố; không chọn liên hệ đăng ký hoặc khóa truy cập.
 
@@ -172,7 +172,7 @@ API thống kê và nhận xét đọc phân bố tổng hợp ngay tại databa
 - [Migration tài khoản, phiên và hồ sơ](backend/db/migrations/003_judge_portal.sql)
 - [Vận hành cổng giám khảo, cấp mã và Jev](docs/JUDGE_PORTAL.md)
 - [Mẫu môi trường](.env.example)
-- [Ghi chú bản 1.6.0](docs/RELEASE_NOTES.md)
+- [Ghi chú bản 1.7.0](docs/RELEASE_NOTES.md)
 
 Repository công khai dùng nhánh `main`. Checkout trên máy này dùng nhánh `codex/musuroom-backend`, theo dõi `origin/main`. Các thay đổi mới nên được thực hiện trên nhánh riêng rồi review trước khi đưa vào `main`.
 

@@ -1,4 +1,4 @@
-# Jev trong Musuroom 1.6.0
+# Jev trong Musuroom 1.7.0
 
 ## Bốn ứng dụng đã triển khai
 
@@ -13,11 +13,11 @@ Không dùng các con số chi phí/tốc độ trong hình làm cam kết của
 
 ## Cách sử dụng
 
-**Kho tri thức:** nhập từ khóa → đọc kết quả và nguồn → nếu muốn sắp xếp lại, chọn ô đồng ý và bấm **Sắp xếp cùng Jev**. Không gửi dữ liệu khi đang gõ. Chỉ sắp xếp kết quả đã tìm thấy, không tìm/bổ sung nguồn ngoài kho. Những bài sau 5 kết quả đầu giữ thứ tự ban đầu. Từ khóa không lưu vào database.
+**Kho tri thức:** nhập từ khóa → đọc kết quả và nguồn → nếu muốn sắp xếp lại, chọn ô đồng ý và bấm **Sắp xếp cùng Jev**. Không gửi dữ liệu khi đang gõ. Bỏ chọn đồng ý sẽ hủy chờ và khôi phục thứ tự tìm kiếm; phản hồi đến muộn bị bỏ qua. Yêu cầu đã gửi trước đó có thể vẫn được provider xử lý. Chỉ sắp xếp kết quả đã tìm thấy, không tìm/bổ sung nguồn ngoài kho. Những bài sau 5 kết quả đầu giữ thứ tự ban đầu. Từ khóa không lưu vào database.
 
-**Quản trị:** đăng nhập ADMIN → Kho dữ liệu → chọn nhóm Tri thức → phân loại một bài hoặc **Phân loại 5 bài trong trang**. Bỏ chọn đồng ý để dùng luật từ khóa tại server. Nếu trang có hơn 5 bài, thao tác lô chỉ lấy 5 bài đầu; chọn bài còn lại để phân loại riêng. Lô Jev gửi tiêu đề/tóm tắt/hạn chế tối đa 350 ký tự mỗi trường, thân bài tối đa 1.000 ký tự/bài; xem JSON bài trước khi thực hiện. Bản phân loại đơn dùng giới hạn riêng lớn hơn ở yêu cầu preview.
+**Quản trị:** đăng nhập ADMIN → Kho dữ liệu → đánh dấu cụ thể 1–5 bài tri thức trong bảng → **Xem yêu cầu của lô** để đọc JSON → **Phân loại bài đã chọn**. Không tự chọn 5 bài đầu. Bỏ chọn đồng ý để dùng luật từ khóa tại server. Đổi các bài được chọn sẽ bỏ đồng ý và xóa bản xem trước cũ. Lô giới hạn tiêu đề/tóm tắt/hạn chế 350 Unicode code points mỗi trường, thân bài 1.000 code points/bài; nếu JSON UTF-8 vượt 18.000 bytes, server rút gọn thêm và đánh dấu `truncated`. Ngân sách dành chỗ cho envelope MCP trong giới hạn 20.000 bytes. Preview và phân loại dùng cùng một hàm dựng request; preview không gọi JevAI. Bản phân loại đơn dùng giới hạn riêng lớn hơn.
 
-**Đối chiếu:** mở bài gốc từ hàng chờ, đọc nguồn và giới hạn áp dụng; chọn **Đã đối chiếu** hoặc **Không sử dụng**. Hai thao tác lưu trạng thái và audit, không sửa category hay nội dung công bố. Bài đã thay đổi hoặc đề xuất đã được thay thế trả HTTP 409; phân loại lại trước khi đối chiếu.
+**Đối chiếu:** lọc Tất cả / Chưa đối chiếu / Đã đối chiếu / Không sử dụng / Bài nguồn đã thay đổi; mở **Chi tiết đề xuất** để đọc confidence hoặc từ khóa/lý do cục bộ. Chuyển trang trước/sau và tải JSON trang đề xuất theo bộ lọc. Số lượng hiển thị thuộc trang hiện tại, không phải tổng toàn kho. Mở bài gốc từ hàng chờ, đọc nguồn và giới hạn áp dụng; chọn **Đã đối chiếu** hoặc **Không sử dụng**. Hai thao tác lưu trạng thái và audit, không sửa category hay nội dung công bố. Bài đã thay đổi hoặc đề xuất đã được thay thế trả HTTP 409; phân loại lại trước khi đối chiếu.
 
 ## Cấu hình riêng tư
 
@@ -47,6 +47,6 @@ JEV_MIN_CONFIDENCE=0.65
 ## Triển khai và kiểm chứng
 
 1. Giữ `.env`, `data/cloud.env` và tài khoản truy cập ngoài Git. Đặt `JEV_TRANSPORT=mcp` trong biến Railway để dùng giao thức đã kiểm tra tại JevAI.
-2. Áp dụng migration `knowledge_decision_reviews`; đồng bộ tên version/nội dung với lịch sử Supabase. Không sửa 5 migration lịch sử đã công bố.
+2. Áp dụng migration `knowledge_decision_reviews`; đồng bộ tên version/nội dung với lịch sử Supabase. Giữ nguyên cả 6 migration lịch sử đã công bố; bản 1.7.0 không thêm migration.
 3. Chạy `pnpm test`, `pnpm check`, `pnpm db:check-history` và kiểm tra Supabase Preview trước khi coi bản phát hành hoàn tất.
-4. Triển khai Railway, kiểm tra `/healthz` trả 1.6.0/PostgreSQL ok và trang tri thức/cổng giám khảo. Tạo QR sau khi xác nhận URL; upload lại tài nguyên QR theo [hướng dẫn cloud](DEPLOY_RAILWAY_SUPABASE.md).
+4. Triển khai Railway, kiểm tra `/healthz` trả 1.7.0/PostgreSQL ok và trang tri thức/cổng giám khảo. Tạo QR sau khi xác nhận URL; upload lại tài nguyên QR theo [hướng dẫn cloud](DEPLOY_RAILWAY_SUPABASE.md).
