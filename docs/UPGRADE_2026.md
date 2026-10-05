@@ -1,4 +1,4 @@
-# Đối chiếu upgrade.docx với Musuroom 1.8.0
+# Đối chiếu upgrade.docx với Musuroom 1.8.2
 
 Ngày cập nhật: 05.10.2026. Người dùng xác nhận chưa có tài liệu TCVN, hồ sơ hũ mẫu hoặc tiêu chí chấm FID chính thức; bản này cung cấp chức năng nhập, không nạp dữ liệu minh họa vào production.
 
@@ -19,11 +19,11 @@ Ngày cập nhật: 05.10.2026. Người dùng xác nhận chưa có tài liệu
 
 ## Vận hành hồ sơ và chấm điểm
 
-1. Đăng nhập cổng giám khảo rồi mở **Hồ sơ & chấm điểm**. ADMIN tạo hồ sơ mẫu, mã hũ, mã lô, nguồn và ghi chép quy trình. Có thể chọn tài liệu đã được tải vào hồ sơ bằng mã tài liệu; không công bố nội dung file riêng tư.
+1. Đăng nhập cổng giám khảo rồi mở **Hồ sơ & chấm điểm**. ADMIN tạo hồ sơ mẫu, mã hũ, mã lô, nguồn và ghi chép quy trình. Chọn minh chứng trong danh sách tài liệu gần nhất; nhãn phân biệt dự thảo/đã hoàn tất. Không công bố nội dung file riêng tư.
 2. Chỉ đánh dấu **Công bố** khi thông tin sẵn sàng chia sẻ. QR là liên kết ngẫu nhiên đến hồ sơ công khai; chỉnh hồ sơ giữ nguyên QR. Bỏ công bố làm liên kết trả 404. Cặp mã mẫu/mã hũ không trùng nhau.
 3. Tạo bộ tiêu chí với tổng trọng số 100%. Giao diện hỗ trợ tối đa 5 tiêu chí, API tối đa 10; không có tiêu chí giả được tạo mặc định.
-4. Giám khảo chọn mẫu và bộ tiêu chí, nhập điểm 0–10. Điểm tổng = tổng(điểm × trọng số / 10), làm tròn hai chữ số. Dashboard hiển thị trung bình /100 và số người chấm. Các phiên cập nhật cũ trả 409 thay vì ghi đè.
-5. Hồ sơ mẫu có revision. Điểm giữ `sample_revision` tại lúc chấm; nếu thay đổi thông tin mẫu, cần đối chiếu lại các đánh giá trước đó.
+4. Giám khảo chọn mẫu và bộ tiêu chí, đọc mã hũ/lô, nguồn và quy trình đang hiển thị rồi nhập điểm 0–10. Điểm tổng = tổng(điểm × trọng số / 10), làm tròn hai chữ số. Các phiên cập nhật cũ trả 409 thay vì ghi đè.
+5. Bảng điểm chỉ tính trung bình của phiên bản hồ sơ hiện tại, hiển thị số phiếu cần đối chiếu lại. Nếu phiếu của bạn thuộc phiên bản cũ, giao diện nhắc đọc hồ sơ và cập nhật. API yêu cầu `sample_revision`; hồ sơ thay đổi trong lúc chấm thì phải tải lại. Một phiếu được cập nhật khi chấm lại; chưa có lịch sử từng lần sửa điểm.
 
 ## Ngoại tuyến và dữ liệu trên thiết bị
 
@@ -63,4 +63,4 @@ Social Preview: dùng `docs/social-preview.png` (1280×640) trong GitHub Setting
 
 ## Kiểm chứng bản phát hành
 
-63/63 kiểm thử đạt; cú pháp 100 file và 138 liên kết nội bộ hợp lệ; audit production không có lỗ hổng đã biết. Đã kiểm tra UI tạo hũ/rubric/chấm điểm bằng dữ liệu trong bộ nhớ, truy xuất và offline lưu/phục hồi/gửi lại. Cloud xác minh phiên ADMIN, chặn anonymous, pgvector query và PostgreSQL health. Docker chưa chạy trên máy này; hộp lưu PDF và khả năng cài PWA cần đối chiếu thêm trên các trình duyệt/thiết bị sử dụng thực tế.
+Kiểm thử gồm SQLite và PostgreSQL, phát lại migration từ database rỗng, quyền truy cập, thuật toán cảm quan và phân biệt điểm theo revision. Đã kiểm tra UI tạo hũ/rubric/chấm điểm bằng dữ liệu trong bộ nhớ, truy xuất và offline lưu/phục hồi/gửi lại. Xem kết quả của bản hiện tại ở [trạng thái triển khai](GITHUB_SUPABASE.md). Docker chưa chạy trên máy này; hộp lưu PDF và khả năng cài PWA cần đối chiếu thêm trên các trình duyệt/thiết bị sử dụng thực tế.

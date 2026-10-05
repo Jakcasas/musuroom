@@ -1,3 +1,7 @@
+# 1.8.2 — 05.10.2026
+
+Chọn minh chứng từ tài liệu có sẵn, hiển thị thông tin hũ/lô/nguồn/quy trình khi chấm. Phiếu cũ có nhắc đối chiếu; bảng trung bình chỉ tính đúng revision hiện tại. API yêu cầu `sample_revision`, có thông báo cụ thể cho xung đột và mã hũ trùng. Migration mới kiểm tra thang điểm, số tiêu chí, trọng số và tổng ở database; giữ bộ tiêu chí đã lưu bất biến. Kiểm thử cùng tình huống trên SQLite và PostgreSQL. Không tạo dữ liệu minh họa trên production.
+
 # 1.8.1 — 05.10.2026
 
 Sửa đọc kết quả MCP theo cấu trúc chính thức JevAI; giữ hỗ trợ envelope cũ. Trạng thái kết nối có thời gian kiểm tra, thông báo lỗi rõ và thời gian chờ khi dùng phân loại cục bộ. ADMIN có nút kiểm tra bằng câu minh họa cố định; API được giới hạn tần suất, phân quyền và CSRF. CLI `jev:check` không in key. Không xác nhận inference Jev thật khi dịch vụ vẫn từ chối credentials/model access.

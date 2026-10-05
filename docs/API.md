@@ -198,9 +198,9 @@ Các route ADMIN/giám khảo dùng phiên đăng nhập; POST/PUT phải có `X
 | GET `/api/v1/admin/research/:kind` | ADMIN | `kind`: sample/rubric/clause; tối đa 500 hồ sơ |
 | POST `/api/v1/admin/research/:kind` | ADMIN | `{data}` theo schema nghiên cứu; 201 |
 | PUT `/api/v1/admin/research/:kind/:id` | ADMIN | `{data,revision}`; sửa sample/clause, rubric bất biến |
-| GET `/api/v1/judge/research/setup` | Reviewer | Mẫu và bộ tiêu chí; thông báo DRAFT |
-| GET `/api/v1/judge/research/scores` | Reviewer | Tổng hợp và phiếu của chính người đăng nhập |
-| POST `/api/v1/judge/research/scores` | Tài khoản giám khảo/ADMIN | `{sample_id,rubric_id,scores:[0..10],revision:0}` tạo mới; cập nhật dùng revision hiện tại |
+| GET `/api/v1/judge/research/setup` | Reviewer | Mẫu và bộ tiêu chí; ADMIN nhận thêm `evidence_documents` (id/title/doc_type/evidence_status), tối đa 500, không có URL/file name |
+| GET `/api/v1/judge/research/scores` | Reviewer | Tổng hợp và phiếu của chính người đăng nhập; tách điểm hiện tại/cũ |
+| POST `/api/v1/judge/research/scores` | Tài khoản giám khảo/ADMIN | `{sample_id,sample_revision,rubric_id,scores:[0..10],revision:0}` tạo mới; cập nhật dùng revision phiếu hiện tại |
 | GET `/api/v1/judge/research/sentiment` | Reviewer | `session_code` và `sample_code`; từ khóa cục bộ, 1.000 góp ý gần nhất |
 | GET `/api/v1/research/clauses?q=...` | Public | Điều khoản công bố, tìm từ khóa; chưa có nguồn thì danh sách rỗng |
 | GET `/api/v1/trace/:token` | Public | Hồ sơ mẫu đang công bố, không trả mã file minh chứng riêng tư |
@@ -210,6 +210,10 @@ Các route ADMIN/giám khảo dùng phiên đăng nhập; POST/PUT phải có `X
 | POST `/api/v1/admin/vectors/search` | ADMIN | `{model,embedding}`; tối đa 5 nguồn công bố cùng model và đúng revision |
 
 Trọng số tiêu chí là số nguyên, tổng 100%; API hỗ trợ 1–10 tiêu chí. Điểm tổng = tổng(điểm × trọng số / 10), làm tròn 2 chữ số, thang 0–100. Mỗi tài khoản chỉ một phiếu cho cặp mẫu/bộ tiêu chí. `sample_revision` giữ phiên bản hồ sơ lúc chấm để đối chiếu khi hồ sơ thay đổi.
+
+Từ 1.8.2, POST điểm bắt buộc gửi `sample_revision` đã đọc ở setup. Thiếu/sai định dạng trả 422; hồ sơ đã đổi trả 409 `sample_revision_conflict`. Database khóa hàng mẫu trong lúc ghi PostgreSQL, kiểm tra loại record, mảng điểm 0–10, số tiêu chí, tổng theo trọng số; loại hồ sơ và bộ tiêu chí đã lưu không được đổi. Giao diện báo rõ khi cần tải lại.
+
+Mỗi nhóm tổng hợp có `current_sample_revision`, `current_judges`, `stale_judges`, `current_mean_total` (null khi chưa có phiếu cho phiên bản hiện tại). `judges`/`mean_total` giữ tổng mọi phiếu đang lưu để đối chiếu; giao diện chỉ dùng `current_mean_total`. Phiếu cũ không bị xóa khi đổi hồ sơ. Chấm lại cập nhật cùng phiếu, không lưu lịch sử từng lần sửa điểm.
 
 Các trường hồ sơ xem [schemas](../backend/services/research-model.mjs). Mã mẫu dùng 3–50 ký tự ASCII, bắt đầu bằng chữ/số. Điều khoản yêu cầu nguồn HTTPS, phiên bản, trích dẫn, giới hạn và xác nhận quyền sử dụng. File riêng tư không trở thành file công khai khi gắn minh chứng.
 

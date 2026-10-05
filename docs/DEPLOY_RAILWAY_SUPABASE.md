@@ -105,6 +105,14 @@ Source Railway đã gắn Jakcasas/musuroom, nhánh main. Push mới nhất chư
 
 ## Nâng cấp 1.8.0
 
+### Bổ sung cho 1.8.2
+
+Áp dụng migration `research_score_integrity` sau các migration nghiên cứu trước đó, đối chiếu `pnpm db:check-history`: 9/9 file, không missing/pending/different. Kiểm thử migration từ database rỗng trước khi áp dụng; không sửa lịch sử để che lỗi Preview. Deploy backend và frontend cùng bản 1.8.2; client chấm điểm phải gửi `sample_revision` từ setup. Trang mở từ bản cũ cần tải lại trước khi gửi. Sau deploy, kiểm tra health, đăng nhập ADMIN, danh sách minh chứng và API scores; tạo QR sau khi health đúng phiên bản, rồi triển khai các tài sản QR đã tạo.
+
+Hàm kiểm tra database dùng SECURITY INVOKER, `search_path` cố định và thu hồi EXECUTE từ PUBLIC/anon/authenticated. Không mở Data API cho bảng nghiên cứu. Tham khảo [Supabase Database Functions](https://supabase.com/docs/guides/database/functions) và [xử lý lỗi branching/migrations](https://supabase.com/docs/guides/deployment/branching/troubleshooting).
+
+### Các bước của bản 1.8.0
+
 1. Sao lưu database theo quy trình vận hành trước khi nâng cấp; không chạy reset database. Bản này bổ sung `research_workspace` và `research_vectors`, giữ nguyên sáu migration cũ.
 2. Áp dụng hai migration mới qua Supabase, giữ đúng version/name/SQL đã ghi trong lịch sử remote. Chạy `pnpm db:check-history`; phải có tám local/remote và không có missing/pending/different. Các bảng mới bật RLS, không mở quyền anon/authenticated.
 3. Giữ nguyên secrets trong Railway Variables. Deploy commit đã kiểm thử bằng Railway CLI; kiểm tra deployment ID cụ thể SUCCESS và `/healthz` phiên bản 1.8.0, PostgreSQL ok.
