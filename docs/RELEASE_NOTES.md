@@ -5,6 +5,7 @@
 - Cổng giám khảo thêm nút hiện/ẩn mã, tự che khi gửi hoặc chuyển khỏi tab. Không thay đổi xác thực hay quyền dữ liệu.
 - Đồng bộ hình thức bảng, hồ sơ, kho tri thức; bổ sung tài sản công khai vào service worker 1.9.0. Không thêm migration.
 - Canva/Figma chưa có công cụ thao tác trong phiên này; Higgsfield từ chối tạo ảnh do gói tài khoản. Sử dụng hình minh họa hiện có và triển khai thiết kế trực tiếp trong mã nguồn.
+- Kiểm thử: 78/78 đạt; kiểm tra 111 tệp mã và 156 liên kết tài sản đạt. UI đã kiểm tra trên desktop 1440 × 900 và 1280 × 800: chọn/đặt lại điểm, hiện/ẩn mã, tra cứu và bố cục không cuộn ngang ở các trang đã kiểm tra. Deployment giao diện 1.9.0 trên Railway SUCCESS tại Singapore; QR được xác minh bằng health/database và hai trang đích công khai.
 
 # 1.8.5 — 06.10.2026
 
