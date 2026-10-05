@@ -4,6 +4,7 @@
 - Overlap 10 giây, draining 35 giây; backend xử lý SIGTERM/SIGINT bằng cùng handler, bỏ qua tín hiệu lặp, ngừng worker ngay và chờ request đang chạy. Deadline 30 giây, log không chứa lỗi provider hoặc credentials.
 - Cleanup vẫn đóng database khi worker dừng lỗi. Healthcheck trả 503 khi database không sẵn sàng; request mới trong giai đoạn dừng nhận 503 và Retry-After.
 - Bổ sung kiểm thử request đang chạy, tín hiệu lặp, deadline, readiness và lỗi cleanup. Giữ thang điểm/phiếu/database hiện có; không thêm migration.
+- Kiểm tra local: 78/78 kiểm thử đạt, 110 tệp mã và 138 liên kết tài sản đạt. Deployment mã 1.8.5 tại Singapore đã SUCCESS; QR được tạo sau khi kiểm tra health/database và hai trang đích công khai.
 
 # 1.8.4 — 05.10.2026
 

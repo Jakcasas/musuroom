@@ -2,7 +2,7 @@
 
 ## Đích triển khai hiện tại
 
-Project **Musuroom 1**, service **musuroom-web**, environment **production**, repository `Jakcasas/musuroom` nhánh `main`. Ngày 06.10.2026 đã kiểm tra bản 1.8.4 đang hoạt động và gỡ dịch vụ rỗng tạo thêm gây hai thông báo Railway failure trên cùng commit. [Chi tiết và quy trình khôi phục](RAILWAY_RECOVERY.md).
+Project **Musuroom 1**, service **musuroom-web**, environment **production**, repository `Jakcasas/musuroom` nhánh `main`. Ngày 06.10.2026 đã triển khai bản 1.8.5 tại Singapore, health PostgreSQL ok; đã gỡ dịch vụ rỗng tạo thêm gây hai thông báo Railway failure trên cùng commit. [Chi tiết và quy trình khôi phục](RAILWAY_RECOVERY.md) · [Cấu hình vận hành 1.8.5](RAILWAY_OPERATIONS.md).
 
 ## Mốc triển khai ngày 02.10.2026
 
