@@ -11,7 +11,7 @@ export function feedback(node,message,bad=false){node.textContent=message;node.c
 export function formErrors(form,fields={}){for(const input of form.querySelectorAll('input,select,textarea')){input.setAttribute('aria-invalid',String(Boolean(fields[input.name])));const error=form.querySelector(`[data-error="${input.name}"]`);if(error)error.textContent=fields[input.name]||'';}}
 export function radar(target,values,labels){
  target.replaceChildren();if(values.some(x=>x===null)){target.append(element('p','Chưa có phiếu để vẽ biểu đồ.','empty-chart'));return;}
- const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 480 360');svg.setAttribute('role','img');svg.setAttribute('aria-label','Điểm trung bình cảm quan trên thang 1 đến 9. Xem bảng để đọc giá trị chính xác.');
+ const ns='http://www.w3.org/2000/svg';const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 480 360');svg.setAttribute('role','group');svg.setAttribute('aria-label','Điểm trung bình cảm quan trên thang 1 đến 9. Xem bảng để đọc giá trị chính xác.');
  const point=(i,r)=>[240+Math.cos(-Math.PI/2+i*2*Math.PI/5)*r,180+Math.sin(-Math.PI/2+i*2*Math.PI/5)*r];
  const shape=(name,attrs)=>{const n=document.createElementNS(ns,name);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);svg.append(n);return n;};
  for(const level of [3,6,9])shape('polygon',{points:labels.map((_,i)=>point(i,level/9*110).join(',')).join(' '),class:'radar-grid'});

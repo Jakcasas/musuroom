@@ -1,3 +1,20 @@
+# Trạng thái Musuroom 1.8.0 — 05.10.2026
+
+- Railway triển khai thành công, `/healthz`: version 1.8.0, database ok. Các trang nghiên cứu/điều khoản/pitch, API đăng nhập và tìm vector được kiểm tra trực tiếp.
+- Supabase có 17 bảng ứng dụng; 8/8 migration khớp version/name/SQL, không missing/pending/different. pgvector 0.8.2 đã được cài; ba bảng nghiên cứu mới bật RLS, anon/authenticated không có SELECT.
+- GitHub của commit `9705c79` đạt cả Supabase Preview, Windows và Linux. 63/63 tests local đạt; audit production không phát hiện lỗ hổng đã biết.
+- Advisors: không WARN/ERROR; 17 INFO [RLS không policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) vì backend là lớp truy cập, và 10 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index). Giữ chính sách đóng và các index phục vụ dữ liệu tương lai.
+- Không có hồ sơ mẫu, bộ tiêu chí, điểm chấm hay vector giả trong production. Kiểm thử giao diện dùng database trong bộ nhớ riêng; ngoại tuyến đã thử bằng cách dừng server rồi khôi phục và gửi lại phiếu.
+- Atlas từ Railway vẫn không kết nối được; chẩn đoán lọc được mã `ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR`. Cần đối chiếu Network Access và đường ra Railway; không tắt TLS.
+- Jev chính thức được thử với câu minh họa không chứa dữ liệu cá nhân: key/quyền model vẫn bị từ chối (`jev_auth_failed`); hệ thống trả `mode=local`. Chưa xác nhận inference thật.
+- Mô tả, homepage và topics GitHub đã cập nhật. Banner Social Preview được lưu trong repository; chọn ảnh trong Settings theo hướng dẫn nếu muốn dùng làm ảnh chia sẻ.
+
+[Phạm vi nâng cấp và hướng dẫn vận hành](UPGRADE_2026.md).
+
+---
+
+## Lịch sử trước nâng cấp
+
 # GitHub, Railway và Supabase — Musuroom 1
 
 Trạng thái ngày **02.10.2026**, mã nguồn **1.7.0**.

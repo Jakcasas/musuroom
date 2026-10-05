@@ -6,11 +6,11 @@ Ngày cập nhật: 05.10.2026. Người dùng xác nhận chưa có tài liệu
 |---|---|---|
 | GitHub Makeover | README có badges, Mermaid, bảng phân hệ và biến môi trường; MIT, NOTICE, CONTRIBUTING, issue và PR templates; banner 1280×640 | Social Preview cần chủ repository chọn ảnh trong Settings nếu API không hỗ trợ |
 | Hạ tầng và dữ liệu | Zod kiểm tra đầu vào khảo sát/đăng ký, kiểm tra cấu trúc hồ sơ mới; circuit breaker Jev; Docker Compose local | Máy hiện tại chưa có Docker để xác minh build/run |
-| Atlas trên Railway | Chẩn đoán kết nối từ chính server qua API ADMIN, mã lỗi lọc; SQL tiếp tục là dữ liệu gốc | Kết nối cloud cần được xác nhận; không tắt TLS hay mở toàn Internet để bỏ lỗi |
+| Atlas trên Railway | Chẩn đoán kết nối từ chính server qua API ADMIN, mã lỗi lọc; SQL tiếp tục là dữ liệu gốc | Cloud đã kiểm tra: lỗi TLS nội bộ từ Atlas; cần đối chiếu Network Access/đường ra Railway. Giữ kiểm chứng TLS. |
 | Radar cảm quan | 5 trục, chọn bằng chuột/bàn phím, số liệu trong bảng | Kết quả thực chỉ xuất hiện khi có phiếu hợp lệ |
 | Offline PWA | Cache trang khảo sát/tri thức công khai và tài nguyên cần thiết; lưu một phiếu khi đã đồng ý, giữ UUID gửi lại | Phải mở trang online ít nhất một lần; không cache API riêng tư, không lưu đăng ký liên hệ; không cam kết ngoại tuyến 100% |
 | Báo cáo PDF | Nút In báo cáo / Lưu PDF tạo bản A4 từ thống kê đang xem | Người dùng chọn Save as PDF trong hộp in trình duyệt; không phải dịch vụ PDF phía server |
-| RAG và TCVN | Nhập điều khoản, phiên bản, trích dẫn, URL, trích đoạn có quyền sử dụng; nguồn đã công bố tham gia truy xuất của trợ lý | Chưa có TCVN thật; không tự tải toàn văn có bản quyền; Jev key vẫn cần quyền hợp lệ |
+| RAG và TCVN | Nhập điều khoản, phiên bản, trích dẫn, URL, trích đoạn có quyền sử dụng; nguồn đã công bố tham gia truy xuất của trợ lý | Chưa có TCVN thật; Jev MCP thử ngày 05.10 vẫn trả jev_auth_failed; cần key/quyền model hợp lệ. |
 | pgvector | Extension và bảng riêng tư; API ADMIN nhập/query vector 384 chiều theo model và revision | Không tự sinh embedding; cần nạp vector từ cùng model đã chọn. Chat công khai hiện dùng từ khóa và tùy chọn Jev reranking |
 | Cảm xúc góp ý | Tổng hợp từ khóa tích cực/cần cải thiện/hỗn hợp/chưa rõ, tối đa 1.000 góp ý gần nhất của đợt/mẫu | Không gửi nhận xét thô đến provider; đây không phải phân tích cảm xúc đã hiệu chuẩn |
 | QR từng hũ | Hồ sơ nội bộ/công bố, QR SVG dẫn đến dữ liệu hiện tại, revision và minh chứng | Nội dung do dự án cung cấp; QR không chứng thực chuỗi cung ứng |
@@ -60,3 +60,7 @@ ADMIN gọi `POST /api/v1/admin/research/diagnostics/atlas` với `{}` và CSRF 
 - [JevAI MCP](https://www.jevai.org/mcp).
 
 Social Preview: dùng `docs/social-preview.png` (1280×640) trong GitHub Settings → General → Social preview. Giữ banner không có key, QR truy cập riêng hoặc dữ liệu người thử. Topics đề xuất: `food-waste`, `mushroom`, `sensory-analysis`, `express`, `supabase`, `mongodb`, `jevai`, `pwa`, `vietnamese`.
+
+## Kiểm chứng bản phát hành
+
+63/63 kiểm thử đạt; cú pháp 100 file và 138 liên kết nội bộ hợp lệ; audit production không có lỗ hổng đã biết. Đã kiểm tra UI tạo hũ/rubric/chấm điểm bằng dữ liệu trong bộ nhớ, truy xuất và offline lưu/phục hồi/gửi lại. Cloud xác minh phiên ADMIN, chặn anonymous, pgvector query và PostgreSQL health. Docker chưa chạy trên máy này; hộp lưu PDF và khả năng cài PWA cần đối chiếu thêm trên các trình duyệt/thiết bị sử dụng thực tế.
