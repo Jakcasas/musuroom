@@ -1,5 +1,24 @@
 # Trợ lý tri thức & phân tích cảm quan
 
+## Xử lý `jev_auth_failed` qua MCP
+
+Jev MCP dùng **personal Bearer key** do trang [Jev Keys](https://www.jevai.org/agent/keys) tạo; cookie đăng nhập hoặc URL Playground không thay thế key. Trong Musuroom, cấu hình đúng là:
+
+```dotenv
+JEV_ENABLED=true
+JEV_TRANSPORT=mcp
+JEV_MODEL=typesafe-ai/jev
+JEV_API_KEY=<dán toàn bộ personal key, không có khoảng trắng hoặc dấu ngoặc kép>
+```
+
+Musuroom gửi `POST https://www.jevai.org/api/mcp` với `MCP-Protocol-Version: 2025-03-26`, `Accept: application/json, text/event-stream` và `Authorization: Bearer ...`. Sau khi thay key, khởi động lại server hoặc redeploy Railway; biến môi trường không được nạp lại trong tiến trình đang chạy.
+
+Nếu vẫn nhận `jev_auth_failed`, kiểm tra theo thứ tự: (1) key đã được **Create hoặc Replace** tại `/agent/keys` và được sao chép đầy đủ ngay lúc tạo; (2) tài khoản có quyền dùng model `typesafe-ai/jev`; (3) Railway Variables dùng đúng tên `JEV_API_KEY`, không phải `TYPESAFE_API_KEY`; (4) không đặt `JEV_MODEL` thành tên model khác; (5) không dán key vào Git, frontend hoặc chat. `CAU_HINH_JEV.cmd` chỉ ghi key vào `data/cloud.env` riêng tư, không in giá trị.
+
+Phân biệt lỗi: `jev_auth_failed` là HTTP 401/403 hoặc MCP trả thông báo credentials/model access; `jev_rate_limited` là 429; `provider_unavailable` là lỗi mạng/5xx; `jev_cooldown` là circuit breaker đang tạm nghỉ sau lỗi. Khi lỗi, Musuroom tự dùng phân loại từ khóa cục bộ và đánh dấu cần đối chiếu, không tạo confidence giả.
+
+Sau khi sửa, kiểm tra bằng một nhận xét thử không chứa dữ liệu cá nhân trong cổng giám khảo. Chỉ coi Jev hoạt động khi phản hồi có `mode=jev`, model đúng và kết quả vượt qua bước đối chiếu nguồn. Lệnh health chỉ cho biết cấu hình/khả năng khởi động, không chứng minh key có quyền model.
+
 
 Musuroom hỗ trợ tra cứu có nguồn và diễn giải thống kê cảm quan. Mặc định, hệ thống hoạt động bằng kho tri thức và thuật toán thống kê; có thể kết nối OpenRouter để bổ sung câu trả lời bằng ngôn ngữ tự nhiên.
 

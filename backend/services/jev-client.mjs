@@ -22,7 +22,7 @@ export function createJevEvaluator(config,fetchImpl=fetch) {
   try{result=await withProviderDeadline(async signal=>{
    let response;
    for(let attempt=0;attempt<2;attempt++){
-    response=await fetchImpl(mcp?'https://www.jevai.org/api/mcp':'https://www.jevai.org/api/v1/decisions',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.jevKey}`,'Content-Type':'application/json'},signal,body});
+    response=await fetchImpl(mcp?'https://www.jevai.org/api/mcp':'https://www.jevai.org/api/v1/decisions',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.jevKey}`,'Content-Type':'application/json',...(mcp?{'Accept':'application/json, text/event-stream','MCP-Protocol-Version':'2025-03-26'}:{})},signal,body});
     if(attempt||![429,529].includes(response.status))break;
     const header=response.headers?.get('retry-after'),seconds=header==null?1:Number(header);
     if(!Number.isFinite(seconds)||seconds<0||seconds>3)break;
