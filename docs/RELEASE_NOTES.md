@@ -1,3 +1,11 @@
+# 1.9.0 — 06.10.2026
+
+- Cải tiến giao diện desktop: màu kem/xanh rừng, Roboto, bố cục rộng, menu trang chủ gọn và ba thẻ truy cập nhanh.
+- Biểu mẫu khảo sát có các nhóm nội dung rõ và chỉ báo số tiêu chí đã chọn; đồng bộ khi thay đổi, khôi phục nháp hoặc đặt lại.
+- Cổng giám khảo thêm nút hiện/ẩn mã, tự che khi gửi hoặc chuyển khỏi tab. Không thay đổi xác thực hay quyền dữ liệu.
+- Đồng bộ hình thức bảng, hồ sơ, kho tri thức; bổ sung tài sản công khai vào service worker 1.9.0. Không thêm migration.
+- Canva/Figma chưa có công cụ thao tác trong phiên này; Higgsfield từ chối tạo ảnh do gói tài khoản. Sử dụng hình minh họa hiện có và triển khai thiết kế trực tiếp trong mã nguồn.
+
 # 1.8.5 — 06.10.2026
 
 - Railway cấu hình Singapore, một replica, giữ hoạt động liên tục; watch paths chỉ theo dõi mã/tài sản runtime và dependency/config build.
