@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.9.0-264736)
+![Version](https://img.shields.io/badge/version-1.9.1-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -13,9 +13,11 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 Triển khai từ `main` vào **Musuroom 1 → musuroom-web → production**, cổng `8080`, healthcheck `/healthz`. Hai thông báo Railway mang tên `perpetual-tranquility` và `mcp.musuroom.com` trên commit cũ thuộc cùng một dịch vụ tạo thêm thiếu biến production; dịch vụ rỗng đã được gỡ. [Đích triển khai và cách xử lý lỗi](docs/RAILWAY_RECOVERY.md).
 
-## Bản 1.9.0 — giao diện trên máy tính
+## Bản 1.9.1 — giao diện trên máy tính
 
 Trang chủ thoáng hơn với màu kem/xanh nấm, điều hướng gọn và ba lối vào chính. Phiếu khảo sát có chỉ báo hoàn thành 5 tiêu chí; cổng giám khảo bổ sung hiện/ẩn mã truy cập. Thẻ hồ sơ, bảng và kho tri thức có kiểu trình bày thống nhất, giữ Roboto. [Thiết kế và phạm vi cập nhật](docs/DESIGN_DESKTOP.md).
+
+Bản 1.9.1 sửa khóa biểu mẫu đăng nhập khi có nút hiện mã, ngăn gửi lặp và hướng dẫn rõ khi kết nối bị gián đoạn. Lỗi nhập liệu được gắn với đúng trường và đưa con trỏ về chỗ cần sửa. Kho tri thức thêm từ khóa gợi ý, giải thích điều kiện sắp xếp cùng Jev; cổng giám khảo có lối chuyển nhanh giữa các mục hồ sơ.
 
 ## Vận hành từ bản 1.8.5
 

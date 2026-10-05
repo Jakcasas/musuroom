@@ -1,3 +1,13 @@
+# 1.9.1 — 06.10.2026
+
+- Sửa regression đăng nhập: nút hiện/ẩn mã làm bộ chọn nút đầu tiên khóa nhầm điều khiển. Cả biểu mẫu được khóa trong lúc xác thực; chặn gửi lặp từ bàn phím. Trợ lý dùng cùng cơ chế.
+- Thông báo mạng, timeout và phản hồi không hợp lệ bằng tiếng Việt, không tự gửi lại yêu cầu ghi dữ liệu và không hiển thị chẩn đoán transport thô.
+- Lỗi nhập liệu liên kết với trường bằng `aria-describedby`, tô dấu lỗi và chuyển focus về trường cần sửa sau khi mở khóa.
+- Kho tri thức có từ khóa gợi ý; giải thích điều kiện dùng Jev. Xóa bộ lọc đồng bộ lại trạng thái đồng ý và nút sắp xếp.
+- Cổng giám khảo có điều hướng nhanh giữa tài liệu, kết quả và phân loại. Đồng bộ menu ở các trang hồ sơ công khai/nghiên cứu; hỗ trợ bàn phím trên radar tránh cuộn khi bấm Space.
+- Không thay đổi schema hoặc quyền Supabase. Fixture kiểm thử dùng database trong bộ nhớ, có thể giả lập xác thực chậm và chọn cổng riêng.
+- Kiểm tra local: 82/82 tests, 112 tệp mã và 161 liên kết tài sản đạt. Trình duyệt desktop xác nhận khóa toàn bộ biểu mẫu trong lúc đăng nhập chậm, đăng nhập/đăng xuất, focus trường liên hệ sai, đặt lại bộ lọc/consent Jev và trợ lý trả nguồn.
+
 # 1.9.0 — 06.10.2026
 
 - Cải tiến giao diện desktop: màu kem/xanh rừng, Roboto, bố cục rộng, menu trang chủ gọn và ba thẻ truy cập nhanh.

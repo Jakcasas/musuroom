@@ -27,6 +27,7 @@ survey.addEventListener('submit', async event => {
   for (const name of ['color_score','aroma_score','umami_taste_score','aftertaste_score','overall_acceptance']) input[name] = Number(input[name]);
   input.submission_key = key;
   const finish = beginSubmission(survey);
+  let invalidField;
   feedback(surveyNote, 'Đang gửi phiếu…');
   try {
     if(keep.checked)drafts.save(input);
@@ -35,9 +36,10 @@ survey.addEventListener('submit', async event => {
     feedback(surveyNote, 'Đã nhận phiếu. Cảm ơn bạn đã góp ý cho mẫu thử. Chọn “Phiếu mới” nếu cần đánh giá mẫu khác.');
     survey.dataset.saved = 'true';
   } catch (error) {
-    formErrors(survey, error.fields); feedback(surveyNote, keep.checked&&drafts.read()?'Chưa xác nhận gửi thành công. Phiếu đã lưu trên máy; giữ nguyên nội dung và bấm gửi lại khi có mạng. '+(error.status?error.message:''):error.message, true);
+    invalidField=formErrors(survey, error.fields); feedback(surveyNote, keep.checked&&drafts.read()?'Chưa xác nhận gửi thành công. Phiếu đã lưu trên máy; giữ nguyên nội dung và bấm gửi lại khi có mạng. '+(error.status?error.message:''):error.message, true);
   } finally {
     finish();
+    invalidField?.focus();
     if (survey.dataset.saved === 'true') for (const control of survey.querySelectorAll('input,select,textarea,button[type=submit]')) control.disabled = true;
   }
 });
@@ -57,14 +59,15 @@ sample.addEventListener('submit', async event => {
   const input = Object.fromEntries(new FormData(sample)); input.consent = sample.elements.consent.checked;
   const finish = beginSubmission(sample);
   let accepted = false;
+  let invalidField;
   feedback(sampleNote, 'Đang tiếp nhận đăng ký…');
   try {
     const result = await request('/api/v1/leads/register', { method:'POST', body:input });
     feedback(sampleNote, result.message); accepted = true;
   } catch (error) {
-    formErrors(sample, error.fields); feedback(sampleNote, error.message, true);
+    invalidField=formErrors(sample, error.fields); feedback(sampleNote, error.message, true);
   } finally {
-    finish(); if (accepted) sample.reset();
+    finish(); invalidField?.focus(); if (accepted) sample.reset();
   }
 });
 sample.addEventListener('reset', event => { if (isSubmitting(sample)) event.preventDefault(); else formErrors(sample); });

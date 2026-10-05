@@ -21,7 +21,7 @@ if(process.env.UI_FIXTURE_RESEARCH==='true'){
  db.prepare("UPDATE research_records SET revision=2 WHERE id='fixture-sample'").run();
 }
 const delay=Math.min(5000,Math.max(0,Number(process.env.UI_FIXTURE_DELAY_MS)||0));
-const fixtureDb=delay?{prepare(sql){const statement=db.prepare(sql);return{all:statement.all.bind(statement),get:statement.get.bind(statement),async run(...values){if(/^INSERT INTO (?:sensory_evaluations|sample_requests)/.test(sql))await new Promise(resolve=>setTimeout(resolve,delay));return statement.run(...values);}};},close:()=>db.close()}:db;
+const fixtureDb=delay?{prepare(sql){const statement=db.prepare(sql);return{all:statement.all.bind(statement),async get(...values){if(/^SELECT \* FROM judge_accounts/.test(sql))await new Promise(resolve=>setTimeout(resolve,delay));return statement.get(...values);},async run(...values){if(/^INSERT INTO (?:sensory_evaluations|sample_requests)/.test(sql))await new Promise(resolve=>setTimeout(resolve,delay));return statement.run(...values);}};},close:()=>db.close()}:db;
 const mockJev=process.env.UI_FIXTURE_JEV==='true';
 const fetchImpl=mockJev?async(url,init)=>{
  if(url!=='https://www.jevai.org/api/v1/decisions')throw Error('Fixture forbids real provider requests');
@@ -30,4 +30,5 @@ const fetchImpl=mockJev?async(url,init)=>{
  return Response.json({code:0,data:{model:'jev-fixture-only',answers}});
 }:undefined;
 const server=createApp({database:fixtureDb,fetchImpl,config:{...loadConfig({DATABASE_PATH:':memory:',...(mockJev?{JEV_ENABLED:'true',JEV_API_KEY:'fixture-only-key'}:{})}),documentRoot:resolve(projectRoot,'tests/fixtures')}});
-server.listen(8767,'127.0.0.1',()=>console.log('Disposable UI fixture at http://127.0.0.1:8767'));
+const port=loadConfig({PORT:process.env.UI_FIXTURE_PORT||'8767'}).port;
+server.listen(port,'127.0.0.1',()=>console.log(`Disposable UI fixture at http://127.0.0.1:${port}`));

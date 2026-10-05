@@ -1,6 +1,7 @@
 import { printReport } from './technical-report.js';
 import { element, number, date, request, feedback, radar } from './portal-ui.js';
 import { dataWorkspace } from './data-workspace.js';
+import { beginSubmission, isSubmitting } from './form-state.js';
 const $=id=>document.getElementById(id);
 let reportData=null;
 let auth=null, groups=[], offset=0, expiryTimer, selectionVersion=0;
@@ -54,7 +55,15 @@ async function showSession(session){
  if(session.user.role==='ADMIN'){await loadLeads();if(auth)await dataPanel.show(session);}
  }catch(error){failed(error);}
 }
-$('login-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;const access_code=$('access-code').value;$('access-code').value='';feedback($('login-feedback'),'Đang xác thực…');try{await showSession(await request('/api/v1/judge/verify',{method:'POST',body:{access_code}}));}catch(error){failed(error,$('login-feedback'));}finally{button.disabled=false;}});
+$('login-form').addEventListener('submit',async event=>{
+ event.preventDefault();const form=event.currentTarget;
+ if(isSubmitting(form)||!form.reportValidity())return;
+ const access_code=$('access-code').value;const finish=beginSubmission(form);
+ $('access-code').value='';feedback($('login-feedback'),'Đang xác thực…');
+ try{await showSession(await request('/api/v1/judge/verify',{method:'POST',body:{access_code}}));}
+ catch(error){failed(error,$('login-feedback'));}
+ finally{finish();if(!auth)$('access-code').focus();}
+});
 $('logout').addEventListener('click',async()=>{try{await request('/api/v1/auth/logout',{method:'POST',body:{},csrf:auth?.csrf_token});clearSession();}catch(error){failed(error);}});
 $('group-select').addEventListener('change',metrics);
 $('csv-export').addEventListener('click',async event=>{const body=selected();if(!body)return;event.target.disabled=true;try{const blob=await request('/api/v1/sensory/export',{method:'POST',body,csrf:auth?.csrf_token});if(!auth)return;const url=URL.createObjectURL(blob);const link=element('a');link.href=url;link.download=`sensory-${body.session_code}-${body.sample_code}.csv`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){failed(error);}finally{event.target.disabled=false;}});
