@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { postgresAdapter,initializePostgres } from '../backend/db/postgres.mjs';
 import { createApp } from '../backend/app.mjs';
 import { loadConfig } from '../backend/config.mjs';
-import { createAccount } from '../backend/security/auth.mjs';
+import { createAccount,rotateJudgeAccessCode } from '../backend/security/auth.mjs';
 import { documentStorage } from '../backend/services/document-storage.mjs';
 import { rateLimit } from '../backend/security/rate-limit.mjs';
 import { request as httpRequest } from 'node:http';
@@ -47,7 +47,7 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  assert.equal((await engine.query("SELECT has_function_privilege('authenticated','public.musuroom_sensory_distribution(text,text)','EXECUTE') AS allowed")).rows[0].allowed,false);
  assert.equal((await engine.query("SELECT count(*)::int n FROM pg_constraint WHERE conrelid='product_samples'::regclass AND conname IN ('product_metrics_object','product_nutrition_object','product_measurements_required','product_metrics_supported','product_nutrition_supported')")).rows[0].n,5);
  const judge=await createAccount(db,{name:'Cloud test judge'});const admin=await createAccount(db,{name:'Cloud test admin',role:'ADMIN'});
- const server=createApp({config:loadConfig(production),database:db});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(async()=>{await new Promise(r=>server.close(r));await server.databaseClosed;});
+ const server=createApp({config:loadConfig({...production,JUDGE_DEFAULT_ACCOUNT_ID:judge.account_id}),database:db});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(async()=>{await new Promise(r=>server.close(r));await server.databaseClosed;});
  const base=`http://127.0.0.1:${server.address().port}`;
  const call=(path,method='GET',body,session,extra={})=>new Promise((resolve,reject)=>{
   const req=httpRequest(base+path,{method,headers:{Host:'musuroom.example','X-Forwarded-Proto':'https',...(body===undefined?{}:{'Content-Type':'application/json'}),...(session?{Cookie:session.cookie,'X-CSRF-Token':session.csrf}:{}),...extra}},res=>{const chunks=[];res.on('data',x=>chunks.push(x));res.on('end',()=>resolve(new Response(res.statusCode===204?null:Buffer.concat(chunks),{status:res.statusCode,headers:Object.fromEntries(Object.entries(res.headers).map(([key,value])=>[key,Array.isArray(value)?value.join(', '):value]))})));});req.on('error',reject);req.end(body===undefined?undefined:JSON.stringify(body));
@@ -89,6 +89,10 @@ test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, senso
  await db.prepare("UPDATE quality_documents SET evidence_status='FINAL' WHERE id=?").run(evidence);
  assert.equal((await call('/api/v1/admin/product-samples','POST',sample,operator)).status,409);assert.equal((await call('/api/v1/admin/product-samples','POST',{...sample,sample_code:'OTHER',metrics:{water_activity:2}},operator)).status,422);
  assert.equal((await call('/api/v1/auth/logout','POST',{},signed)).status,204);assert.equal((await call('/api/v1/judge/dossier','GET',undefined,signed)).status,401);
+ const judgeCode='postgres-fixture-code!';const changed=await rotateJudgeAccessCode(db,judge.account_id,judgeCode);assert.equal(changed.expires_at,judge.expires_at);
+ assert.equal((await call('/api/v1/judge/verify','POST',{access_code:judge.access_code})).status,401);
+ const defaultLogin=await call('/api/v1/judge/verify','POST',{access_code:judgeCode});assert.equal(defaultLogin.status,200);const defaultAuth=await defaultLogin.json();assert.equal(defaultAuth.user.role,'JUDGE');const defaultSession={cookie:defaultLogin.headers.get('set-cookie').split(';')[0],csrf:defaultAuth.csrf_token};
+ assert.equal((await call('/api/v1/admin/leads','GET',undefined,defaultSession)).status,403);assert.equal((await call('/api/v1/auth/logout','POST',{},defaultSession)).status,204);
 });
 test('Supabase storage authenticates server-side, refuses public buckets and never constructs public object links',async()=>{
  const config=loadConfig(production);const name='11111111-1111-4111-8111-111111111111.txt';const bytes=Buffer.from('private fixture');let publicBucket=true;let upload=0;

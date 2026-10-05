@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -12,6 +12,7 @@
     "db:migrate": "node scripts/database.mjs",
     "access:create": "node scripts/create-access.mjs",
     "access:revoke": "node scripts/revoke-access.mjs",
+    "access:change-judge": "node scripts/change-judge-code.mjs",
     "dossier:add": "node scripts/add-document.mjs",
     "docs:search": "node scripts/search-typesafe.mjs",
     "jev:check": "node scripts/check-jev.mjs",

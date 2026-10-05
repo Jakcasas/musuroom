@@ -1,3 +1,7 @@
+# 1.8.3 — 05.10.2026
+
+Mã Giám khảo mặc định được người vận hành lựa chọn và băm bằng scrypt. Chỉ một tài khoản JUDGE được cấu hình, không dùng mã mặc định để đăng nhập ADMIN. Đổi mã thu hồi phiên cũ, giữ thời hạn; kiểm tra lại credential/tài khoản khi tạo phiên để chặn thao tác đồng thời với thu hồi. Không đưa giá trị mã vào Git, frontend hoặc QR. Bỏ qua metadata `.vs/` của Visual Studio.
+
 # 1.8.2 — 05.10.2026
 
 Chọn minh chứng từ tài liệu có sẵn, hiển thị thông tin hũ/lô/nguồn/quy trình khi chấm. Phiếu cũ có nhắc đối chiếu; bảng trung bình chỉ tính đúng revision hiện tại. API yêu cầu `sample_revision`, có thông báo cụ thể cho xung đột và mã hũ trùng. Migration mới kiểm tra thang điểm, số tiêu chí, trọng số và tổng ở database; giữ bộ tiêu chí đã lưu bất biến. Kiểm thử cùng tình huống trên SQLite và PostgreSQL. Không tạo dữ liệu minh họa trên production.

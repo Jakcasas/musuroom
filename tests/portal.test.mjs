@@ -6,17 +6,42 @@ import { readFileSync } from 'node:fs';
 import { createApp } from '../backend/app.mjs';
 import { loadConfig, projectRoot } from '../backend/config.mjs';
 import { openDatabase } from '../backend/db/database.mjs';
-import { createAccount } from '../backend/security/auth.mjs';
+import { createAccount,rotateJudgeAccessCode,createSecurity } from '../backend/security/auth.mjs';
 import { createJevClassifier } from '../backend/services/jev.mjs';
-async function client(t,extra={}){
+async function client(t,extra={},defaultAccount){
  const db=openDatabase(':memory:');const config={...loadConfig({DATABASE_PATH:':memory:',AUTH_LOGIN_LIMIT:'3'}),documentRoot:resolve(projectRoot,'tests/fixtures'),...extra};
  const judge=await createAccount(db,{name:'Giám khảo kiểm thử'});const admin=await createAccount(db,{name:'Quản trị kiểm thử',role:'ADMIN'});
+ if(defaultAccount)config.defaultJudgeAccountId=defaultAccount==='admin'?admin.account_id:judge.account_id;
  const server=createApp({config,database:db});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
  const base=`http://127.0.0.1:${server.address().port}`;
  const call=(path,method='GET',body,cookie,csrf)=>fetch(base+'/api/v1'+path,{method,headers:{...(body===undefined?{}:{'Content-Type':'application/json'}),...(cookie?{Cookie:cookie}:{}),...(csrf?{'X-CSRF-Token':csrf}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
  const login=async(account,previous)=>{const response=await call('/judge/verify','POST',{access_code:account.access_code},previous);return {response,cookie:response.headers.get('set-cookie')?.split(';')[0],session:await response.json()};};
  return{db,call,login,judge,admin,base};
 }
+
+test('Default judge code stays hashed and JUDGE-only; rotation revokes old codes/sessions and keeps expiry',async t=>{
+ const a=await client(t,{},'judge'),old=await a.login(a.judge),code='fixture-passcode-2026!';
+ const changed=await rotateJudgeAccessCode(a.db,a.judge.account_id,code);assert.equal(changed.expires_at,a.judge.expires_at);
+ assert.equal((await a.call('/auth/session','GET',undefined,old.cookie)).status,401);assert.equal((await a.login(a.judge)).response.status,401);
+ const login=await a.call('/judge/verify','POST',{access_code:code});assert.equal(login.status,200);const cookie=login.headers.get('set-cookie').split(';')[0],session=await login.json();assert.equal(session.user.role,'JUDGE');
+ assert.equal((await a.call('/admin/leads','GET',undefined,cookie)).status,403);assert.equal((await a.call('/sensory/export','POST',{},cookie)).status,403);
+ assert.ok(!JSON.stringify(a.db.prepare('SELECT * FROM judge_accounts').all()).includes(code));
+ await assert.rejects(()=>rotateJudgeAccessCode(a.db,a.admin.account_id,code));await assert.rejects(()=>rotateJudgeAccessCode(a.db,a.judge.account_id,'short'));
+ a.db.prepare('UPDATE judge_accounts SET expires_at=0 WHERE id=?').run(a.judge.account_id);assert.equal((await a.call('/judge/verify','POST',{access_code:code})).status,401);
+ const b=await client(t,{},'admin');assert.equal((await b.call('/judge/verify','POST',{access_code:b.admin.access_code.split('.')[1]})).status,401);assert.equal((await b.login(b.admin)).response.status,200);
+ const c=await client(t);await rotateJudgeAccessCode(c.db,c.judge.account_id,code);assert.equal((await c.call('/judge/verify','POST',{access_code:code})).status,401);
+ assert.throws(()=>loadConfig({JUDGE_DEFAULT_ACCOUNT_ID:'invalid-id'}));
+});
+
+test('Revocation after credential lookup prevents a login session from being created',async()=>{
+ const db=openDatabase(':memory:');try{
+ const judge=await createAccount(db,{name:'Snapshot test'});
+ const wrapped={prepare(sql){const statement=db.prepare(sql);return {get(...args){const row=statement.get(...args);if(sql==='SELECT * FROM judge_accounts WHERE id=?')db.prepare('UPDATE judge_accounts SET enabled=0 WHERE id=?').run(judge.account_id);return row;},run:statement.run.bind(statement),all:statement.all.bind(statement)};}};
+ let status=200;const response={set(){return this;},status(value){status=value;return this;},json(){return this;}};
+ await createSecurity(wrapped,loadConfig({})).login({ip:'snapshot-test',headers:{},body:{access_code:judge.access_code}},response);
+ assert.equal(status,401);assert.equal(db.prepare('SELECT count(*) AS n FROM auth_sessions').get().n,0);
+ }finally{db.close();}
+});
 test('Portal enforces role and CSRF; stores credential/session hashes and rotates sessions',async t=>{
  const a=await client(t);assert.equal((await a.call('/judge/dossier')).status,401);assert.equal((await a.call('/auth/session')).status,401);
  const signed=await a.login(a.judge);assert.equal(signed.response.status,200);assert.match(signed.response.headers.get('set-cookie'),/HttpOnly; SameSite=Strict/);

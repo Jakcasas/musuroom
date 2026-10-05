@@ -1,4 +1,4 @@
-# Cổng Ban Giám Khảo FID 2026 — Musuroom 1 (mã nguồn 1.4.2)
+# Cổng Ban Giám Khảo FID 2026 — Musuroom 1
 
 ## Mở và đăng nhập
 
@@ -14,6 +14,16 @@ Tài khoản cấp lúc hoàn thiện có thời hạn 7 ngày; xem `expires_at`
 Giao diện giám khảo chỉ tải dữ liệu riêng tư sau khi xác thực. Form khảo sát và đăng ký mẫu ở `trai-nghiem.html` nhận dữ liệu trực tiếp qua API. Liên kết điền sẵn mã: `http://127.0.0.1:8766/trai-nghiem.html?session=ROUND-01&sample=MUSH-01`. Vai trò người thử tự khai trong phiếu không cấp quyền đăng nhập.
 
 ## Cấp mã riêng cho từng người
+
+### Mã Giám khảo mặc định · 1.8.3
+
+`JUDGE_DEFAULT_ACCOUNT_ID` trỏ tới một tài khoản JUDGE đang hoạt động. Khi được cấu hình, người xem có thể nhập trực tiếp mã do người vận hành chọn (12–100 ký tự). Mã không nằm trong frontend hoặc Git; SQL chỉ lưu salt và hash scrypt. Giá trị thực nằm trong tệp JSON riêng tư của người vận hành. ADMIN tiếp tục dùng mã riêng.
+
+Lệnh `pnpm access:change-judge` nhận mã qua stdin, cập nhật tài khoản trong `data/judge-access.json` và `.env`. Thêm `--cloud` để cập nhật tài khoản trong `data/cloud-judge-access.json` và `data/cloud.env`. Không truyền mã qua tham số CLI, README hoặc URL. Sau đó đồng bộ riêng `JUDGE_DEFAULT_ACCOUNT_ID` sang Railway Variables và triển khai/restart. Lệnh không in mã và không gia hạn tài khoản; nếu đã hết hạn, cấp tài khoản mới theo hướng dẫn bên dưới.
+
+Đổi mã xóa các phiên của tài khoản, mã ngẫu nhiên cũ không còn hợp lệ. Mọi người dùng mã mặc định được ghi nhận dưới cùng tài khoản JUDGE; cấp mã riêng nếu cần phân biệt từng người chấm. Giới hạn thử sai, CSRF, cookie và thời hạn phiên vẫn được áp dụng.
+
+### Tài khoản riêng
 
 Chạy trong thư mục dự án với Node 24 trở lên:
 
