@@ -1,6 +1,10 @@
 # Triển khai Musuroom 1 — Railway + Supabase
 
-## Bản đang chạy, ngày 02.10.2026
+## Đích triển khai hiện tại
+
+Project **Musuroom 1**, service **musuroom-web**, environment **production**, repository `Jakcasas/musuroom` nhánh `main`. Ngày 06.10.2026 đã kiểm tra bản 1.8.4 đang hoạt động và gỡ dịch vụ rỗng tạo thêm gây hai thông báo Railway failure trên cùng commit. [Chi tiết và quy trình khôi phục](RAILWAY_RECOVERY.md).
+
+## Mốc triển khai ngày 02.10.2026
 
 - Ứng dụng: **https://musuroom-web-production.up.railway.app**.
 - Health `/healthz`: `app=musuroom`, `version=1.7.0`, `database=ok`.

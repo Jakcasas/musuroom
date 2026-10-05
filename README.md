@@ -11,6 +11,8 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 **[Mở website](https://musuroom-web-production.up.railway.app)** · **[Khảo sát](https://musuroom-web-production.up.railway.app/trai-nghiem.html)** · **[Cổng giám khảo](https://musuroom-web-production.up.railway.app/giam-khao.html)** · **[Hướng dẫn](docs/README.md)**
 
+Triển khai từ `main` vào **Musuroom 1 → musuroom-web → production**, cổng `8080`, healthcheck `/healthz`. Hai thông báo Railway mang tên `perpetual-tranquility` và `mcp.musuroom.com` trên commit cũ thuộc cùng một dịch vụ tạo thêm thiếu biến production; dịch vụ rỗng đã được gỡ. [Đích triển khai và cách xử lý lỗi](docs/RAILWAY_RECOVERY.md).
+
 ## Bản 1.8.4
 
 Bốn luồng Jev gồm kiểm tra đầu vào, sắp xếp nguồn, phân loại 1–5 bài/lô và lưu đề xuất để đối chiếu. Bản này bổ sung nhận diện bí mật tiếng Việt/ký tự ẩn, giới hạn request sắp xếp nguồn 18 KB và đưa kết quả có hai nhãn gần nhau vào hàng chờ. Giao diện nêu rõ số đề xuất từ Jev và từ luật cục bộ; lý do cần xem lại được lưu cùng đề xuất trong Supabase. [Chi tiết các luồng](docs/JEV_WORKFLOWS.md).
