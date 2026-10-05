@@ -33,6 +33,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'X-Frame-Options':'DENY', 'Permissions-Policy':'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'" });
+    if(app.locals.draining)return res.status(503).set('Retry-After','1').json({error:'service_restarting'});
     let path;
     try { path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); } catch { return res.status(400).json({ error: 'invalid_url' }); }
     if (path.includes('\0') || path.includes('\\') || path.split('/').some(part => part.startsWith('.'))) return res.status(403).json({ error: 'forbidden_path' });
@@ -54,7 +55,10 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
     next();
   });
   app.use(express.json({ limit: '16kb', strict: true }));
-  app.get('/healthz', async (req, res) => { await db.prepare('SELECT 1').get(); res.json({ ...releaseInfo, database: 'ok' }); });
+  app.get('/healthz', async (req, res) => {
+    try{await db.prepare('SELECT 1').get();res.json({...releaseInfo,database:'ok'});}
+    catch{res.status(503).json({...releaseInfo,database:'unavailable'});}
+  });
   app.get('/api/status', async (req, res) => res.json({ ...releaseInfo, aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
   app.post('/api/knowledge/rerank',rateLimit(5,'search_rate_limit'),async(req,res)=>{
     const {query,category='',allow_remote}=req.body||{};
@@ -113,6 +117,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
 export function createApp(options) {
   const app = createApplication(options);
   const server = createServer(app);
-  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve().then(()=>server.stopDataWorker?.()).then(()=>app.locals.db.close()).then(resolve,reject)));
+  server.setDraining=()=>{app.locals.draining=true;};
+  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve().then(async()=>{try{await server.stopDataWorker?.();}finally{await app.locals.db.close();}}).then(resolve,reject)));
   return server;
 }

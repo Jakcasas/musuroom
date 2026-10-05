@@ -1,3 +1,10 @@
+# 1.8.5 — 06.10.2026
+
+- Railway cấu hình Singapore, một replica, giữ hoạt động liên tục; watch paths chỉ theo dõi mã/tài sản runtime và dependency/config build.
+- Overlap 10 giây, draining 35 giây; backend xử lý SIGTERM/SIGINT bằng cùng handler, bỏ qua tín hiệu lặp, ngừng worker ngay và chờ request đang chạy. Deadline 30 giây, log không chứa lỗi provider hoặc credentials.
+- Cleanup vẫn đóng database khi worker dừng lỗi. Healthcheck trả 503 khi database không sẵn sàng; request mới trong giai đoạn dừng nhận 503 và Retry-After.
+- Bổ sung kiểm thử request đang chạy, tín hiệu lặp, deadline, readiness và lỗi cleanup. Giữ thang điểm/phiếu/database hiện có; không thêm migration.
+
 # 1.8.4 — 05.10.2026
 
 - Guardrails chuẩn hóa Unicode, loại ký tự ẩn và chặn/che mật khẩu tiếng Việt, Bearer token, URI database có credentials, private key trước khi gọi Jev.

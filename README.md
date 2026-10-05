@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.8.4-264736)
+![Version](https://img.shields.io/badge/version-1.8.5-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -13,7 +13,11 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 Triển khai từ `main` vào **Musuroom 1 → musuroom-web → production**, cổng `8080`, healthcheck `/healthz`. Hai thông báo Railway mang tên `perpetual-tranquility` và `mcp.musuroom.com` trên commit cũ thuộc cùng một dịch vụ tạo thêm thiếu biến production; dịch vụ rỗng đã được gỡ. [Đích triển khai và cách xử lý lỗi](docs/RAILWAY_RECOVERY.md).
 
-## Bản 1.8.4
+## Bản 1.8.5
+
+Vận hành Railway ở Singapore với một replica, healthcheck database `/healthz`, overlap 10 giây và draining 35 giây. Backend dừng nhận yêu cầu mới, dừng worker một lần và chờ yêu cầu đang chạy trước khi đóng database; deadline 30 giây. Health trả 503 khi database chưa sẵn sàng. Watch paths chỉ build lại khi tài sản chạy ứng dụng thay đổi. [Cấu hình và vận hành Railway](docs/RAILWAY_OPERATIONS.md).
+
+### Các luồng của bản 1.8.4
 
 Bốn luồng Jev gồm kiểm tra đầu vào, sắp xếp nguồn, phân loại 1–5 bài/lô và lưu đề xuất để đối chiếu. Bản này bổ sung nhận diện bí mật tiếng Việt/ký tự ẩn, giới hạn request sắp xếp nguồn 18 KB và đưa kết quả có hai nhãn gần nhau vào hàng chờ. Giao diện nêu rõ số đề xuất từ Jev và từ luật cục bộ; lý do cần xem lại được lưu cùng đề xuất trong Supabase. [Chi tiết các luồng](docs/JEV_WORKFLOWS.md).
 

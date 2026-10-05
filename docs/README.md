@@ -11,6 +11,7 @@
 | Sửa Supabase Preview và kiểm tra lịch sử migration | [Lịch sử migration](SUPABASE_MIGRATIONS.md) |
 | Deploy Railway và in QR | [Triển khai cloud](DEPLOY_RAILWAY_SUPABASE.md) |
 | Xử lý deployment Railway lỗi, chọn đúng project/service | [Khôi phục triển khai](RAILWAY_RECOVERY.md) |
+| Singapore, healthcheck và cập nhật có draining | [Vận hành Railway](RAILWAY_OPERATIONS.md) |
 | Xem API khảo sát, thống kê và đăng ký mẫu | [REST API](API.md) |
 | Cấp mã giám khảo và thêm hồ sơ | [Cổng giám khảo](JUDGE_PORTAL.md) |
 | Hiểu cấu trúc server và database | [Kiến trúc](ARCHITECTURE.md) |
