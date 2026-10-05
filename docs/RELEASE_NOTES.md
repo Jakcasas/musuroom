@@ -5,6 +5,8 @@
 - Bulk labeling hiển thị số đề xuất Jev/cục bộ/cần xem lại. Confidence gate v2 lưu `review_reason` và `probability_margin`; chênh lệch hai nhãn dưới 0.1 cần đối chiếu. Ngưỡng này là chính sách thận trọng, chưa phải ngưỡng đã hiệu chuẩn.
 - Cài MCP Codex không lưu key vào config; có chẩn đoán riêng handshake, danh sách công cụ và inference. Lần thử hiện tại: local 401, cloud `tools/call` từ chối credentials/model access; chưa có inference thật thành công.
 - Dùng bảng `knowledge_decision_reviews` hiện có; không cần migration mới. Quyền Data API của bảng vẫn đóng, thao tác qua API ADMIN/CSRF của backend.
+- Kiểm chứng: 74/74 kiểm thử đạt; 9 migration local/remote khớp version, tên và SQL. Các trường hợp provider thành công được kiểm thử bằng mock; kết quả gọi Jev thật được ghi riêng, không suy ra từ kiểm thử mock.
+- Kiểm tra production 05.10.2026: health 1.8.4/PostgreSQL ok; phân loại hai lô 5+1 bài, lưu 6 đề xuất `pending`, `mode=local`, policy v2. Lô đầu nhận `jev_auth_failed`, lô sau và reranking dùng dự phòng trong thời gian cooldown. QR được xác minh lại với hai trang đích công khai. Supabase Preview, CI Linux và Windows đều thành công cho commit mã xử lý.
 
 # 1.8.3 — 05.10.2026
 
