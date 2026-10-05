@@ -1,4 +1,10 @@
-# Trạng thái Musuroom 1.8.2 — 05.10.2026
+# Trạng thái Musuroom 1.8.3 — 05.10.2026
+
+Mã Giám khảo mặc định đã cấu hình trên Railway và SQLite local; lưu salt/hash scrypt trong database. Kiểm tra thật: mã mới được chấp nhận với quyền JUDGE, mã cũ trả 401, trang quản trị trả 403; các phiên kiểm chứng đã đăng xuất. Đổi mã giữ thời hạn tài khoản và không đưa giá trị mã vào Git, QR hoặc frontend. Không có migration schema mới cho thay đổi này.
+
+68/68 kiểm thử đạt, gồm đổi mã, thu hồi phiên, giới hạn vai trò và thu hồi tài khoản trong lúc xác thực. Cú pháp 103 file và 138 liên kết hợp lệ. Commit mã `114cdb5` đạt cả Supabase Preview, Windows và Linux. Advisors bảo mật không có WARN/ERROR; 17 INFO RLS không policy vẫn là chính sách đóng Data API. Xem [vận hành tài khoản](JUDGE_PORTAL.md).
+
+## Kiểm chứng bản 1.8.2
 
 Bản 1.8.2 bổ sung chọn minh chứng từ hồ sơ, thông tin mẫu khi chấm và tổng hợp điểm theo phiên bản. API bắt buộc `sample_revision`; database kiểm tra trọng số, thang điểm, tổng và tính bất biến của bộ tiêu chí. Key Jev trong cấu hình riêng tư đã được đồng bộ ở bản 1.8.1; suy luận thật vẫn trả `jev_auth_failed`, gồm thử model mặc định ngày 05.10. Xem [hướng dẫn Jev](ASSISTANT.md).
 
