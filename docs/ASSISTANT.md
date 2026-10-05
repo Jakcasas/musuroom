@@ -29,6 +29,8 @@ Client nhận đúng dạng MCP `structuredContent` là data theo tài liệu Je
 
 Kiểm tra ngày 05.10.2026: initialize và tools/list trả HTTP 200; tools/call trả MCP isError với thông báo credentials/model access. Đó là lỗi quyền suy luận; thành công của handshake không chứng minh key đã được chấp nhận để gọi model. Key mới trong cấu hình riêng tư được đồng bộ lại với Railway vì khác key đang triển khai; chưa có kết quả inference thật thành công.
 
+Đã thử thêm yêu cầu bỏ trường model (dùng mặc định của cùng endpoint JevAI); lỗi credentials/model access vẫn xuất hiện. Vì vậy chưa có bằng chứng đổi tên model sẽ giải quyết lỗi. Khi liên hệ JevAI, cung cấp thời điểm UTC `2026-10-05T12:28:28Z`, endpoint `/api/mcp`, tool `jev_decide`, HTTP 200 + MCP isError và hiện tượng cả model mặc định lẫn `typesafe-ai/jev` đều bị từ chối; không gửi key. Musuroom không tự gửi yêu cầu hỗ trợ thay bạn.
+
 
 Musuroom hỗ trợ tra cứu có nguồn và diễn giải thống kê cảm quan. Mặc định, hệ thống hoạt động bằng kho tri thức và thuật toán thống kê; có thể kết nối OpenRouter để bổ sung câu trả lời bằng ngôn ngữ tự nhiên.
 

@@ -1,4 +1,6 @@
-# Trạng thái Musuroom 1.8.0 — 05.10.2026
+# Trạng thái Musuroom 1.8.1 — 05.10.2026
+
+Bản 1.8.1 bổ sung trạng thái Jev và API kiểm tra ADMIN. Đã xác minh trên Railway: health/database tốt, frontend khớp mã local, anonymous 401, thiếu CSRF 403. Key Jev trong cấu hình riêng tư đã được đồng bộ vì khác Railway; suy luận thật vẫn trả `jev_auth_failed`, gồm thử model mặc định. Xem [hướng dẫn Jev](ASSISTANT.md). Bộ kiểm thử đạt 64/64.
 
 - Railway triển khai thành công, `/healthz`: version 1.8.0, database ok. Các trang nghiên cứu/điều khoản/pitch, API đăng nhập và tìm vector được kiểm tra trực tiếp.
 - Supabase có 17 bảng ứng dụng; 8/8 migration khớp version/name/SQL, không missing/pending/different. pgvector 0.8.2 đã được cài; ba bảng nghiên cứu mới bật RLS, anon/authenticated không có SELECT.
