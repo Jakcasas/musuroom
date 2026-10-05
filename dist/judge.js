@@ -1,9 +1,11 @@
+import { printReport } from './technical-report.js';
 import { element, number, date, request, feedback, radar } from './portal-ui.js';
 import { dataWorkspace } from './data-workspace.js';
 const $=id=>document.getElementById(id);
+let reportData=null;
 let auth=null, groups=[], offset=0, expiryTimer, selectionVersion=0;
 function clearSession(message='') {
- dataPanel.clear();
+ reportData=null;sentimentNote.textContent='';dataPanel.clear();
  auth=null; clearTimeout(expiryTimer); selectionVersion++; groups=[]; offset=0; $('access-code').value='';
  $('dashboard').hidden=true; $('login-panel').hidden=false;
  for(const id of ['documents','metric-rows','radar','lead-rows','jev-result','insight-result','welcome','session-info','project-note','portal-feedback'])$(id).replaceChildren();
@@ -15,8 +17,9 @@ const dataPanel=dataWorkspace(failed);
 function selected(){const group=groups[Number($('group-select').value)];return group?{session_code:group.session_code,sample_code:group.sample_code}:null;}
 async function metrics(){
  const selection=selected(); if(!selection)return; const version=++selectionVersion;
- $('analytics-panel').hidden=true; $('analytics-empty').hidden=false; $('analytics-empty').textContent='Đang tải kết quả…'; $('insight-result').textContent='';
+ reportData=null; sentimentNote.textContent=''; $('analytics-panel').hidden=true; $('analytics-empty').hidden=false; $('analytics-empty').textContent='Đang tải kết quả…'; $('insight-result').textContent='';
  try{const data=await request('/api/v1/sensory/analytics?'+new URLSearchParams(selection));if(!auth||version!==selectionVersion)return;
+ reportData=data;
  $('analytics-count').textContent=`${data.count} phiếu · Đợt ${data.session_code} · Mẫu ${data.sample_code}`;
  $('metric-rows').replaceChildren();Object.values(data.metrics).forEach((m,i)=>{const row=element('tr');for(const value of [data.radar.labels[i],number(m.mean),number(m.median),number(m.sd)])row.append(element('td',value));$('metric-rows').append(row);});
  radar($('radar'),data.radar.values,data.radar.labels);$('analytics-panel').hidden=false;$('analytics-empty').hidden=true;
@@ -58,3 +61,6 @@ $('jev-form').addEventListener('submit',async event=>{event.preventDefault();con
 $('refresh-leads').addEventListener('click',loadLeads);$('previous-leads').addEventListener('click',()=>{offset=Math.max(0,offset-20);loadLeads();});$('next-leads').addEventListener('click',()=>{offset+=20;loadLeads();});
 window.addEventListener('focus',async()=>{if(auth)try{const session=await request('/api/v1/auth/session');auth=session;}catch(error){failed(error);}});
 request('/api/v1/auth/session').then(showSession).catch(error=>{if(error.status!==401)failed(error,$('login-feedback'));});
+
+const pdfButton=element('button','In báo cáo / Lưu PDF ↓','text-button');pdfButton.type='button';$('analytics-panel').append(pdfButton);pdfButton.onclick=()=>{if(auth&&reportData)printReport(reportData);};
+const sentimentButton=element('button','Xem xu hướng góp ý','text-button'),sentimentNote=element('p','','small');sentimentButton.type='button';$('analytics-panel').append(sentimentButton,sentimentNote);sentimentButton.onclick=async()=>{const selection=selected(),version=selectionVersion;if(!auth||!selection)return;sentimentButton.disabled=true;try{const data=await request('/api/v1/judge/research/sentiment?'+new URLSearchParams(selection));if(auth&&version===selectionVersion)sentimentNote.textContent=`${data.count} góp ý (tối đa ${data.limit} gần nhất): ${data.counts.positive} tích cực, ${data.counts.negative} cần cải thiện, ${data.counts.mixed} hỗn hợp, ${data.counts.unclear} chưa rõ. ${data.notice}`;}catch(e){failed(e);}finally{sentimentButton.disabled=false;}};

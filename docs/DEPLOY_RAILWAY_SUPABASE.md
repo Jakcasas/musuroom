@@ -101,3 +101,15 @@ Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ 
 4. Deploy lại và kiểm tra ADMIN data/status: last_error_code=null, last_completed_at mới và pending giảm sau cập nhật thật. Nếu chưa có egress ổn định, dùng `pnpm cloud:deploy --without-atlas` và đồng bộ có kiểm soát từ máy hiện tại.
 
 Source Railway đã gắn Jakcasas/musuroom, nhánh main. Push mới nhất chưa tự tạo deployment; bản này được triển khai bằng CLI sau khi CI đạt. Đối chiếu GitHub App/webhook trong Railway và thử push trước khi coi auto deploy đã hoạt động.
+
+
+## Nâng cấp 1.8.0
+
+1. Sao lưu database theo quy trình vận hành trước khi nâng cấp; không chạy reset database. Bản này bổ sung `research_workspace` và `research_vectors`, giữ nguyên sáu migration cũ.
+2. Áp dụng hai migration mới qua Supabase, giữ đúng version/name/SQL đã ghi trong lịch sử remote. Chạy `pnpm db:check-history`; phải có tám local/remote và không có missing/pending/different. Các bảng mới bật RLS, không mở quyền anon/authenticated.
+3. Giữ nguyên secrets trong Railway Variables. Deploy commit đã kiểm thử bằng Railway CLI; kiểm tra deployment ID cụ thể SUCCESS và `/healthz` phiên bản 1.8.0, PostgreSQL ok.
+4. Đăng nhập ADMIN kiểm tra `nghien-cuu.html`, thử chẩn đoán Atlas. Chỉ nhập hồ sơ thật đã được phép công bố. Không nhập dữ liệu minh họa vào database production.
+5. Chạy `pnpm qr:generate https://musuroom-web-production.up.railway.app`; commit tài sản QR/manifest rồi triển khai lại và xác nhận đúng phiên bản. QR hũ mẫu được sinh trực tiếp sau khi công bố hồ sơ.
+6. Nếu Atlas từ Railway còn lỗi, kiểm tra DNS, tài khoản database và Network Access theo địa chỉ outbound thực. Nếu Jev từ chối, kiểm tra key/quyền model tại www.jevai.org/agent/keys. Website dùng SQL và dự phòng cục bộ trong thời gian đó.
+
+PWA chỉ hỗ trợ tài nguyên đã tải online; phiên bản service worker thay đổi theo bản phát hành. Phiếu lưu cục bộ không tự đẩy nền. Docker Compose chỉ dành cho local, không chứa cấu hình/secret production.

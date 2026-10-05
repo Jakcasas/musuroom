@@ -1,3 +1,7 @@
+# 1.8.0 — 05.10.2026
+
+Hồ sơ nghiên cứu, QR từng hũ, tiêu chí và điểm trọng số; PWA lưu phiếu khi mất mạng; radar tương tác và báo cáo A4; điều khoản có nguồn, API pgvector; Zod và circuit breaker Jev. Thêm giấy phép, hướng dẫn đóng góp, banner và cấu hình Docker local. [Phạm vi kiểm chứng và việc cần bổ sung](UPGRADE_2026.md).
+
 # Musuroom 1 — bản mã nguồn 1.7.0
 
 Ngày cập nhật: **02.10.2026**.

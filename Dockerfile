@@ -7,6 +7,7 @@ COPY backend ./backend
 COPY dist ./dist
 COPY supabase ./supabase
 COPY server.mjs ./
+RUN mkdir -p /app/data && chown node:node /app/data
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080
 USER node
 EXPOSE 8080

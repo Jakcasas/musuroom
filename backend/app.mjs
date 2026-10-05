@@ -13,6 +13,8 @@ import { createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
 import { projectRouter } from './routes/project.mjs';
 import { dataRouter } from './routes/data.mjs';
+import { researchRouter } from './routes/research.mjs';
+import { vectorRouter } from './routes/vectors.mjs';
 import { createKnowledgeReranker } from './services/knowledge-reranker.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
 import { calculate } from '../dist/core.js';
@@ -94,6 +96,8 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.use('/api/v1', judgeRouter(db,security,config,fetchImpl));
   app.use('/api/v1', projectRouter(db,security,config));
   app.use('/api/v1', dataRouter(db,security,config,fetchImpl));
+  app.use('/api/v1', researchRouter(db,security,config));
+  app.use('/api/v1', vectorRouter(db,security));
   app.use('/api/v1', v1Router(db, authorize, config, fetchImpl, security.requireReviewer, complete));
   app.use('/api', (req, res) => res.status(404).json({ error: 'endpoint_not_found' }));
   app.use((req, res, next) => ['GET', 'HEAD'].includes(req.method) ? next() : res.status(405).set('Allow', 'GET, HEAD').json({ error: 'method_not_allowed' }));

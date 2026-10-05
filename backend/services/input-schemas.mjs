@@ -1,0 +1,6 @@
+import { z } from 'zod';
+const code=z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{2,49}$/,'Mã cần 3–50 ký tự chữ, số, dấu _ hoặc -.');
+const score=z.number().int().min(1).max(9);
+export const sensorySchema=z.object({session_code:code,sample_code:code,tester_type:z.enum(['JUDGE','STUDENT','CONSUMER','OTHER']),color_score:score,aroma_score:score,umami_taste_score:score,aftertaste_score:score,overall_acceptance:score,comments:z.string().max(1000).optional(),submission_key:z.uuid().optional()});
+export const registrationSchema=z.object({full_name:z.string().trim().min(2).max(100),phone_or_email:z.string().trim().min(5).max(100),organization_type:z.enum(['INDIVIDUAL','RESTAURANT','FOOD_BUSINESS','OTHER']).optional(),dietary_preference:z.enum(['NONE','VEGAN','LOW_SODIUM','FAMILY','OTHER']).optional(),shipping_address:z.string().max(300).optional(),consent:z.literal(true)});
+export function validateBody(schema){return(req,res,next)=>{const result=schema.safeParse(req.body);if(result.success){req.body=result.data;return next();}const errors={};for(const issue of result.error.issues)errors[issue.path[0]||'body']='Thông tin thiếu hoặc không đúng định dạng cho trường này.';res.status(422).json({errors});};}

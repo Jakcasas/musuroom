@@ -181,3 +181,30 @@ JSON đọc projection từ SQL, không phải truy vấn trực tiếp Atlas. T
 
 Phân loại đơn cũng lưu đề xuất. `requires_review`/`gate` là tín hiệu của chính sách ứng dụng, không xác nhận tính đúng đắn hay cấp quyền. Xem [giới hạn và cấu hình](JEV_WORKFLOWS.md).
 
+
+
+## Research workspace · 1.8.0
+
+Các route ADMIN/giám khảo dùng phiên đăng nhập; POST/PUT phải có `X-CSRF-Token`. Lỗi 401/403 cho quyền, 422 cho dữ liệu, 409 cho phiên bản/cặp mẫu-hũ trùng. Không tạo dữ liệu TCVN hoặc tiêu chí chính thức mặc định.
+
+| Method / route | Quyền | Nội dung |
+|---|---|---|
+| GET `/api/v1/admin/research/:kind` | ADMIN | `kind`: sample/rubric/clause; tối đa 500 hồ sơ |
+| POST `/api/v1/admin/research/:kind` | ADMIN | `{data}` theo schema nghiên cứu; 201 |
+| PUT `/api/v1/admin/research/:kind/:id` | ADMIN | `{data,revision}`; sửa sample/clause, rubric bất biến |
+| GET `/api/v1/judge/research/setup` | Reviewer | Mẫu và bộ tiêu chí; thông báo DRAFT |
+| GET `/api/v1/judge/research/scores` | Reviewer | Tổng hợp và phiếu của chính người đăng nhập |
+| POST `/api/v1/judge/research/scores` | Tài khoản giám khảo/ADMIN | `{sample_id,rubric_id,scores:[0..10],revision:0}` tạo mới; cập nhật dùng revision hiện tại |
+| GET `/api/v1/judge/research/sentiment` | Reviewer | `session_code` và `sample_code`; từ khóa cục bộ, 1.000 góp ý gần nhất |
+| GET `/api/v1/research/clauses?q=...` | Public | Điều khoản công bố, tìm từ khóa; chưa có nguồn thì danh sách rỗng |
+| GET `/api/v1/trace/:token` | Public | Hồ sơ mẫu đang công bố, không trả mã file minh chứng riêng tư |
+| GET `/api/v1/trace/:token/qr.svg` | Public | QR tới PUBLIC_ORIGIN/truy-xuat.html?sample=TOKEN |
+| POST `/api/v1/admin/research/diagnostics/atlas` | ADMIN | `{}`; kiểm tra ping, mã lỗi lọc; tối đa 2 lần/phút |
+| POST `/api/v1/admin/vectors/import` | ADMIN | `{record_id,source_revision,model,embedding}`; 384 số hữu hạn, không toàn 0 |
+| POST `/api/v1/admin/vectors/search` | ADMIN | `{model,embedding}`; tối đa 5 nguồn công bố cùng model và đúng revision |
+
+Trọng số tiêu chí là số nguyên, tổng 100%; API hỗ trợ 1–10 tiêu chí. Điểm tổng = tổng(điểm × trọng số / 10), làm tròn 2 chữ số, thang 0–100. Mỗi tài khoản chỉ một phiếu cho cặp mẫu/bộ tiêu chí. `sample_revision` giữ phiên bản hồ sơ lúc chấm để đối chiếu khi hồ sơ thay đổi.
+
+Các trường hồ sơ xem [schemas](../backend/services/research-model.mjs). Mã mẫu dùng 3–50 ký tự ASCII, bắt đầu bằng chữ/số. Điều khoản yêu cầu nguồn HTTPS, phiên bản, trích dẫn, giới hạn và xác nhận quyền sử dụng. File riêng tư không trở thành file công khai khi gắn minh chứng.
+
+Vector cần PostgreSQL có pgvector (SQLite trả 503). Không có vector/model tự sinh. Score similarity không phải xác suất nội dung đúng. Xem [hướng dẫn nâng cấp](UPGRADE_2026.md).

@@ -1,0 +1,15 @@
+name: Đề xuất cải tiến
+description: Mô tả nhu cầu và cách đánh giá kết quả
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Người dùng cần làm gì và đang gặp khó khăn nào?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Khi nào có thể xem cải tiến là hoàn tất?
+    validations:
+      required: true

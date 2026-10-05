@@ -26,6 +26,8 @@ export async function initializePostgres(db){
   ['pg-004-product-integrity','20260930160511_musuroom_product_integrity.sql'],
   ['pg-005-data-sync-jobs','20261001031031_data_sync_jobs.sql'],
   ['pg-006-knowledge-decision-reviews','20261001143510_knowledge_decision_reviews.sql'],
+  ['pg-007-research-workspace','20261005045403_research_workspace.sql'],
+  ['pg-008-research-vectors','20261005045418_research_vectors.sql'],
  ];
  for(const [name,file] of migrations){
  if(!ledgerExists||!await db.prepare('SELECT version FROM schema_migrations WHERE version=?').get(name)){

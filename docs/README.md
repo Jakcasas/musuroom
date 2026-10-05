@@ -2,6 +2,8 @@
 
 | Bạn muốn làm gì? | Tài liệu |
 |---|---|
+| Hồ sơ hũ mẫu, chấm điểm, ngoại tuyến, PDF và điều khoản | [Nâng cấp 1.8.0](UPGRADE_2026.md) |
+| Cấu hình và kiểm chứng trợ lý tri thức | [Hỗ trợ phân tích](ASSISTANT.md) |
 | Dùng 4 luồng Jev, phân loại theo lô và đối chiếu đề xuất | [Jev trong Musuroom](JEV_WORKFLOWS.md) |
 | Chạy website và xem các trang | [README dự án](../README.md) |
 | Xem các lỗi đã sửa và cải tiến ở bản 1.7.0 | [Ghi chú phát hành](RELEASE_NOTES.md) |

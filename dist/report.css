@@ -1,0 +1,12 @@
+#technical-report{display:none}
+@media print{
+ @page{size:A4;margin:18mm}
+ body.reporting>*{display:none!important}
+ body.reporting>#technical-report{display:block!important;color:#10271e;background:white;font-family:Roboto,sans-serif}
+ #technical-report h1{font-size:24pt;line-height:1.15}#technical-report p{font-size:10pt;line-height:1.5}
+ #technical-report table{width:100%;border-collapse:collapse;font-size:10pt}
+ #technical-report th,#technical-report td{border:1px solid #b5beb0;padding:8px;text-align:left}
+ #technical-report .report-chart{width:150mm;margin:auto}#technical-report svg{width:100%;max-height:85mm}
+ #technical-report .report-chart p{display:none}
+ #technical-report tr{break-inside:avoid}
+}

@@ -9,7 +9,7 @@ export function loadConfig(env = process.env) {
   };
   const production = env.NODE_ENV === 'production';
   const host = env.HOST || (production ? '0.0.0.0' : '127.0.0.1');
-  if ((!production && host !== '127.0.0.1') || (production && !['0.0.0.0','127.0.0.1'].includes(host))) throw new Error('Invalid HOST for deployment mode');
+  if ((!production && host !== '127.0.0.1' && !(env.CONTAINER_LOCAL==='true'&&host==='0.0.0.0')) || (production && !['0.0.0.0','127.0.0.1'].includes(host))) throw new Error('Invalid HOST for deployment mode');
   const databaseProvider = env.DATABASE_PROVIDER || 'sqlite';
   if(!['sqlite','postgres'].includes(databaseProvider))throw new Error('Invalid DATABASE_PROVIDER');
   const publicOrigin = env.PUBLIC_ORIGIN || '';

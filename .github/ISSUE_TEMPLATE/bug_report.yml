@@ -1,0 +1,17 @@
+name: Báo lỗi
+description: Gửi lỗi có thể tái hiện, không kèm dữ liệu bí mật
+title: "[Lỗi] "
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+      description: Nêu trang, thao tác, kết quả thực tế và kết quả mong đợi. Không gửi mật khẩu, mã truy cập hoặc thông tin người thử.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Phiên bản, trình duyệt và hệ điều hành
+    validations:
+      required: true

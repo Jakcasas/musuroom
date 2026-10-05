@@ -5,6 +5,7 @@ import { codePattern, sensoryMetricsFromDistribution, sensoryCsv, validateSensor
 import { validateRegistration } from '../services/sample-registration.mjs';
 import { createSensoryInterpreter } from '../services/sensory-insights.mjs';
 import { rateLimit } from '../security/rate-limit.mjs';
+import { sensorySchema,registrationSchema,validateBody } from '../services/input-schemas.mjs';
 
 const statuses = ['PENDING','SENT','FEEDBACK_RECEIVED','CANCELLED'];
 function filters(input) {
@@ -24,7 +25,7 @@ export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize,
   const leads = leadsRepository(db);
   const interpret = createSensoryInterpreter(config, fetchImpl, complete);
   const throttle = rateLimit(60, 'submission_rate_limit');
-  router.post('/sensory/submit', throttle, async (req, res) => {
+  router.post('/sensory/submit', throttle, validateBody(sensorySchema), async (req, res) => {
     const { input, errors } = validateSensory(req.body);
     if (Object.keys(errors).length) return res.status(422).json({ errors });
     const result = await sensory.submit(input);
@@ -48,7 +49,7 @@ export function v1Router(db, authorize, config, fetchImpl, reviewer = authorize,
     const metrics = sensoryMetricsFromDistribution(await sensory.distribution(selected.session, selected.sample), selected.session, selected.sample);
     res.json(await interpret(metrics));
   });
-  router.post('/leads/register', throttle, async (req, res) => {
+  router.post('/leads/register', throttle, validateBody(registrationSchema), async (req, res) => {
     const { input, errors } = validateRegistration(req.body);
     if (Object.keys(errors).length) return res.status(422).json({ errors });
     const result = await leads.register(input);

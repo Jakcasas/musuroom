@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -32,7 +32,8 @@
     "express": "5.2.1",
     "mongodb": "7.7.0",
     "pg": "8.23.0",
-    "qrcode": "1.5.4"
+    "qrcode": "1.5.4",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

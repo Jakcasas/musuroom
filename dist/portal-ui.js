@@ -16,5 +16,8 @@ export function radar(target,values,labels){
  const shape=(name,attrs)=>{const n=document.createElementNS(ns,name);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);svg.append(n);return n;};
  for(const level of [3,6,9])shape('polygon',{points:labels.map((_,i)=>point(i,level/9*110).join(',')).join(' '),class:'radar-grid'});
  labels.forEach((label,i)=>{const[x,y]=point(i,110);shape('line',{x1:240,y1:180,x2:x,y2:y,class:'radar-grid'});const[lx,ly]=point(i,140);const n=shape('text',{x:lx,y:ly,'text-anchor':lx>260?'start':lx<220?'end':'middle',class:'radar-label'});n.textContent=label;});
- shape('polygon',{points:values.map((v,i)=>point(i,v/9*110).join(',')).join(' '),class:'radar-data'});target.append(svg);
+ shape('polygon',{points:values.map((v,i)=>point(i,v/9*110).join(',')).join(' '),class:'radar-data'});
+ const detail=element('p','Chạm hoặc dùng Tab tới từng điểm để xem giá trị.','small');detail.setAttribute('role','status');
+ values.forEach((value,i)=>{const[x,y]=point(i,value/9*110);const dot=shape('circle',{cx:x,cy:y,r:6,fill:'#10271e',tabindex:0,role:'button','aria-label':`${labels[i]}: ${number(value)} trên 9`});const show=()=>{detail.textContent=`${labels[i]}: ${number(value)} / 9`;};dot.addEventListener('focus',show);dot.addEventListener('mouseenter',show);dot.addEventListener('click',show);dot.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')show();});});
+ target.append(svg,detail);
 }

@@ -1,4 +1,5 @@
 import { readProviderJson,withProviderDeadline } from './provider-response.mjs';
+import { circuitBreaker } from './circuit-breaker.mjs';
 export function jevFailureMessage(reason){return{jev_disabled:'Jev chưa được cấu hình. Bạn có thể tự phân loại.',jev_auth_failed:'JevAI chưa chấp nhận key hoặc quyền model. Người vận hành cần kiểm tra tài khoản JevAI.',jev_rate_limited:'Đã đạt giới hạn JevAI. Bạn có thể thử lại sau hoặc tự phân loại.',jev_busy:'Jev đang xử lý yêu cầu khác. Hãy thử lại sau.',invalid_response:'Jev chưa trả kết quả đúng cấu trúc. Bạn có thể tự phân loại.'}[reason]||'JevAI chưa đáp ứng yêu cầu này. Bạn có thể tự phân loại và tiếp tục xem nguồn.';}
 export function validChoice(answer,criteria) {
  if(!answer||answer.type!=='choice'||!Object.hasOwn(criteria,answer.choice)||!Number.isFinite(answer.confidence)||answer.confidence<0||answer.confidence>1||!answer.probabilities||Array.isArray(answer.probabilities))return false;
@@ -7,7 +8,7 @@ export function validChoice(answer,criteria) {
 }
 const concurrency=new WeakMap();
 export function createJevEvaluator(config,fetchImpl=fetch) {
- if(!concurrency.has(config))concurrency.set(config,{active:0});
+ if(!concurrency.has(config))concurrency.set(config,{active:0,breaker:circuitBreaker()});
  const pool=concurrency.get(config);
  return async request=>{
   if(!config.jevEnabled)return{reason:'jev_disabled'};
@@ -15,8 +16,10 @@ export function createJevEvaluator(config,fetchImpl=fetch) {
   if(pool.active>=2)return{reason:'jev_busy'};
   const mcp=config.jevTransport==='mcp';
   const body=JSON.stringify(mcp?{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'jev_decide',arguments:request}}:request);if(Buffer.byteLength(body)>20000)return{reason:'context_too_large'};
+  if(!pool.breaker.enter())return{reason:'jev_cooldown',retry_after:pool.breaker.retryAfter()};
   pool.active++;
-  try{return await withProviderDeadline(async signal=>{
+  let result;
+  try{result=await withProviderDeadline(async signal=>{
    let response;
    for(let attempt=0;attempt<2;attempt++){
     response=await fetchImpl(mcp?'https://www.jevai.org/api/mcp':'https://www.jevai.org/api/v1/decisions',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.jevKey}`,'Content-Type':'application/json'},signal,body});
@@ -35,6 +38,7 @@ export function createJevEvaluator(config,fetchImpl=fetch) {
    if(!envelope||typeof envelope!=='object')return{reason:'invalid_response'};
    if(envelope.code!==0||!envelope.data||typeof envelope.data!=='object')return{reason:'invalid_response'};
    return{data:envelope.data};
-  },config.timeout);}catch{return{reason:'provider_unavailable'};}finally{pool.active--;}
+  },config.timeout);}catch{result={reason:'provider_unavailable'};}finally{pool.active--;}
+  pool.breaker.settle(result.reason);return result;
  };
 }

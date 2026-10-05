@@ -1,0 +1,24 @@
+services:
+  musuroom:
+    build: .
+    # Development binds only to this machine. Production remains Railway + Supabase.
+    ports: ["127.0.0.1:8766:8766"]
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      CONTAINER_LOCAL: "true"
+      PORT: "8766"
+      DATABASE_PROVIDER: sqlite
+      DATABASE_PATH: /app/data/musuroom.sqlite
+      AI_PROVIDER: disabled
+      JEV_ENABLED: "false"
+      MONGO_ENABLED: "false"
+    volumes: ["musuroom-data:/app/data"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8766/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  musuroom-data:
