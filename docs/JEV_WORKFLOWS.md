@@ -8,7 +8,7 @@ Reranking truyền thêm giới hạn áp dụng của nguồn; chỉ tối đa 
 
 Bulk labeling trả `summary` gồm `total`, `jev`, `local`, `needs_review`; giao diện phân biệt nguồn tạo đề xuất. Confidence gate v2 lưu `review_reason`, `probability_margin` trong `decision_json` trên Supabase. Phân bố xác suất không hợp lệ, độ tin cậy thấp hoặc khoảng cách hai nhãn dưới 0.1 phải được đối chiếu. Ngưỡng 0.1 là chính sách chưa hiệu chuẩn trên dữ liệu nghiên cứu. Mọi đề xuất mới đều có trạng thái `pending`; `suggestion` không tự chuyển thành `confirmed`.
 
-Hướng dẫn [MCP và xử lý lỗi key/model](JEV_MCP_SETUP.md). Key local hiện bị từ chối HTTP 401; key cloud kết nối MCP được nhưng inference vẫn bị từ chối. Không ghi nhận kết quả luật cục bộ là kết quả Jev.
+Hướng dẫn [MCP và xử lý lỗi key/model](JEV_MCP_SETUP.md). Lỗi key local HTTP 401 đã được sửa bằng cách đồng bộ key hiện tại trong tài khoản Jev. Local và cloud kết nối MCP được nhưng inference vẫn bị từ chối. Không ghi nhận kết quả luật cục bộ là kết quả Jev.
 
 ## Bốn ứng dụng đã triển khai
 

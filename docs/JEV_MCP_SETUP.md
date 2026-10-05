@@ -34,7 +34,9 @@ Lệnh kiểm tra `initialize`, `tools/list`, sau đó gọi đúng một `jev_d
 
 ## Kết quả thực tế ngày 05.10.2026
 
-Hai file cấu hình hiện có key khác nhau: key `.env` local bị từ chối HTTP 401 ngay ở initialize; key `data/cloud.env` trả HTTP 200 ở initialize và tools/list, đủ 6 công cụ. `jev_decide` với model `typesafe-ai/jev` vẫn trả `isError` credentials/model access; lần thử model mặc định trước đó cũng bị từ chối. Hai bước đầu không chạy model và không chứng minh key có quyền suy luận. Không tự ghi đè key local bằng key cloud vì chưa có key nào xác nhận inference thành công.
+Ban đầu hai file cấu hình có key khác nhau: local bị HTTP 401 ngay ở initialize. Đã đối chiếu key hiện tại trên Jev Keys với key cloud và đồng bộ về `.env` local, có sao lưu riêng tư. Sau sửa, cả local và cloud trả HTTP 200 ở initialize/tools/list; `jev_decide` vẫn trả `isError` credentials/model access. Lần thử model mặc định trước đó cũng bị từ chối. Hai bước đầu không chạy model và không chứng minh key có quyền suy luận.
+
+Preset Tool guard trên trang Jev Agent cũng đã được thử bằng phiên đăng nhập, với tình huống sắp xếp nguồn công khai Musuroom. Trang báo `Unexpected token '<'` vì nhận HTML thay cho JSON. Lỗi này chưa cho biết nguyên nhân máy chủ cụ thể; cần phía Jev kiểm tra dịch vụ/quyền model. Chưa có inference thật thành công. Sau khi đồng bộ key local, Restart MCP trong Codex để bỏ header cũ đã cache.
 
 Thực hiện tại tài khoản Jev:
 
