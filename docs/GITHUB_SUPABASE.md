@@ -1,13 +1,13 @@
-# Trạng thái Musuroom 1.8.1 — 05.10.2026
+# Trạng thái Musuroom 1.8.2 — 05.10.2026
 
-Bản 1.8.1 bổ sung trạng thái Jev và API kiểm tra ADMIN. Đã xác minh trên Railway: health/database tốt, frontend khớp mã local, anonymous 401, thiếu CSRF 403. Key Jev trong cấu hình riêng tư đã được đồng bộ vì khác Railway; suy luận thật vẫn trả `jev_auth_failed`, gồm thử model mặc định. Xem [hướng dẫn Jev](ASSISTANT.md). Bộ kiểm thử đạt 64/64.
+Bản 1.8.2 bổ sung chọn minh chứng từ hồ sơ, thông tin mẫu khi chấm và tổng hợp điểm theo phiên bản. API bắt buộc `sample_revision`; database kiểm tra trọng số, thang điểm, tổng và tính bất biến của bộ tiêu chí. Key Jev trong cấu hình riêng tư đã được đồng bộ ở bản 1.8.1; suy luận thật vẫn trả `jev_auth_failed`, gồm thử model mặc định ngày 05.10. Xem [hướng dẫn Jev](ASSISTANT.md).
 
-- Railway triển khai thành công, `/healthz`: version 1.8.0, database ok. Các trang nghiên cứu/điều khoản/pitch, API đăng nhập và tìm vector được kiểm tra trực tiếp.
-- Supabase có 17 bảng ứng dụng; 8/8 migration khớp version/name/SQL, không missing/pending/different. pgvector 0.8.2 đã được cài; ba bảng nghiên cứu mới bật RLS, anon/authenticated không có SELECT.
-- GitHub của commit `9705c79` đạt cả Supabase Preview, Windows và Linux. 63/63 tests local đạt; audit production không phát hiện lỗ hổng đã biết.
-- Advisors: không WARN/ERROR; 17 INFO [RLS không policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) vì backend là lớp truy cập, và 10 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index). Giữ chính sách đóng và các index phục vụ dữ liệu tương lai.
+- Railway triển khai thành công, `/healthz`: version 1.8.2, database ok. API setup/scores được kiểm tra bằng phiên ADMIN/JUDGE: anonymous 401, thiếu CSRF 403, đầu vào rỗng 422; logout làm phiên cũ trả 401. Không tạo hồ sơ hoặc điểm giả để kiểm tra production.
+- Supabase có 17 bảng ứng dụng; 9/9 migration khớp version/name/SQL, không missing/pending/different. Hai trigger kiểm tra nghiên cứu đã cài, CHECK đã validate, hàm SECURITY INVOKER với search_path cố định và anon không có EXECUTE. pgvector 0.8.2 và RLS được giữ.
+- GitHub của commit mã `9697413` đạt cả Supabase Preview, Windows và Linux. 66/66 tests local đạt; cú pháp 102 file và 138 liên kết hợp lệ. Kiểm tra lịch sử Git không phát hiện các giá trị bí mật đang lưu riêng hoặc đường dẫn cấm.
+- Advisors: không WARN/ERROR; 17 INFO [RLS không policy](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) vì backend là lớp truy cập, và 8 INFO [index chưa sử dụng](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) tại lần kiểm tra này. Giữ chính sách đóng và các index phục vụ dữ liệu tương lai.
 - Không có hồ sơ mẫu, bộ tiêu chí, điểm chấm hay vector giả trong production. Kiểm thử giao diện dùng database trong bộ nhớ riêng; ngoại tuyến đã thử bằng cách dừng server rồi khôi phục và gửi lại phiếu.
-- Atlas từ Railway vẫn không kết nối được; chẩn đoán lọc được mã `ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR`. Cần đối chiếu Network Access và đường ra Railway; không tắt TLS.
+- Lần chẩn đoán Atlas từ Railway gần nhất trả `ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR`. Cần đối chiếu Network Access và đường ra Railway; chưa xác nhận đã xử lý, không tắt TLS.
 - Jev chính thức được thử với câu minh họa không chứa dữ liệu cá nhân: key/quyền model vẫn bị từ chối (`jev_auth_failed`); hệ thống trả `mode=local`. Chưa xác nhận inference thật.
 - Mô tả, homepage và topics GitHub đã cập nhật. Banner Social Preview được lưu trong repository; chọn ảnh trong Settings theo hướng dẫn nếu muốn dùng làm ảnh chia sẻ.
 
