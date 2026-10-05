@@ -1,4 +1,14 @@
-# Jev trong Musuroom 1.7.0
+# Jev trong Musuroom 1.8.4
+
+## Cải tiến 1.8.4
+
+Guardrails kiểm tra văn bản sau khi chuẩn hóa NFKC và loại ký tự ẩn. Mật khẩu tiếng Việt, URI database có thông tin xác thực và private key bị chặn/che trước khi gửi. Đây vẫn là heuristic, không bảo đảm phát hiện mọi dữ liệu nhạy cảm.
+
+Reranking truyền thêm giới hạn áp dụng của nguồn; chỉ tối đa 5 ứng viên, giới hạn JSON 18.000 bytes và rút gọn theo code point. API trả `context_truncated` khi phải rút gọn. Điểm bằng nhau giữ thứ tự gốc; các nguồn ngoài 5 ứng viên không đổi.
+
+Bulk labeling trả `summary` gồm `total`, `jev`, `local`, `needs_review`; giao diện phân biệt nguồn tạo đề xuất. Confidence gate v2 lưu `review_reason`, `probability_margin` trong `decision_json` trên Supabase. Phân bố xác suất không hợp lệ, độ tin cậy thấp hoặc khoảng cách hai nhãn dưới 0.1 phải được đối chiếu. Ngưỡng 0.1 là chính sách chưa hiệu chuẩn trên dữ liệu nghiên cứu. Mọi đề xuất mới đều có trạng thái `pending`; `suggestion` không tự chuyển thành `confirmed`.
+
+Hướng dẫn [MCP và xử lý lỗi key/model](JEV_MCP_SETUP.md). Key local hiện bị từ chối HTTP 401; key cloud kết nối MCP được nhưng inference vẫn bị từ chối. Không ghi nhận kết quả luật cục bộ là kết quả Jev.
 
 ## Bốn ứng dụng đã triển khai
 

@@ -34,7 +34,7 @@ test('Guardrails prevent remote transmission for instruction-like/secret input a
  assert.equal(guardInput('an toàn thực phẩm và hoạt độ nước').allow_remote,true);
  assert.equal(confidenceGate({mode:'local',topic:'flavor',confidence:null}).gate,'review');
  assert.equal(confidenceGate({mode:'jev',topic:'other',confidence:1}).gate,'review');
- assert.equal(confidenceGate({mode:'jev',topic:'flavor',confidence:0.9}).gate,'suggestion');
+ assert.equal(confidenceGate({mode:'jev',topic:'flavor',confidence:0.9,probabilities:{flavor:0.9,other:0.1}}).gate,'suggestion');
 });
 test('Bulk labeling uses one Jev request, isolates guarded records, and handles invalid/low-confidence answers individually',async()=>{
  const db=openDatabase(':memory:');try{

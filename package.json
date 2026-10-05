@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -16,6 +16,8 @@
     "dossier:add": "node scripts/add-document.mjs",
     "docs:search": "node scripts/search-typesafe.mjs",
     "jev:check": "node scripts/check-jev.mjs",
+    "jev:diagnose": "node scripts/diagnose-jev.mjs",
+    "mcp:install-jev": "node scripts/install-jev-mcp.mjs",
     "qr:generate": "node scripts/generate-qr.mjs",
     "cloud:check": "node scripts/cloud-preflight.mjs",
     "cloud:configure": "node scripts/railway-configure.mjs",

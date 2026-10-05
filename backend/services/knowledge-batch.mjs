@@ -32,6 +32,6 @@ export function createKnowledgeBatch(config,fetchImpl) {
     results[index]=confidenceGate({mode:'jev',topic:answer.choice,confidence:answer.confidence,probabilities:answer.probabilities,model:response.data.model,rubric_version:'knowledge-topic-batch-1'},config.jevMinConfidence);
    }
   }
-  return {items:results.map((result,index)=>({article_id:documents[index].resource_id,...result})),jev_requests:requests};
+  return {items:results.map((result,index)=>({article_id:documents[index].resource_id,...result})),jev_requests:requests,summary:{total:results.length,jev:results.filter(item=>item.mode==='jev').length,local:results.filter(item=>item.mode!=='jev').length,needs_review:results.filter(item=>item.requires_review).length}};
  };
 }

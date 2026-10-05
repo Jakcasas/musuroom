@@ -1,3 +1,11 @@
+# 1.8.4 — 05.10.2026
+
+- Guardrails chuẩn hóa Unicode, loại ký tự ẩn và chặn/che mật khẩu tiếng Việt, Bearer token, URI database có credentials, private key trước khi gọi Jev.
+- Reranking chỉ xử lý tối đa 5 nguồn đã tìm thấy, truyền cả giới hạn áp dụng, giới hạn JSON UTF-8 18.000 bytes, giữ thứ tự khi hòa điểm và giữ nguyên nguồn phía sau.
+- Bulk labeling hiển thị số đề xuất Jev/cục bộ/cần xem lại. Confidence gate v2 lưu `review_reason` và `probability_margin`; chênh lệch hai nhãn dưới 0.1 cần đối chiếu. Ngưỡng này là chính sách thận trọng, chưa phải ngưỡng đã hiệu chuẩn.
+- Cài MCP Codex không lưu key vào config; có chẩn đoán riêng handshake, danh sách công cụ và inference. Lần thử hiện tại: local 401, cloud `tools/call` từ chối credentials/model access; chưa có inference thật thành công.
+- Dùng bảng `knowledge_decision_reviews` hiện có; không cần migration mới. Quyền Data API của bảng vẫn đóng, thao tác qua API ADMIN/CSRF của backend.
+
 # 1.8.3 — 05.10.2026
 
 Mã Giám khảo mặc định được người vận hành lựa chọn và băm bằng scrypt. Chỉ một tài khoản JUDGE được cấu hình, không dùng mã mặc định để đăng nhập ADMIN. Đổi mã thu hồi phiên cũ, giữ thời hạn; kiểm tra lại credential/tài khoản khi tạo phiên để chặn thao tác đồng thời với thu hồi. Không đưa giá trị mã vào Git, frontend hoặc QR. Bỏ qua metadata `.vs/` của Visual Studio.
