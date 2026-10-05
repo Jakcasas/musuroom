@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -14,6 +14,7 @@
     "access:revoke": "node scripts/revoke-access.mjs",
     "dossier:add": "node scripts/add-document.mjs",
     "docs:search": "node scripts/search-typesafe.mjs",
+    "jev:check": "node scripts/check-jev.mjs",
     "qr:generate": "node scripts/generate-qr.mjs",
     "cloud:check": "node scripts/cloud-preflight.mjs",
     "cloud:configure": "node scripts/railway-configure.mjs",

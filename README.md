@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.8.0-264736)
+![Version](https://img.shields.io/badge/version-1.8.1-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -11,7 +11,9 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 **[Mở website](https://musuroom-web-production.up.railway.app)** · **[Khảo sát](https://musuroom-web-production.up.railway.app/trai-nghiem.html)** · **[Cổng giám khảo](https://musuroom-web-production.up.railway.app/giam-khao.html)** · **[Hướng dẫn](docs/README.md)**
 
-## Bản 1.8.0
+## Bản 1.8.1
+
+Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo hiển thị trạng thái dịch vụ, lý do dùng dự phòng và nút kiểm tra câu minh họa dành cho ADMIN. Thêm `pnpm jev:check --cloud` để thử cấu hình riêng tư. [Hướng dẫn xử lý Jev](docs/ASSISTANT.md). Quyền suy luận của key hiện lưu vẫn bị Jev từ chối trong lần thử ngày 05.10.2026.
 
 - Hồ sơ hũ mẫu, mã lô, nguồn nguyên liệu và QR giữ nguyên khi cập nhật thông tin.
 - Chấm điểm theo bộ tiêu chí dự thảo, trọng số tổng 100%, xử lý xung đột phiên bản.

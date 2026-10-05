@@ -1,3 +1,7 @@
+# 1.8.1 — 05.10.2026
+
+Sửa đọc kết quả MCP theo cấu trúc chính thức JevAI; giữ hỗ trợ envelope cũ. Trạng thái kết nối có thời gian kiểm tra, thông báo lỗi rõ và thời gian chờ khi dùng phân loại cục bộ. ADMIN có nút kiểm tra bằng câu minh họa cố định; API được giới hạn tần suất, phân quyền và CSRF. CLI `jev:check` không in key. Không xác nhận inference Jev thật khi dịch vụ vẫn từ chối credentials/model access.
+
 # 1.8.0 — 05.10.2026
 
 Hồ sơ nghiên cứu, QR từng hũ, tiêu chí và điểm trọng số; PWA lưu phiếu khi mất mạng; radar tương tác và báo cáo A4; điều khoản có nguồn, API pgvector; Zod và circuit breaker Jev. Thêm giấy phép, hướng dẫn đóng góp, banner và cấu hình Docker local. [Phạm vi kiểm chứng và việc cần bổ sung](UPGRADE_2026.md).

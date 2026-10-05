@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { extname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { createJevClassifier } from '../services/jev.mjs';
+import { jevConnectionStatus } from '../services/jev-client.mjs';
 import { documentStorage } from '../services/document-storage.mjs';
 import { rateLimit } from '../security/rate-limit.mjs';
 export function judgeRouter(db, security, config, fetchImpl) {
@@ -10,6 +11,12 @@ export function judgeRouter(db, security, config, fetchImpl) {
   router.post('/judge/verify', security.login);
   router.get('/auth/session', security.session);
   router.post('/auth/logout', security.requireReviewer, security.logout);
+  router.get('/judge/jev/status',security.requireReviewer,(req,res)=>res.json(jevConnectionStatus(config)));
+  router.post('/admin/jev/check',security.requireAdmin,rateLimit(2,'jev_diagnostic_rate_limit'),async(req,res)=>{
+    if(req.body?.allow_remote!==true)return res.status(422).json({error:'explicit_remote_consent_required'});
+    const result=await classify('Nhận xét minh họa kiểm tra kết nối Musuroom: mùi nấm thơm.',true);
+    res.json({connection:jevConnectionStatus(config),verification:{mode:result.mode,reason:result.reason||null,requires_review:result.requires_review},notice:'Chỉ gửi câu minh họa cố định, không gửi hồ sơ hoặc dữ liệu của người thử. Kiểm tra có thể dùng một lượt Jev.'});
+  });
   router.get('/judge/dossier', security.requireReviewer, async (req,res) => {
     const documents = await db.prepare('SELECT id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at FROM quality_documents ORDER BY created_at DESC,id').all();
     res.json({ project: { brand: 'Musuroom', title: 'Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm', stage: 'Nghiên cứu và hoàn thiện', note: 'Hồ sơ chỉ thể hiện tài liệu đã được người vận hành cung cấp. Chưa công bố công thức hoặc chứng nhận khi chưa có minh chứng.' }, documents: documents.map(d=>({...d,download_url:`/api/v1/judge/documents/${d.id}`})), jev_enabled: config.jevEnabled });

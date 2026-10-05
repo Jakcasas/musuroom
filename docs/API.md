@@ -185,6 +185,12 @@ Phân loại đơn cũng lưu đề xuất. `requires_review`/`gate` là tín hi
 
 ## Research workspace · 1.8.0
 
+### Jev connection · 1.8.1
+
+`GET /api/v1/judge/jev/status` yêu cầu phiên Reviewer: trả configured, transport, model, status (`disabled`, `untested`, `responded`, `unavailable`), last_checked_at, last_success_at, reason, retry_after. Đây là trạng thái dịch vụ theo tiến trình, không có key hoặc nội dung đầu vào.
+
+`POST /api/v1/admin/jev/check` yêu cầu ADMIN + CSRF, body `{ "allow_remote": true }`, tối đa 2 lần/phút. Gửi một câu minh họa cố định để kiểm tra, trả connection và verification.mode/reason/requires_review. Không dùng phiếu thật hoặc ghi nhận xét vào database. Có thể tiêu thụ một lượt Jev; circuit breaker có thể trả dự phòng trước khi gửi. Handshake HTTP 200 không thay thế xác minh suy luận.
+
 Các route ADMIN/giám khảo dùng phiên đăng nhập; POST/PUT phải có `X-CSRF-Token`. Lỗi 401/403 cho quyền, 422 cho dữ liệu, 409 cho phiên bản/cặp mẫu-hũ trùng. Không tạo dữ liệu TCVN hoặc tiêu chí chính thức mặc định.
 
 | Method / route | Quyền | Nội dung |

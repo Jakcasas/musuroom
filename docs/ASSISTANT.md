@@ -19,6 +19,16 @@ Phân biệt lỗi: `jev_auth_failed` là HTTP 401/403 hoặc MCP trả thông b
 
 Sau khi sửa, kiểm tra bằng một nhận xét thử không chứa dữ liệu cá nhân trong cổng giám khảo. Chỉ coi Jev hoạt động khi phản hồi có `mode=jev`, model đúng và kết quả vượt qua bước đối chiếu nguồn. Lệnh health chỉ cho biết cấu hình/khả năng khởi động, không chứng minh key có quyền model.
 
+### Kiểm tra trực tiếp trong Musuroom · 1.8.1
+
+Đăng nhập ADMIN → mục **Hỗ trợ phân loại góp ý** → **Kiểm tra Jev bằng câu minh họa**. Thao tác chỉ gửi câu minh họa cố định, có thể dùng một lượt Jev; không lấy nhận xét thật từ database. Trạng thái phân biệt chưa kiểm tra, có phản hồi và lỗi xác thực/dịch vụ. Lần kiểm tra và thời gian chờ thuộc tiến trình server hiện tại, không lưu nội dung vào database. Giám khảo xem trạng thái và dùng phân loại; chỉ ADMIN được gọi chẩn đoán, tối đa hai lần/phút và cần CSRF.
+
+Có thể dùng `pnpm jev:check` với `.env` local hoặc `pnpm jev:check --cloud` với `data/cloud.env`. Lệnh này gọi từ máy đang chạy lệnh, không chứng minh cấu hình Railway giống local; kết quả chỉ in trạng thái đã lọc. Exit code 0 khi nhận kết quả `mode=jev`, 1 khi chưa xác minh được.
+
+Client nhận đúng dạng MCP `structuredContent` là data theo tài liệu Jev, vẫn hỗ trợ envelope cũ `code/data` và JSON trong text. Mọi câu trả lời vẫn kiểm tra nhãn, xác suất và confidence. Chỉ sử dụng endpoint www.jevai.org.
+
+Kiểm tra ngày 05.10.2026: initialize và tools/list trả HTTP 200; tools/call trả MCP isError với thông báo credentials/model access. Đó là lỗi quyền suy luận; thành công của handshake không chứng minh key đã được chấp nhận để gọi model. Key mới trong cấu hình riêng tư được đồng bộ lại với Railway vì khác key đang triển khai; chưa có kết quả inference thật thành công.
+
 
 Musuroom hỗ trợ tra cứu có nguồn và diễn giải thống kê cảm quan. Mặc định, hệ thống hoạt động bằng kho tri thức và thuật toán thống kê; có thể kết nối OpenRouter để bổ sung câu trả lời bằng ngôn ngữ tự nhiên.
 
