@@ -1,4 +1,4 @@
-# Giao diện Musuroom trên máy tính — 1.9.1
+# Giao diện Musuroom trên máy tính — 1.10.0
 
 ## Định hướng
 
@@ -12,9 +12,9 @@ Bố cục ưu tiên màn hình máy tính: vùng nội dung tối đa 1320 px, 
 
 ## Tệp triển khai
 
-Bản 1.9.1 bổ sung từ khóa gợi ý trong kho tri thức, hướng dẫn khi chưa đủ điều kiện sắp xếp cùng Jev và điều hướng nhanh trong hồ sơ giám khảo. Đăng nhập và trợ lý dùng cùng cơ chế khóa biểu mẫu để tránh gửi lặp. Các lỗi validation có `aria-describedby`, dấu lỗi trực quan và trả focus về trường lỗi sau khi mở khóa. Lỗi mạng hoặc hết thời gian chờ không tự gửi lại yêu cầu ghi dữ liệu.
+Bản 1.10.0 giữ các cải tiến desktop 1.9.1 và bổ sung hướng vận hành Atlas-first. Kho tri thức có từ khóa gợi ý, hướng dẫn khi chưa đủ điều kiện sắp xếp cùng Jev và điều hướng nhanh trong hồ sơ giám khảo. Đăng nhập và trợ lý dùng cùng cơ chế khóa biểu mẫu để tránh gửi lặp. Các lỗi validation có `aria-describedby`, dấu lỗi trực quan và trả focus về trường lỗi sau khi mở khóa. Lỗi mạng hoặc hết thời gian chờ không tự gửi lại yêu cầu ghi dữ liệu.
 
-`dist/desktop.css` chứa lớp giao diện dùng chung, được nạp sau các stylesheet hiện có. `dist/desktop-ui.js` chỉ bổ sung hiển thị trên trình duyệt. Service worker 1.9.1 lưu hai tài sản công khai này cùng trang khảo sát; API và hồ sơ riêng tư vẫn nằm ngoài cache.
+`dist/desktop.css` chứa lớp giao diện dùng chung, được nạp sau các stylesheet hiện có. `dist/desktop-ui.js` chỉ bổ sung hiển thị trên trình duyệt. Service worker 1.10.0 lưu hai tài sản công khai này cùng trang khảo sát; API và hồ sơ riêng tư vẫn nằm ngoài cache.
 
 ## Công cụ thiết kế bên ngoài
 

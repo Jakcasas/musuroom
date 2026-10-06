@@ -23,7 +23,6 @@ export function loadConfig(env = process.env) {
   if(storageProvider==='supabase' && (!/^https:\/\/[^/]+\.supabase\.co$/.test(supabaseUrl) || !storageKey))throw new Error('Supabase Storage requires URL and server-only key');
   const storageBucket=env.SUPABASE_STORAGE_BUCKET || 'musuroom-dossier';
   if(!/^[a-z0-9][a-z0-9-]{2,62}$/.test(storageBucket))throw new Error('Invalid storage bucket');
-  if(production && (!publicOrigin || databaseProvider!=='postgres' || storageProvider!=='supabase'))throw new Error('Production requires HTTPS PUBLIC_ORIGIN, Postgres and Supabase private storage');
   const provider = env.AI_PROVIDER || 'disabled';
   if (!['disabled', 'openrouter'].includes(provider)) throw new Error('Invalid AI_PROVIDER');
   const apiKey = (env.OPENROUTER_API_KEY || '').trim();
@@ -34,6 +33,11 @@ export function loadConfig(env = process.env) {
   const writeToken = env.API_WRITE_TOKEN || '';
   const defaultJudgeAccountId=(env.JUDGE_DEFAULT_ACCOUNT_ID||'').trim();
   if(defaultJudgeAccountId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(defaultJudgeAccountId))throw new Error('Invalid JUDGE_DEFAULT_ACCOUNT_ID');
+  const judgeBootstrapCode=(env.JUDGE_BOOTSTRAP_CODE||'').trim();
+  const adminBootstrapCode=(env.ADMIN_BOOTSTRAP_CODE||'').trim();
+  const validateBootstrap=(key,value)=>{if(value&&(value.length<12||value.length>100||/[\u0000-\u001f\u007f]/.test(value)))throw new Error(key+' must contain 12-100 visible characters');};
+  validateBootstrap('JUDGE_BOOTSTRAP_CODE',judgeBootstrapCode);
+  validateBootstrap('ADMIN_BOOTSTRAP_CODE',adminBootstrapCode);
   if (writeToken && writeToken.length < 32) throw new Error('API_WRITE_TOKEN must have at least 32 characters');
   if (env.JEV_ENABLED && !['true','false'].includes(env.JEV_ENABLED)) throw new Error('Invalid JEV_ENABLED');
   const jevEnabled = env.JEV_ENABLED === 'true';
@@ -52,5 +56,7 @@ export function loadConfig(env = process.env) {
   const mongoControls={mongoEnabled,mongoUri,mongoDatabase,mongoSource,mongoEnrichment,mongoBatchSize:integer('MONGO_SYNC_BATCH_SIZE',25,1,100),mongoSyncMs:integer('MONGO_SYNC_INTERVAL_MS',60000,10000,3600000),mongoJevMax:integer('MONGO_JEV_MAX_PER_RUN',10,1,20),jevMinConfidence:Number(env.JEV_MIN_CONFIDENCE||0.65)};
   if(!Number.isFinite(mongoControls.jevMinConfidence)||mongoControls.jevMinConfidence<0||mongoControls.jevMinConfidence>1)throw new Error('Invalid JEV_MIN_CONFIDENCE');
   mongoControls.jevTransport=jevTransport;
-  return Object.freeze({ ...aiControls, ...mongoControls, defaultJudgeAccountId, production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, jevKey, jevModel, documentRoot: resolve(projectRoot, 'data/dossier') });
+  if(production && !publicOrigin)throw new Error('Production requires HTTPS PUBLIC_ORIGIN');
+  if(production && databaseProvider==='sqlite' && !mongoEnabled)throw new Error('Production SQLite mode requires MongoDB Atlas for JSON projection');
+  return Object.freeze({ ...aiControls, ...mongoControls, defaultJudgeAccountId, judgeBootstrapCode, adminBootstrapCode, production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, jevKey, jevModel, documentRoot: resolve(projectRoot, 'data/dossier') });
 }

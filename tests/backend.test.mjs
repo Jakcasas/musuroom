@@ -58,6 +58,14 @@ test('Batch API requires token, calculates on server and saves a retrievable row
   assert.equal((await (await a.get('/api/batches?limit=1', { headers: auth })).json()).items.length, 1);
   assert.equal((await a.get('/api/batches?limit=10000', { headers: auth })).status, 400);
 });
+test('Server-only bootstrap access code creates a judge account without storing plaintext', async t => {
+  const a = await api(t, { JUDGE_BOOTSTRAP_CODE: 'fixture-judge-code-2026' });
+  const login = await a.post('/api/v1/judge/verify', { access_code: 'fixture-judge-code-2026' });
+  assert.equal(login.status, 200);
+  const session = await login.json();
+  assert.equal(session.user.role, 'JUDGE');
+  assert.ok(!JSON.stringify(session).includes('fixture-judge-code-2026'));
+});
 test('API rejects cross-origin writes, malformed/large payloads and rate-limits chat', async t => {
   const a = await api(t, { CHAT_REQUESTS_PER_MINUTE: '1' });
   assert.equal((await a.post('/api/chat', { question: 'Umami là gì?' }, { Origin: 'https://example.org' })).status, 403);

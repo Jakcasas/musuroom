@@ -9,7 +9,7 @@ import { createAssistant } from './services/assistant.mjs';
 import { createModelGateway } from './services/model-gateway.mjs';
 import { releaseInfo } from './version.mjs';
 import { v1Router } from './routes/v1.mjs';
-import { createSecurity } from './security/auth.mjs';
+import { bootstrapAccessAccounts, createSecurity } from './security/auth.mjs';
 import { judgeRouter } from './routes/judge.mjs';
 import { projectRouter } from './routes/project.mjs';
 import { dataRouter } from './routes/data.mjs';
@@ -21,15 +21,21 @@ import { calculate } from '../dist/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
   if(config.databaseProvider==='postgres' && !database)throw new Error('Open configured Postgres database before creating application');
   const db = database || openDatabase(config.databasePath);
+  const bootstrapPromise = bootstrapAccessAccounts(db, config);
   const app = express();
   app.disable('x-powered-by');
   if(config.production)app.set('trust proxy',1);
+  app.use(async (req, res, next) => {
+    try { await bootstrapPromise; next(); }
+    catch { res.status(503).json({ error: 'access_bootstrap_failed' }); }
+  });
   const knowledge = knowledgeRepository(db);
   const batches = batchRepository(db);
   const complete = createModelGateway(config, fetchImpl);
   const answer = createAssistant(config, knowledge, fetchImpl, complete);
   const rerank = createKnowledgeReranker(config,fetchImpl);
   app.locals.db = db;
+  app.locals.bootstrapPromise = bootstrapPromise;
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'X-Frame-Options':'DENY', 'Permissions-Policy':'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'" });

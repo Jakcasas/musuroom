@@ -1,3 +1,10 @@
+# 1.10.0 — 06.10.2026
+
+- Chuyển cấu hình Railway sang Atlas-first: `MONGO_ENABLED=true` sẽ dùng SQLite runtime và MongoDB Atlas cho JSON projection, không còn bắt buộc PostgreSQL/Supabase trước khi deploy.
+- Thêm `JUDGE_BOOTSTRAP_CODE` và `ADMIN_BOOTSTRAP_CODE` để tạo tài khoản server-only khi database runtime mới khởi động; mã chỉ nằm trong biến môi trường, database chỉ lưu hash scrypt.
+- Cloud preflight nhận diện đúng `sqlite`, `local storage`, `atlas`, `jev`; Supabase/Postgres trở thành tích hợp legacy thay vì điều kiện bắt buộc.
+- Cập nhật tài liệu và template `.env` để giữ URI/key/mã đăng nhập ngoài Git.
+
 # 1.9.1 — 06.10.2026
 
 - Sửa regression đăng nhập: nút hiện/ẩn mã làm bộ chọn nút đầu tiên khóa nhầm điều khiển. Cả biểu mẫu được khóa trong lúc xác thực; chặn gửi lặp từ bàn phím. Trợ lý dùng cùng cơ chế.

@@ -1,8 +1,8 @@
-# Triển khai Musuroom 1 — Railway + Supabase
+# Triển khai Musuroom 1 — Railway + Atlas
 
 ## Đích triển khai hiện tại
 
-Project **Musuroom 1**, service **musuroom-web**, environment **production**, repository `Jakcasas/musuroom` nhánh `main`. Ngày 06.10.2026 đã triển khai bản 1.8.5 tại Singapore, health PostgreSQL ok; đã gỡ dịch vụ rỗng tạo thêm gây hai thông báo Railway failure trên cùng commit. [Chi tiết và quy trình khôi phục](RAILWAY_RECOVERY.md) · [Cấu hình vận hành 1.8.5](RAILWAY_OPERATIONS.md).
+Project **Musuroom 1**, service **musuroom-web**, environment **production**, repository `Jakcasas/musuroom` nhánh `main`. Bản 1.10.0 ưu tiên MongoDB Atlas cho kho JSON và không còn bắt buộc PostgreSQL/Supabase trong production. [Chi tiết và quy trình khôi phục](RAILWAY_RECOVERY.md) · [Cấu hình vận hành](RAILWAY_OPERATIONS.md).
 
 ## Mốc triển khai ngày 02.10.2026
 
@@ -17,13 +17,9 @@ Project **Musuroom 1**, service **musuroom-web**, environment **production**, re
 
 Trong thư mục dự án, cài Node.js 24 và pnpm 11.19.0. Chạy `pnpm install --frozen-lockfile`. Railway CLI cần phiên đăng nhập của chủ dự án: `pnpm exec railway login --browserless`. Nếu binary CLI chưa được cài do scripts bị chặn, chạy `node node_modules/@railway/cli/npm-install/postinstall.js` rồi kiểm tra `pnpm exec railway --version`.
 
-Trên máy mới, tạo `data/cloud.env` từ `cloud.env.example`. Trong Supabase **Connect**, lấy **Session pooler cổng 5432**; điền password đã percent-encode. Không dùng transaction pooler 6543 vì migration giữ advisory lock theo session. Khóa Storage chỉ lưu ở backend. Trên máy này **CAU_HINH_SUPABASE.cmd** nhập ẩn mật khẩu và ghi riêng vào `data/cloud.env`.
+Trên máy mới, tạo `data/cloud.env` từ `cloud.env.example`. Điền `MONGODB_URI` Atlas SRV, `MONGO_ENABLED=true`, `MONGODB_DATABASE=musuroom` và `MONGO_SOURCE_ID=musuroom-production`. Nếu muốn cổng giám khảo sống ổn định sau mỗi deploy SQLite runtime, đặt `JUDGE_BOOTSTRAP_CODE` và `ADMIN_BOOTSTRAP_CODE` trong file riêng hoặc Railway Variables; không ghi chúng vào README, Git hoặc frontend.
 
-Đổi/reset mật khẩu thực hiện trong Supabase Dashboard rồi cập nhật helper. Lỗi 28P01 là mật khẩu chưa được chấp nhận. Sau đổi mật khẩu, preflight thử lại tối đa 2 lần với khoảng chờ 2 giây để xử lý thời gian cập nhật của pooler; nếu vẫn lỗi, dừng trước khi upload. Không đưa mật khẩu vào URL Git, README hoặc frontend.
-
-CA được lấy từ **Database Settings > SSL configuration > Download certificate**. Máy này có CA trong `data/supabase-ca.crt` và `DATABASE_CA_CERT` lưu riêng. Backend luôn xác minh TLS/hostname; tham số SSL trong URL không được dùng để tắt xác minh. PEM một dòng trong `.env` dùng dấu nháy đơn và `\n` cho xuống dòng. [Hướng dẫn kết nối PostgreSQL](https://supabase.com/docs/guides/database/connecting-to-postgres).
-
-Bucket Storage phải `public=false`. Khi chuẩn bị trên một project mới, chạy với `MUSUROOM_ENV_FILE=data/cloud.env`: `node scripts/database.mjs` và `node scripts/provision-storage.mjs`. Với fork dùng project khác, sửa IDs/domain tại `scripts/cloud-config.mjs` và project/pooler trong template trước khi cấu hình.
+PostgreSQL/Supabase vẫn được giữ cho dự án legacy. Chỉ điền `DATABASE_PROVIDER=postgres`, `DATABASE_URL`, `DATABASE_CA_CERT`, `STORAGE_PROVIDER=supabase`, `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` khi chủ động dùng legacy. Khi `MONGO_ENABLED=true`, script cloud sẽ ưu tiên `DATABASE_PROVIDER=sqlite`, `STORAGE_PROVIDER=local` và làm trống các biến Supabase trước khi gửi lên Railway.
 
 ## 2. Kiểm tra và triển khai
 
@@ -36,9 +32,9 @@ pnpm cloud:check
 pnpm cloud:deploy
 ```
 
-`cloud:check` đọc file riêng, kiểm tra PostgreSQL/migration và private bucket; Atlas được kiểm tra nếu được cấu hình. Jev báo configured/disabled, chưa coi cấu hình là lời gọi dịch vụ đã thành công.
+`cloud:check` đọc file riêng, kiểm tra database runtime, storage theo cấu hình và Atlas nếu bật. Jev báo configured/disabled, chưa coi cấu hình là lời gọi dịch vụ đã thành công.
 
-Atlas đã kết nối và nhận 6 tài liệu JSON được đọc kiểm chứng; SQL pending=0. `pnpm cloud:deploy` cấu hình worker trên Railway. Khi Atlas tạm không đáp ứng, có thể triển khai với `--without-atlas`; flag chỉ tắt worker trên deployment đó, bảo toàn URI trong file riêng. Jev dùng `JEV_API_KEY` từ www.jevai.org/agent/keys và `typesafe-ai/jev`; thử thật hiện báo credentials/model access rejected (MCP) và REST 502. Kiểm tra key/quyền model tại JevAI; không đổi sang provider khác để vượt lỗi này.
+Atlas nhận JSON projection qua worker tăng dần. Khi Atlas tạm không đáp ứng, có thể triển khai với `--without-atlas`; flag chỉ tắt worker trên deployment đó, bảo toàn URI trong file riêng. Jev dùng `JEV_API_KEY` từ www.jevai.org/agent/keys và `typesafe-ai/jev`; nếu quyền model bị từ chối, hệ thống chuyển sang luật cục bộ và ghi rõ cần đối chiếu.
 
 `cloud:deploy` kiểm tra trước, chuyển toàn bộ biến môi trường theo whitelist bằng stdin, chọn đúng project/service/production, upload, theo dõi ID deployment vừa tạo đến SUCCESS và chờ tối đa 10 phút cho `/healthz` đúng phiên bản package và database. Bản cũ cùng version không được dùng để xác nhận triển khai. QR chỉ tạo sau khi health và trang khảo sát/giám khảo đã hoạt động. Script không in giá trị bí mật. Có thể tách bước chuyển biến bằng `pnpm cloud:configure` và upload bằng:
 
@@ -68,7 +64,7 @@ node scripts/add-document.mjs --file docs/project-brief.txt --title 'Giới thi�
 Remove-Item Env:MUSUROOM_ENV_FILE
 ```
 
-Máy này đã có hai file mã cloud; script giữ file/tài khoản đã tồn tại. Mã giám khảo khác mật khẩu database. Gửi riêng đúng mã JUDGE cho người được mời; mã ADMIN chỉ dành cho người vận hành. Mã mặc định hết hạn sau 7 ngày; tạo file mới khi cần và thu hồi mã cũ bằng `scripts/revoke-access.mjs ACCOUNT_ID` với môi trường cloud.
+Với Atlas-first runtime, cách gọn hơn là dùng `JUDGE_BOOTSTRAP_CODE` và `ADMIN_BOOTSTRAP_CODE` trong Railway Variables. Ứng dụng tạo/cập nhật tài khoản khi khởi động và chỉ lưu hash scrypt. Mã giám khảo khác mật khẩu database. Gửi riêng đúng mã JUDGE cho người được mời; mã ADMIN chỉ dành cho người vận hành.
 
 Upload SOP/COGS/COA thật bằng cùng CLI và nhãn đúng nội dung. BRIEF DRAFT không trở thành kết quả kiểm nghiệm. File nằm trong private Storage; tải đi qua API có xác thực và kiểm tra hash/kích thước.
 
@@ -86,9 +82,9 @@ Khi tạo QR mới trên máy sau deploy, các tệp được đưa vào lần p
 
 - Qua HTTPS, mở trang chủ/khảo sát/tri thức/minh bạch/giám khảo. Kiểm tra version bằng `/healthz`.
 - API riêng trả 401 khi chưa đăng nhập. JUDGE không đọc liên hệ ADMIN hoặc kho JSON quản trị. Cookie production có `Secure`, `HttpOnly`, `SameSite=Strict`; POST yêu cầu CSRF. Kiểm tra đăng xuất làm phiên cũ trả 401.
-- Database bật RLS và thu hồi quyền browser trên bảng Musuroom. Production không fallback sang SQLite hoặc lưu tệp lâu dài trong container.
+- Legacy PostgreSQL bật RLS nếu dùng. Bản Atlas-first dùng SQLite runtime trong container và Atlas cho JSON projection; hồ sơ local không phải kho lưu trữ lâu dài.
 - Một replica vì rate limit dùng bộ nhớ tiến trình. Khi tăng replica, cần kho điều phối chung cho rate limit.
-- Backup PostgreSQL và Storage theo gói/lịch vận hành thực tế; NDJSON không thay backup. Theo dõi log Railway, lỗi kết nối, pending sync và hạn mã giám khảo.
+- Backup Atlas theo gói/lịch vận hành thực tế; NDJSON không thay backup. Theo dõi log Railway, lỗi kết nối, pending sync và hạn mã giám khảo.
 - Cấu hình Atlas/Jev theo [kho JSON và hỗ trợ phân loại](MONGODB_JEV.md). Để hai phần này disabled nếu chưa có URI/key; chức năng khảo sát và hồ sơ vẫn hoạt động.
 
 ## Tài liệu nhà cung cấp

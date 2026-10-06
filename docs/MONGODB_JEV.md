@@ -1,13 +1,13 @@
 # Kho dữ liệu JSON và hỗ trợ phân loại Jev
 
-Musuroom 1, mã nguồn **1.6.0**. PostgreSQL giữ dữ liệu gốc; Atlas lưu bản JSON để truy vấn và phân tích. Ngày 01.10.2026, database Supabase có 6 bài tri thức; đã đồng bộ và đọc kiểm chứng đủ 6 tài liệu trên Atlas, không còn công việc chờ. URI/key đã lưu riêng. JevAI vẫn báo credentials/model access rejected qua MCP chính thức (REST 502); chưa có inference Jev thành công. Bộ JSON cloud đã xuất cục bộ trong `data/exports/`, ngoài Git.
+Musuroom 1, mã nguồn **1.10.0**. Railway có thể chạy theo hướng Atlas-first: SQLite runtime phục vụ API giao dịch, Atlas lưu JSON projection để truy vấn/xử lý dữ liệu, còn PostgreSQL/Supabase là tích hợp legacy khi cần. URI/key/mã đăng nhập lưu riêng ngoài Git. JevAI vẫn cần key từ `www.jevai.org/agent/keys`; khi quyền model bị từ chối, hệ thống dùng phân loại cục bộ và ghi rõ trạng thái.
 
 ## Luồng xử lý
 
 ```mermaid
 flowchart LR
-  Web[Khảo sát và quản trị] --> SQL[(PostgreSQL)]
-  SQL --> Queue[Hàng đợi trong cùng giao dịch]
+  Web[Khảo sát và quản trị] --> SQL[(SQLite runtime / PostgreSQL legacy)]
+  SQL --> Queue[Hàng đợi revision]
   Queue --> Project[Chọn trường dữ liệu và tổng hợp điểm]
   Project --> JSON[JSON có nguồn, hash và phiên bản]
   JSON --> Mongo[(Atlas: musuroom.documents)]
@@ -30,7 +30,7 @@ Không chọn tên, liên hệ, địa chỉ, mã đăng nhập, phiên, góp ý
 
 Envelope có `_id` ổn định, `source`, `type`, `resource_id`, `schema_version`, `source_revision`, `content_hash`, `app_version`, `projected_at`. `_id` kết hợp source với khóa tài nguyên. Schema MongoDB nằm tại [mongo-schema.json](../backend/services/mongo-schema.json); áp dụng khi tạo collection mới. Collection đã tồn tại cần người vận hành đối chiếu validator hiện có trước khi thay đổi.
 
-Atlas dùng upsert và [pipeline cập nhật có điều kiện](https://www.mongodb.com/docs/manual/tutorial/update-documents-with-aggregation-pipeline/): revision cũ không ghi đè revision mới; `$literal` giữ nội dung JSON là dữ liệu. Chỉ xác nhận công việc SQL sau khi MongoDB ghi thành công. Lỗi giữa hai bước được thử lại. Lease SQL ngăn hai worker xử lý cùng lúc và hết hạn sau 5 phút khi tiến trình dừng bất thường. Mã lỗi lưu trong SQL không chứa URI hoặc thông tin xác thực.
+Atlas dùng upsert và [pipeline cập nhật có điều kiện](https://www.mongodb.com/docs/manual/tutorial/update-documents-with-aggregation-pipeline/): revision cũ không ghi đè revision mới; `$literal` giữ nội dung JSON là dữ liệu. Chỉ xác nhận công việc sau khi MongoDB ghi thành công. Lỗi giữa hai bước được thử lại. Lease runtime ngăn hai worker xử lý cùng lúc và hết hạn sau 5 phút khi tiến trình dừng bất thường. Mã lỗi lưu nội bộ không chứa URI hoặc thông tin xác thực.
 
 Index cho `(source,type,resource_id)` là unique; `(source,type,_id)` phục vụ phân trang; `(source,jev.topic,jev.requires_review)` phục vụ phân loại. Đây là cơ chế đồng bộ tăng dần, chưa phải kết quả benchmark Big Data hoặc bảo đảm khôi phục sự cố.
 
@@ -38,7 +38,7 @@ Index cho `(source,type,resource_id)` là unique; `(source,type,_id)` phục v�
 
 1. Trong tài khoản Atlas của bạn, chọn cluster hiện có và vùng Singapore nếu phù hợp. Nếu chưa có cluster, tự chọn gói/ngân sách trước khi tạo.
 2. Tạo database user riêng với quyền `readWrite` chỉ trên database `musuroom`. Hoàn tất mật khẩu trong Atlas; không sử dụng mật khẩu Supabase làm mật khẩu Atlas.
-3. Trong Network Access, cho phép IP máy chạy script và IP egress Railway theo cấu hình/gói đang dùng. Không có IP egress ổn định thì đồng bộ từ máy có IP được cho phép và để `MONGO_ENABLED=false` trên Railway.
+3. Trong Network Access, cho phép IP máy chạy script và IP egress Railway theo cấu hình/gói đang dùng. Nếu Railway không có IP egress ổn định, vẫn có thể deploy web và đồng bộ từ máy có IP được cho phép.
 4. Trong **Connect > Drivers**, lấy SRV URI `mongodb+srv://...`, điền mật khẩu đã percent-encode. Trên máy này chạy **CAU_HINH_MONGODB.cmd**; helper lưu URI vào `data/cloud.env`, không in giá trị. Có thể điền trực tiếp trong Railway Variables khi vận hành từ máy khác.
 5. Kiểm tra và đồng bộ một batch:
 
@@ -75,7 +75,7 @@ Giới hạn: request 20.000 bytes, response 64 KiB, deadline toàn bộ lời g
 | MONGO_JEV_MAX_PER_RUN | 10 | Tối đa 1–20 bài/lần khi enrichment được chọn |
 | JEV_MIN_CONFIDENCE | 0.65 | Ngưỡng đề xuất cần xem lại, 0–1 |
 
-Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File được lưu ở `data/exports/`, đọc từng trang 100 công việc. Đây là projection tại thời điểm đọc từng bản ghi; cập nhật diễn ra trong lúc xuất có thể được bao gồm. Export này không thay thế backup PostgreSQL hoặc private Storage.
+Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File được lưu ở `data/exports/`, đọc từng trang 100 công việc. Đây là projection tại thời điểm đọc từng bản ghi; cập nhật diễn ra trong lúc xuất có thể được bao gồm. Export này không thay thế backup Atlas hoặc hồ sơ riêng.
 
 ## Phân loại cục bộ khi Jev chưa đáp ứng
 
@@ -85,6 +85,6 @@ Xuất toàn bộ dữ liệu theo dòng NDJSON bằng `pnpm data:export`. File 
 
 ## Trạng thái đồng bộ trên Railway
 
-Worker trên Railway hiện trả `atlas_network_unavailable`, dù đồng bộ từ máy này và đọc lại Atlas đã thành công. Cần kiểm tra Atlas Network Access và DNS/kết nối từ Railway trước khi xác nhận đồng bộ tự động trên cloud. Dữ liệu khảo sát vẫn lưu vào Supabase; có thể chạy `data:sync` từ máy đã được Atlas cho phép.
+Nếu worker trên Railway trả `atlas_network_unavailable`, kiểm tra Atlas Network Access và DNS/kết nối từ vùng Railway. Dữ liệu runtime vẫn nhận khảo sát; có thể chạy `data:sync` từ máy đã được Atlas cho phép rồi deploy lại khi Network Access đã mở đúng.
 
 Bản 1.6.0: [4 luồng Jev, lô phân loại và hàng chờ đối chiếu](JEV_WORKFLOWS.md).

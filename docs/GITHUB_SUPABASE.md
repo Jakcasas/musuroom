@@ -50,7 +50,7 @@ Supabase Security/Performance Advisors sau pg-005 không có WARN/ERROR. Có 13 
 
 Code có MongoDB driver, JSON projection, batch/upsert, revision, retry và lease; có Jev Choice để gợi ý chủ đề bài tri thức. URI Atlas và key từ JevAI /agent/keys đã lưu riêng. Atlas đã nhận đủ 6 tài liệu JSON được đọc kiểm chứng, hàng đợi SQL pending=0. JevAI vẫn báo credentials/model access rejected qua MCP, REST 502; cần kiểm tra key/quyền model trước khi xác nhận inference thành công. Runtime chỉ dùng www.jevai.org, model typesafe-ai/jev. [Các bước thiết lập](MONGODB_JEV.md).
 
-Hướng dẫn cập nhật biến, deploy lại, cấp mã, upload hồ sơ và in QR tại [Railway + Supabase](DEPLOY_RAILWAY_SUPABASE.md). Local dùng SQLite riêng tại `http://127.0.0.1:8766/`.
+Hướng dẫn cập nhật biến, deploy lại, cấp mã, upload hồ sơ và in QR tại [Railway + Atlas](DEPLOY_RAILWAY_SUPABASE.md). Local dùng SQLite riêng tại `http://127.0.0.1:8766/`.
 
 ## Trạng thái đồng bộ trên Railway
 

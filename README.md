@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.9.1-264736)
+![Version](https://img.shields.io/badge/version-1.10.0-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -13,11 +13,11 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 Triển khai từ `main` vào **Musuroom 1 → musuroom-web → production**, cổng `8080`, healthcheck `/healthz`. Hai thông báo Railway mang tên `perpetual-tranquility` và `mcp.musuroom.com` trên commit cũ thuộc cùng một dịch vụ tạo thêm thiếu biến production; dịch vụ rỗng đã được gỡ. [Đích triển khai và cách xử lý lỗi](docs/RAILWAY_RECOVERY.md).
 
-## Bản 1.9.1 — giao diện trên máy tính
+## Bản 1.10.0 — Atlas-first runtime
 
 Trang chủ thoáng hơn với màu kem/xanh nấm, điều hướng gọn và ba lối vào chính. Phiếu khảo sát có chỉ báo hoàn thành 5 tiêu chí; cổng giám khảo bổ sung hiện/ẩn mã truy cập. Thẻ hồ sơ, bảng và kho tri thức có kiểu trình bày thống nhất, giữ Roboto. [Thiết kế và phạm vi cập nhật](docs/DESIGN_DESKTOP.md).
 
-Bản 1.9.1 sửa khóa biểu mẫu đăng nhập khi có nút hiện mã, ngăn gửi lặp và hướng dẫn rõ khi kết nối bị gián đoạn. Lỗi nhập liệu được gắn với đúng trường và đưa con trỏ về chỗ cần sửa. Kho tri thức thêm từ khóa gợi ý, giải thích điều kiện sắp xếp cùng Jev; cổng giám khảo có lối chuyển nhanh giữa các mục hồ sơ.
+Bản 1.10.0 chuyển cấu hình cloud sang hướng Atlas-first: production không còn bắt buộc PostgreSQL/Supabase trước khi deploy, MongoDB Atlas giữ kho JSON xử lý và Supabase/Postgres trở thành tích hợp kế thừa. Cổng giám khảo có thể bootstrap bằng mã server-only trong Railway Variables, lưu hash scrypt vào database runtime và không đưa mã vào Git/frontend. Preflight cloud kiểm tra SQLite/Atlas/local storage theo cấu hình thực tế, nên lỗi Supabase cũ không còn chặn upload khi dự án đang dùng Atlas.
 
 ## Vận hành từ bản 1.8.5
 
@@ -61,14 +61,14 @@ Docker local: `docker compose up --build -d`; chỉ công bố cổng trên 127.
 ```mermaid
 flowchart LR
   Web[Web / PWA / QR] --> API[Express + xác thực + Zod]
-  API --> SQL[(SQLite local / Supabase PostgreSQL)]
-  API --> Files[Private Supabase Storage]
+  API --> SQL[(SQLite runtime / PostgreSQL legacy)]
+  API --> Files[Local private files / Supabase legacy]
   SQL --> Queue[Hàng đợi có revision]
   Queue --> Atlas[(MongoDB Atlas JSON)]
   API --> Gate[Đồng ý gửi + giới hạn + circuit breaker]
   Gate --> Jev[JevAI chính thức]
   API --> Sources[Kho tri thức + điều khoản công bố]
-  SQL --> Vector[pgvector 384 chiều]
+  SQL -. optional .-> Vector[pgvector legacy]
 ```
 
 | Phân hệ | Giao diện | Hướng dẫn |
@@ -91,9 +91,9 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `PORT` | `8766` | Cổng HTTP |
 | `NODE_ENV` | `development` | development hoặc production |
 | `DATABASE_PATH` | `./data/musuroom.sqlite` | Tệp SQLite local |
-| `DATABASE_PROVIDER` | `sqlite` | sqlite hoặc postgres |
-| `DATABASE_URL` | `` | URL PostgreSQL riêng tư, Session pooler :5432 |
-| `DATABASE_CA_CERT` | `` | CA PostgreSQL; luôn kiểm chứng TLS |
+| `DATABASE_PROVIDER` | `sqlite` | sqlite mặc định; postgres là legacy |
+| `DATABASE_URL` | `` | URL PostgreSQL riêng tư nếu dùng legacy |
+| `DATABASE_CA_CERT` | `` | CA PostgreSQL nếu dùng legacy |
 | `PUBLIC_ORIGIN` | `` | HTTPS gốc của ứng dụng dùng tạo QR |
 | `STORAGE_PROVIDER` | `local` | local hoặc supabase |
 | `SUPABASE_URL` | `` | URL project Supabase |
@@ -113,6 +113,8 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `AUTH_SESSION_MINUTES` | `120` | Thời hạn phiên tuyệt đối, phút |
 | `AUTH_IDLE_MINUTES` | `20` | Thời hạn không hoạt động, phút |
 | `AUTH_LOGIN_LIMIT` | `8` | Giới hạn đăng nhập theo IP |
+| `JUDGE_BOOTSTRAP_CODE` | `` | Mã giám khảo server-only để bootstrap tài khoản runtime |
+| `ADMIN_BOOTSTRAP_CODE` | `` | Mã quản trị server-only để bootstrap tài khoản runtime |
 | `JEV_ENABLED` | `false` | Cho phép kết nối JevAI chính thức |
 | `JEV_API_KEY` | `` | Key từ www.jevai.org/agent/keys, chỉ ở server |
 | `JEV_MODEL` | `typesafe-ai/jev` | Model Jev được tài khoản cho phép |
@@ -127,7 +129,7 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `MONGO_JEV_MAX_PER_RUN` | `10` | Số yêu cầu phân loại tối đa mỗi đợt |
 | `JEV_TRANSPORT` | `mcp` | mcp hoặc rest của www.jevai.org |
 
-Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá nhân vào Git/ZIP/frontend. SQL là nguồn dữ liệu gốc; bản Atlas chỉ chứa projection được cho phép. PostgreSQL dùng Session pooler, kiểm chứng TLS; private Storage phục vụ qua API có phân quyền.
+Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá nhân vào Git/ZIP/frontend. Atlas chứa JSON projection được cho phép; SQL runtime giữ dữ liệu giao dịch phục vụ API. PostgreSQL/Supabase vẫn được hỗ trợ khi cần legacy, nhưng Railway bản mới có thể chạy không phụ thuộc vào chúng.
 
 ## Tri thức và hỗ trợ phân tích
 
@@ -137,7 +139,7 @@ OpenRouter là kết nối hỏi đáp tùy chọn, mặc định `disabled`. H�
 
 ## Triển khai và kiểm tra
 
-- [Railway + Supabase + QR: các bước vận hành](docs/DEPLOY_RAILWAY_SUPABASE.md).
+- [Railway + Atlas + QR: các bước vận hành](docs/DEPLOY_RAILWAY_SUPABASE.md).
 - [Đối chiếu lịch sử migration](docs/GITHUB_SUPABASE.md). Không sửa migration đã áp dụng; tạo migration mới rồi đối chiếu đúng version/name/SQL.
 - [Nội dung nâng cấp, KPI và việc cần làm ngoài hệ thống](docs/UPGRADE_2026.md).
 

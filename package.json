@@ -1,10 +1,10 @@
 {
   "name": "musuroom",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
-  "description": "Musuroom 1: Express, SQLite/PostgreSQL, private Supabase dossier and optional Jev",
+  "description": "Musuroom 1: Express, Atlas JSON projection, optional legacy PostgreSQL/Supabase and Jev",
   "scripts": {
     "start": "node server.mjs",
     "dev": "node --watch server.mjs",

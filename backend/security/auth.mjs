@@ -26,6 +26,21 @@ export async function rotateJudgeAccessCode(db,accountId,code) {
     return {account_id:account.id,display_name:account.display_name,role:'JUDGE',access_code:code,expires_at:new Date(account.expires_at).toISOString()};
   } catch(error) {await db.exec('ROLLBACK');throw error;}
 }
+export async function bootstrapAccessAccounts(db,config) {
+  const expires = Date.now() + 30 * 86400000;
+  const accounts = [
+    { id: '11111111-1111-4111-8111-111111111111', name: 'Ban Giám Khảo Musuroom', role: 'JUDGE', code: config.judgeBootstrapCode, expires },
+    { id: '22222222-2222-4222-8222-222222222222', name: 'Quản trị Musuroom', role: 'ADMIN', code: config.adminBootstrapCode, expires }
+  ].filter(account => account.code);
+  for (const account of accounts) {
+    const salt = randomBytes(16).toString('hex');
+    const hash = (await derive(account.code, salt, 64)).toString('hex');
+    await db.prepare(`INSERT INTO judge_accounts(id,display_name,role,secret_salt,secret_hash,expires_at,enabled)
+      VALUES(?,?,?,?,?,?,1)
+      ON CONFLICT(id) DO UPDATE SET display_name=excluded.display_name,role=excluded.role,secret_salt=excluded.secret_salt,secret_hash=excluded.secret_hash,expires_at=excluded.expires_at,enabled=1`).run(account.id, account.name, account.role, salt, hash, account.expires);
+  }
+  return accounts.length;
+}
 export function createSecurity(db, config, now = Date.now) {
   const failures = new Map(); let activeLogins = 0; let cleanedAt=now();
   const name = config.production ? '__Host-musuroom_session' : cookieName;
@@ -66,13 +81,25 @@ export function createSecurity(db, config, now = Date.now) {
     if (activeLogins >= 3) return res.status(429).set('Retry-After','5').json({ error: 'login_busy' });
     const value = req.body?.access_code;
     const match = typeof value === 'string' && value.length <= 100 ? value.trim().match(/^([0-9a-f-]{36})\.([A-Za-z0-9_-]{32})$/i) : null;
-    const defaultCode=!match&&config.defaultJudgeAccountId&&typeof value==='string'&&value.trim().length>=12&&value.length<=100&&!/[\u0000-\u001f\u007f]/.test(value)?value.trim():null;
+    const passwordOnlyEnabled=config.defaultJudgeAccountId||config.judgeBootstrapCode||config.adminBootstrapCode;
+    const defaultCode=!match&&passwordOnlyEnabled&&typeof value==='string'&&value.trim().length>=12&&value.length<=100&&!/[\u0000-\u001f\u007f]/.test(value)?value.trim():null;
     activeLogins++;
     let valid = false; let account;
     try {
-      account = match ? await db.prepare('SELECT * FROM judge_accounts WHERE id=?').get(match[1]) : defaultCode ? await db.prepare("SELECT * FROM judge_accounts WHERE id=? AND role='JUDGE'").get(config.defaultJudgeAccountId) : null;
-      const computed = (await derive(match?.[2] || defaultCode || 'invalid-code', account?.secret_salt || '00000000000000000000000000000000', 64)).toString('hex');
-      valid = account && account.enabled && account.expires_at > now() && equal(computed, account.secret_hash);
+      if(match)account = await db.prepare('SELECT * FROM judge_accounts WHERE id=?').get(match[1]);
+      else if(defaultCode) {
+        const candidates = [
+          config.defaultJudgeAccountId && { id: config.defaultJudgeAccountId, role: 'JUDGE' },
+          config.judgeBootstrapCode && { id: '11111111-1111-4111-8111-111111111111', role: 'JUDGE' },
+          config.adminBootstrapCode && { id: '22222222-2222-4222-8222-222222222222', role: 'ADMIN' }
+        ].filter(Boolean);
+        for(const entry of candidates){
+          const candidate = await db.prepare('SELECT * FROM judge_accounts WHERE id=?').get(entry.id);
+          const computed = (await derive(defaultCode, candidate?.secret_salt || '00000000000000000000000000000000', 64)).toString('hex');
+          if(candidate?.role === entry.role && candidate.enabled && candidate.expires_at > now() && equal(computed, candidate.secret_hash)){account=candidate;valid=true;break;}
+        }
+      }
+      if(match){const computed = (await derive(match[2], account?.secret_salt || '00000000000000000000000000000000', 64)).toString('hex');valid = account && account.enabled && account.expires_at > now() && equal(computed, account.secret_hash);}
     } finally { activeLogins--; }
     if (!valid) {
       const current = failures.get(bucket);
