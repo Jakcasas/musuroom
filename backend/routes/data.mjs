@@ -5,9 +5,30 @@ import { knowledgeDecisionRequest,createKnowledgeClassifier } from '../services/
 import { rateLimit } from '../security/rate-limit.mjs';
 import { createKnowledgeBatch,knowledgeBatchPreview } from '../services/knowledge-batch.mjs';
 import { decisionReviews } from '../repositories/decision-reviews.mjs';
+import {createAtlasLabeling} from '../services/atlas-labeling.mjs';
+import {decisionSchemas,labelRunRequestSchema} from '../services/decision-contracts.mjs';
+import {validateBody} from '../services/input-schemas.mjs';
 export function dataRouter(db,security,config,fetchImpl) {
  const router=Router(),classify=createKnowledgeClassifier(config,fetchImpl),batch=createKnowledgeBatch(config,fetchImpl),reviews=decisionReviews(db);
  router.use('/admin/data',security.requireAdmin);
+ router.get('/admin/data/schemas',(req,res)=>res.json(decisionSchemas));
+ const labeler=db.dialect==='mongodb'?createAtlasLabeling(db,config,{classify:batch}):null;
+ router.use('/admin/data/label-runs',(req,res,next)=>labeler?next():res.status(409).json({error:'atlas_primary_required'}));
+ router.post('/admin/data/label-runs/preview',validateBody(labelRunRequestSchema),async(req,res)=>res.json(await labeler.preview(req.body)));
+ router.post('/admin/data/label-runs',validateBody(labelRunRequestSchema),rateLimit(2,'classification_rate_limit'),async(req,res)=>{
+  try{const run=await labeler.enqueue(req.body,req.principal.account_id);await security.audit(req.principal.account_id,'LABEL_RUN_CREATED',run.id);res.status(202).json(run);}
+  catch(error){if(error.code==='label_run_active')return res.status(409).json({error:error.code});throw error;}
+ });
+ const pageQuery=req=>{const after=req.query.after??'',limit=Number(req.query.limit??25);return typeof after==='string'&&/^[a-f0-9-]{0,64}$/.test(after)&&Number.isInteger(limit)&&limit>=1&&limit<=100?{after,limit}:null;};
+ router.get('/admin/data/label-runs',async(req,res)=>{const page=pageQuery(req);if(!page)return res.status(400).json({error:'invalid_pagination'});const items=await labeler.list(page.after,page.limit);res.json({items,next_cursor:items.length===page.limit?items.at(-1).id:null});});
+ router.use('/admin/data/label-runs/:id',(req,res,next)=>/^[a-f0-9-]{36}$/.test(req.params.id)?next():res.status(400).json({error:'invalid_run_id'}));
+ router.get('/admin/data/label-runs/:id',async(req,res)=>{const run=await labeler.get(req.params.id);run?res.json(run):res.status(404).json({error:'run_not_found'});});
+ router.get('/admin/data/label-runs/:id/events',async(req,res)=>{const page=pageQuery(req);if(!page)return res.status(400).json({error:'invalid_pagination'});const items=await labeler.eventPage(req.params.id,page.after,page.limit);res.json({items,next_cursor:items.length===page.limit?items.at(-1).id:null});});
+ router.post('/admin/data/label-runs/:id/control',async(req,res)=>{
+  if(!['resume','cancel'].includes(req.body?.action))return res.status(422).json({error:'invalid_run_action'});
+  try{if(!await labeler.control(req.params.id,req.body.action))return res.status(409).json({error:'run_state_changed'});await security.audit(req.principal.account_id,'LABEL_RUN_'+req.body.action.toUpperCase(),req.params.id);res.json(await labeler.get(req.params.id));}
+  catch(error){if(error.code==='label_run_active')return res.status(409).json({error:error.code});throw error;}
+ });
  router.get('/admin/data/status',async(req,res)=>res.json({...await dataStatus(db,config),jev_enabled:config.jevEnabled,batch_size:config.mongoBatchSize}));
  router.get('/admin/data/documents',async(req,res)=>{
   const {after='',type}=req.query,limit=Number(req.query.limit??25);

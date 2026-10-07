@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "source": {
+      "type": "string",
+      "maxLength": 63
+    },
+    "article_id": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "source_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "decision_type": {
+      "type": "string",
+      "const": "KNOWLEDGE_TOPIC"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "jev",
+        "local"
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 100
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "topic": {
+      "type": "string",
+      "enum": [
+        "ingredients",
+        "flavor",
+        "safety",
+        "methods",
+        "other"
+      ]
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requires_review": {
+      "type": "boolean"
+    },
+    "probabilities": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ingredients": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "flavor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "safety": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "methods": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "other": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "ingredients",
+            "flavor",
+            "safety",
+            "methods",
+            "other"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "policy_version": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "rubric_version": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "fallback_used": {
+      "type": "boolean"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,100}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "saved",
+        "stale"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+    }
+  },
+  "required": [
+    "id",
+    "run_id",
+    "source",
+    "article_id",
+    "source_revision",
+    "content_hash",
+    "decision_type",
+    "provider",
+    "model",
+    "topic",
+    "confidence",
+    "requires_review",
+    "probabilities",
+    "policy_version",
+    "rubric_version",
+    "fallback_used",
+    "reason",
+    "latency_ms",
+    "outcome",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

@@ -135,6 +135,8 @@ Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá 
 
 ## Tri thức và hỗ trợ phân tích
 
+Luồng **JSON → JSON Schema → Atlas → Jev** có tác vụ tối đa 10.000 bản ghi, lô 5 bài, checkpoint và nhật ký quyết định. Quản trị có thể xem trước, tạo, theo dõi, dừng và tiếp tục tác vụ ngay trong cổng hồ sơ. [Hợp đồng JSON và hướng dẫn xử lý theo lô](docs/JSON_JEV_PIPELINE.md). Key/model lỗi sẽ chặn tác vụ; kết quả cục bộ được ghi đúng nguồn.
+
 Jev sử dụng duy nhất dịch vụ **www.jevai.org**, key từ [trang quản lý key](https://www.jevai.org/agent/keys), model `typesafe-ai/jev`. Người vận hành xem dữ liệu và đồng ý trước khi gửi; mặc định worker không tự enrichment. Khi dịch vụ lỗi hoặc quyền model không hợp lệ, dùng luật từ khóa cục bộ, ghi rõ nguồn kết quả và không tạo confidence giả.
 
 OpenRouter là kết nối hỏi đáp tùy chọn, mặc định `disabled`. Hướng dẫn đầy đủ đã tách vào [Trợ lý tri thức & phân tích cảm quan](docs/ASSISTANT.md). Điểm cảm quan và chấm thi luôn được tính bằng thuật toán; mô hình không tự sửa nguồn, chứng nhận chất lượng hoặc quyết định điểm.

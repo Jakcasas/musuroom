@@ -9,6 +9,9 @@ import { documentStorage } from '../backend/services/document-storage.mjs';
 import { dataJobs,projectDocument } from '../backend/services/data-projections.mjs';
 import { syncData } from '../backend/services/data-sync.mjs';
 import { decisionReviews } from '../backend/repositories/decision-reviews.mjs';
+import {openMongoStore} from '../backend/services/mongo-store.mjs';
+import {createAtlasLabeling} from '../backend/services/atlas-labeling.mjs';
+import {createKnowledgeBatch} from '../backend/services/knowledge-batch.mjs';
 
 test('Atlas primary: persistence, concurrent submissions, judge access, revisions, JSON outbox and private GridFS', {skip:process.env.RUN_ATLAS_TESTS!=='true',timeout:180000}, async()=>{
   const name='musuroom_verify_'+randomUUID().replaceAll('-','').slice(0,16);
@@ -88,4 +91,38 @@ test('Atlas primary: persistence, concurrent submissions, judge access, revision
     if(db.database.databaseName!==name||!/^musuroom_verify_[a-f0-9]{16}$/.test(name))throw new Error('Invalid cleanup target');
     await db.database.dropDatabase();await db.close();
   }
+});
+
+test('Atlas label jobs: leases, checkpoints, blocked Jev, stale sources, cancellation, schema and audit privacy', {skip:process.env.RUN_ATLAS_TESTS!=='true',timeout:180000},async()=>{
+ const name='musuroom_verify_'+randomUUID().replaceAll('-','').slice(0,16);
+ const config=loadConfig({MONGO_ENABLED:'true',MONGODB_URI:process.env.MONGODB_URI,MONGODB_DATABASE:name,DATABASE_PROVIDER:'mongodb',STORAGE_PROVIDER:'mongodb'});
+ const db=await openMongoDatabase(config);let mirror;
+ try{
+  mirror=await openMongoStore(config);await syncData({db,config,store:mirror});
+  const labeler=createAtlasLabeling(db,config);
+  const plan=await labeler.preview({limit:6,allow_remote:false});assert.equal(plan.eligible,6);assert.equal(plan.request_preview.articles.length,5);assert.equal(plan.batch_size,5);
+  const first=await labeler.enqueue({limit:6,allow_remote:false});
+  await assert.rejects(labeler.enqueue({limit:6,allow_remote:false}),error=>error.code==='label_run_active');
+  const attempts=await Promise.all([labeler.runOnce(),labeler.runOnce()]);assert.equal(attempts.filter(result=>result.mode==='processed').length,1);
+  let run=await labeler.get(first.id);assert.equal(run.scanned,5);assert.equal(run.status,'queued');
+  await db.collection('label_runs').updateOne({id:first.id},{$set:{status:'running',lock_owner:'expired-fixture',lease_until:0}});
+  assert.equal((await labeler.runOnce()).mode,'processed');run=await labeler.get(first.id);assert.equal(run.status,'completed');assert.equal(run.scanned,6);assert.equal(run.local,6);assert.equal(run.jev,0);
+  assert.equal((await labeler.runOnce()).mode,'idle');const events=await labeler.eventPage(first.id);assert.equal(events.length,6);assert.ok(events.every(event=>event.fallback_used&&event.requires_review));
+  assert.ok(!JSON.stringify(events).includes('Thử nghiệm'));assert.ok(events.every(event=>!Object.hasOwn(event,'body')&&!Object.hasOwn(event,'state')));
+  const local=createKnowledgeBatch(config);const blocked=createAtlasLabeling(db,config,{classify:async docs=>{const result=await local(docs,false);for(const item of result.items)item.reason='jev_auth_failed';return result;}});
+  const stop=await blocked.enqueue({limit:1,allow_remote:true});assert.equal((await blocked.runOnce()).reason,'jev_auth_failed');run=await blocked.get(stop.id);assert.equal(run.status,'blocked');assert.equal(run.cursor,'');assert.equal(run.scanned,0);assert.equal((await blocked.eventPage(stop.id)).length,0);
+  const recovered=createAtlasLabeling(db,config,{classify:createKnowledgeBatch({...config,jevEnabled:true,jevTransport:'rest'},async(url,options)=>{const request=JSON.parse(options.body);return Response.json({code:0,data:{model:'typesafe-ai/jev',answers:Object.fromEntries(Object.keys(request.questions).map(key=>[key,{type:'choice',choice:'flavor',confidence:0.9,probabilities:{ingredients:0.03,flavor:0.9,safety:0.03,methods:0.02,other:0.02}}]))}});})});
+  assert.equal(await recovered.control(stop.id,'resume'),true);await recovered.runOnce();assert.equal((await recovered.get(stop.id)).status,'completed');assert.equal((await recovered.get(stop.id)).jev,1);
+  const stale=createAtlasLabeling(db,config,{classify:async docs=>{await db.collection('data_sync_jobs').updateOne({job_key:'knowledge:'+docs[0].resource_id},{$inc:{revision:1}});return local(docs,false);}});
+  const outdated=await stale.enqueue({limit:1,allow_remote:false});await stale.runOnce();run=await stale.get(outdated.id);assert.equal(run.stale,1);assert.equal(run.saved,0);assert.equal((await stale.eventPage(outdated.id))[0].outcome,'stale');
+  const cancel=createAtlasLabeling(db,config,{classify:async docs=>{await labeler.control(cancelRun.id,'cancel');return local(docs,false);}});
+  const cancelRun=await cancel.enqueue({limit:1,allow_remote:false});assert.equal((await cancel.runOnce()).mode,'lease_lost');assert.equal((await cancel.get(cancelRun.id)).status,'cancelled');assert.equal((await cancel.eventPage(cancelRun.id)).length,0);
+  const bad=createAtlasLabeling(db,config,{classify:async docs=>{const result=await local(docs,false);result.items[0].confidence=2;return result;}});
+  const invalid=await bad.enqueue({limit:1,allow_remote:false});assert.equal((await bad.runOnce()).mode,'stopped');assert.equal((await bad.get(invalid.id)).scanned,0);assert.equal((await bad.eventPage(invalid.id)).length,0);
+  await assert.rejects(db.collection('decision_events').insertOne({id:'bad',provider:'grant_admin'}),error=>error.code===121);
+  let now=Date.now();const transient=createAtlasLabeling(db,config,{clock:()=>now,classify:async docs=>{const result=await local(docs,false);result.jev_requests=1;for(const item of result.items)item.reason='provider_unavailable';return result;}});
+  const retry=await transient.enqueue({limit:1,allow_remote:true});assert.equal((await transient.runOnce()).mode,'retry_scheduled');assert.equal((await transient.runOnce()).mode,'idle');
+  now+=30001;assert.equal((await transient.runOnce()).mode,'retry_scheduled');now+=60001;assert.equal((await transient.runOnce()).mode,'stopped');
+  run=await transient.get(retry.id);assert.equal(run.status,'failed');assert.equal(run.jev_requests,3);assert.equal(run.scanned,0);assert.equal((await transient.eventPage(retry.id)).length,0);
+ }finally{await mirror?.close();if(db.database.databaseName!==name||!/^musuroom_verify_[a-f0-9]{16}$/.test(name))throw Error('Invalid cleanup target');await db.database.dropDatabase();await db.close();}
 });

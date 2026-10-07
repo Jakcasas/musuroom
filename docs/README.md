@@ -5,6 +5,7 @@
 | Hồ sơ hũ mẫu, chấm điểm, ngoại tuyến, PDF và điều khoản | [Nâng cấp 1.8.0](UPGRADE_2026.md) |
 | Cấu hình và kiểm chứng trợ lý tri thức | [Hỗ trợ phân tích](ASSISTANT.md) |
 | Dùng 4 luồng Jev, phân loại theo lô và đối chiếu đề xuất | [Jev trong Musuroom](JEV_WORKFLOWS.md) |
+| JSON Schema, tác vụ Atlas có checkpoint và nhật ký Jev | [JSON và xử lý theo lô](JSON_JEV_PIPELINE.md) |
 | Chạy website và xem các trang | [README dự án](../README.md) |
 | Xem các lỗi đã sửa và cải tiến ở bản 1.7.0 | [Ghi chú phát hành](RELEASE_NOTES.md) |
 | Xem repository và trạng thái Supabase | [GitHub + Supabase](GITHUB_SUPABASE.md) |

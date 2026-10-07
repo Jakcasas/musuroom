@@ -1,6 +1,6 @@
 {
   "name": "musuroom",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -24,6 +24,8 @@
     "cloud:deploy": "node scripts/deploy-cloud.mjs",
     "data:export": "node scripts/export-data.mjs",
     "data:sync": "node scripts/sync-mongo.mjs",
+    "data:label": "node scripts/label-atlas.mjs",
+    "schema:decisions": "node scripts/decision-schemas.mjs",
     "schema:postgres": "node scripts/build-postgres-schema.mjs",
     "check": "node scripts/check-project.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
