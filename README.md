@@ -2,12 +2,14 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.11.0-264736)
+![Version](https://img.shields.io/badge/version-1.12.1-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
 
 Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát cảm quan, kho tri thức có nguồn, hồ sơ mẫu và cổng giám khảo. Giao diện tiếng Việt, font Roboto lưu cùng ứng dụng.
+
+Quản trị có thể kiểm tra Jev bằng câu minh họa ngay trong cổng giám khảo: báo cáo phân biệt lỗi xác thực HTTP, quyền suy luận và gateway, không hiển thị key. [Cấu hình và chẩn đoán](docs/JEV_MCP_SETUP.md). MongoDB Atlas là nơi lưu dữ liệu chính; Supabase giữ cấu hình/migrations cũ và không nhận dữ liệu runtime mới. Trước push chạy `node scripts/check-publish.mjs` để kiểm tra secret trong tệp Git và lịch sử.
 
 **[Mở website](https://musuroom-web-production.up.railway.app)** · **[Khảo sát](https://musuroom-web-production.up.railway.app/trai-nghiem.html)** · **[Cổng giám khảo](https://musuroom-web-production.up.railway.app/giam-khao.html)** · **[Hướng dẫn](docs/README.md)**
 

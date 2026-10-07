@@ -1,4 +1,6 @@
-# REST API — Musuroom 1 (mã nguồn 1.4.2)
+# REST API — Musuroom 1 (mã nguồn 1.12.1)
+
+POST `/api/v1/admin/jev/diagnose`: chỉ ADMIN, cookie/CSRF và `{"allow_remote":true}`. Trả từng bước MCP, `inference_verified`, `failure_layer`, `next_action`, `retryable`, `checked_at`; không có key hoặc body lỗi thô. Cùng giới hạn 2 lần/phút với `/admin/jev/check`. Chỉ gửi câu minh họa, không gửi dữ liệu MongoDB.
 
 Base URL mặc định: `http://127.0.0.1:8766`. Request có body phải dùng `Content-Type: application/json`, giới hạn 16 KB. Server không bật CORS; request từ origin khác bị từ chối. Database và `.env` không được phục vụ qua HTTP.
 

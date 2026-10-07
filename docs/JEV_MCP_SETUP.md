@@ -19,6 +19,7 @@ Tham khảo [cấu hình MCP trong Codex](https://learn.chatgpt.com/docs/extend/
 ```powershell
 pnpm jev:diagnose
 pnpm jev:diagnose --cloud
+pnpm jev:diagnose --cloud --default-model
 ```
 
 Lệnh kiểm tra `initialize`, `tools/list`, sau đó gọi đúng một `jev_decide` bằng câu minh họa, không đọc phiếu hoặc liên hệ người dùng. Lần gọi quyết định có thể sử dụng quota Jev. Kết quả chỉ chứa trạng thái HTTP, bước kiểm tra và mã lý do; không in key, phản hồi thô hoặc xác suất. Chỉ `inference_verified: true` xác nhận đã nhận quyết định hợp lệ, không chỉ dựa vào HTTP 200.
@@ -31,6 +32,13 @@ Lệnh kiểm tra `initialize`, `tools/list`, sau đó gọi đúng một `jev_d
 | `quota_or_rate_limit` | Kiểm tra hạn mức tại tài khoản Jev và chờ theo chính sách dịch vụ |
 | `network_timeout_or_invalid_response` / `provider_unavailable` | Kiểm tra mạng và trạng thái Jev; không tắt TLS hoặc gửi key sang host khác |
 | `invalid_decision_response` | Phản hồi chưa qua kiểm tra schema; dùng dự phòng và lưu kết quả chẩn đoán để kiểm tra mã kết nối |
+| `non_json_response` | Jev trả HTTP thành công nhưng body không phải JSON; cần bên vận hành kiểm tra gateway/dịch vụ |
+
+Bản 1.12.1 trả thêm `failure_layer`, `next_action`, `retryable` và `checked_at`. HTTP 200 ở handshake không chứng minh key có quyền model. Lỗi quyền suy luận không phân biệt được credentials nào phía server thất bại; tránh kết luận key người dùng chắc chắn sai. `--default-model` bỏ trường model trong đúng một yêu cầu thử, không tự chuyển model của website.
+
+Quản trị có thể dùng nút kiểm tra Jev trong cổng giám khảo hoặc POST `/api/v1/admin/jev/diagnose` với `{"allow_remote":true}`, cookie phiên và CSRF. Báo cáo không lưu key hay phản hồi thô. Thêm server MCP vào Codex không cập nhật biến Railway. Key cloud lưu ở `data/cloud.env`, không dán vào `.env.example`. Chạy `node scripts/check-publish.mjs` trước push; CI cũng kiểm tra các tệp được Git theo dõi.
+
+JevAI hiện tự giới thiệu là trang cộng đồng; TypeSafe AI là bên cung cấp model/core API. Preset Model route chọn model cho tác vụ, không phải màn hình cấp quyền. Musuroom tiếp tục dùng endpoint JevAI theo lựa chọn của chủ dự án.
 
 ## Kết quả thực tế ngày 05.10.2026
 

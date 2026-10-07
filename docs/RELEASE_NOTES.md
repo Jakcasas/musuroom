@@ -1,3 +1,11 @@
+# Musuroom 1.12.1 — 08.10.2026
+
+- Chẩn đoán MCP từ cổng quản trị: phân biệt HTTP authentication, quyền suy luận, quota, gateway và phản hồi không phải JSON; không xuất lỗi thô/secret.
+- API kiểm tra chỉ cho ADMIN, có CSRF, đồng ý gửi câu minh họa và giới hạn chung 2 lần/phút.
+- CLI có `--default-model` để kiểm tra mặc định của server, không đổi model ứng dụng.
+- Kiểm tra xuất bản quét cả tệp Git đang làm việc và lịch sử, chặn personal key Jev bị dán vào tệp mẫu. CI chạy kiểm tra này trước test.
+- MongoDB vẫn là nơi lưu dữ liệu chính. Supabase hiện ACTIVE_HEALTHY, 17 bảng public có RLS và không cấp SELECT cho anon/authenticated.
+
 # Musuroom 1.12.0 — 08.10.2026
 
 - JSON Schema và validator BSON cho state, tác vụ và nhật ký quyết định.
