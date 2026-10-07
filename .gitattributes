@@ -1,0 +1,5 @@
+backend/config.mjs text eol=lf
+backend/routes/research.mjs text eol=lf
+backend/services/jev-client.mjs text eol=lf
+shared/*.js text eol=lf
+scripts/build-shared.mjs text eol=lf
