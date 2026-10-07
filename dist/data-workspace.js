@@ -30,7 +30,7 @@ export function dataWorkspace(onError) {
   try{
    const query=new URLSearchParams({after:nextAfter,limit:'25'});if($('data-type').value)query.set('type',$('data-type').value);
    const [data,status]=await Promise.all([request('/api/v1/admin/data/documents?'+query),request('/api/v1/admin/data/status')]);if(!current(v))return;
-   after=nextAfter;history=nextHistory;items=data.items;cursor=data.next_cursor;jevEnabled=status.jev_enabled;selected.clear();selectionInputs.clear();
+   after=nextAfter;history=nextHistory;items=data.items;cursor=data.next_cursor;jevEnabled=status.jev_enabled;labelRuns.setAvailable(status.atlas_labeling_supported===true);selected.clear();selectionInputs.clear();
    $('data-status').textContent=`${status.mongo_enabled?'Đồng bộ Atlas đã cấu hình':'Atlas chưa kết nối'} · ${status.total} bản ghi · ${status.pending} chờ đồng bộ${status.last_completed_at?' · Lần xử lý gần nhất: '+date(status.last_completed_at):''}${status.last_error_code?' · Cần kiểm tra kết nối đồng bộ':''}`;
    $('data-rows').replaceChildren();$('data-article').replaceChildren();$('data-json').textContent='Xem JSON của một bản ghi hoặc đánh dấu các bài tri thức để xem yêu cầu của lô.';$('data-decision').textContent='';$('data-consent').checked=false;
    for(const item of items){

@@ -6,12 +6,12 @@ export function labelRunWorkspace(parent,{getSession,onError,isBusy}){
  const actions=element('div','','form-actions'),preview=element('button','Xem JSON trước','text-button'),start=element('button','Tạo tác vụ','button dark'),refresh=element('button','Cập nhật tiến độ','text-button'),schemas=element('button','Xem JSON Schema','text-button');
  for(const button of [preview,start,refresh,schemas])button.type='button';actions.append(preview,start,refresh,schemas);
  const message=element('p','','form-feedback');message.setAttribute('role','status');const json=element('pre','','json-view');json.tabIndex=0;json.setAttribute('aria-label','JSON Schema hoặc bản xem trước tác vụ');
- const rows=element('div');section.append(title,note,label,consentLabel,actions,message,json,rows);parent.append(section);let busy=false,version=0;
+ const rows=element('div');section.append(title,note,label,consentLabel,actions,message,json,rows);parent.append(section);let busy=false,version=0,available=false;section.hidden=true;
  const states={queued:'Đang chờ',running:'Đang xử lý',completed:'Hoàn tất',blocked:'Cần xử lý cấu hình Jev',failed:'Cần kiểm tra dữ liệu/dịch vụ',cancelled:'Đã dừng'};
  const auth=()=>getSession();
  const call=(path,body)=>request('/api/v1/admin/data/'+path,{...(body?{method:'POST',csrf:auth().csrf_token,body}:{})});
  function toggle(){for(const input of [preview,start,refresh,schemas,limit,consent])input.disabled=busy||!auth()||isBusy();}
- async function action(fn){if(!auth()||busy||isBusy())return;const v=version;busy=true;toggle();try{await fn(v);}catch(error){if(v===version)onError(error);}finally{if(v===version){busy=false;toggle();}}}
+ async function action(fn){if(!available||!auth()||busy||isBusy())return;const v=version;busy=true;toggle();try{await fn(v);}catch(error){if(v===version)onError(error);}finally{if(v===version){busy=false;toggle();}}}
  async function load(v=version){
   const page=await call('label-runs');if(v!==version)return;rows.replaceChildren();
   for(const run of page.items){
@@ -27,5 +27,5 @@ export function labelRunWorkspace(parent,{getSession,onError,isBusy}){
  preview.addEventListener('click',()=>action(async v=>{const data=await call('label-runs/preview',settings());if(v!==version)return;json.textContent=JSON.stringify(data,null,2);feedback(message,`Có ${data.eligible} bản ghi trong phạm vi. Chưa gọi Jev.`);}));
  start.addEventListener('click',()=>action(async v=>{const data=await call('label-runs',settings());if(v!==version)return;consent.checked=false;feedback(message,`Đã lưu tác vụ cho ${data.total} bản ghi. Bấm cập nhật để xem tiến độ.`);await load(v);}));
  schemas.addEventListener('click',()=>action(async v=>{const data=await call('schemas');if(v===version)json.textContent=JSON.stringify(data,null,2);}));refresh.addEventListener('click',()=>action(v=>load(v)));
- return {clear(){version++;busy=false;consent.checked=false;json.textContent='';message.textContent='';rows.replaceChildren();toggle();},load:()=>action(v=>load(v))};
+ return {setAvailable(value){available=value;section.hidden=!value;},clear(){version++;busy=false;available=false;section.hidden=true;consent.checked=false;json.textContent='';message.textContent='';rows.replaceChildren();toggle();},load:()=>action(v=>load(v))};
 }

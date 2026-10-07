@@ -27,5 +27,5 @@ export function dataJobs(db,{after='',limit=25,type,pending=false}={}) {
 export async function dataStatus(db,config) {
  const counts=await operation(db,'jobs.counts',()=>db.prepare('SELECT count(*) AS total,sum(CASE WHEN synced_revision<revision THEN 1 ELSE 0 END) AS pending FROM data_sync_jobs')).get();
  const state=await operation(db,'jobs.state',()=>db.prepare("SELECT last_completed_at,last_error_code,last_synced_count FROM data_sync_state WHERE id='mongo'")).get();
- return{mongo_enabled:config.mongoEnabled,jev_enrichment:config.mongoEnrichment,source:config.mongoSource,total:Number(counts.total),pending:Number(counts.pending||0),...state};
+ return{mongo_enabled:config.mongoEnabled,atlas_labeling_supported:db.dialect==='mongodb',jev_enrichment:config.mongoEnrichment,source:config.mongoSource,total:Number(counts.total),pending:Number(counts.pending||0),...state};
 }
