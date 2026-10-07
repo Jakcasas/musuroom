@@ -8,7 +8,7 @@ export const cloudKeys=['NODE_ENV','HOST','PORT','PUBLIC_ORIGIN','DATABASE_PROVI
 export function cloudEnvironment(values,origin=cloudTarget.origin) {
  publicLinks(origin);
  const atlasFirst=values.MONGO_ENABLED==='true';
- const env={...values,NODE_ENV:'production',HOST:'0.0.0.0',PORT:'8080',PUBLIC_ORIGIN:new URL(origin).origin,API_WRITE_TOKEN:'',DATABASE_PROVIDER:atlasFirst?'sqlite':values.DATABASE_PROVIDER||'sqlite',DATABASE_PATH:values.DATABASE_PATH||'data/musuroom.sqlite',STORAGE_PROVIDER:atlasFirst?'local':values.STORAGE_PROVIDER||'local',AI_PROVIDER:values.AI_PROVIDER||'disabled',JEV_ENABLED:values.JEV_ENABLED||'false',MONGO_ENABLED:values.MONGO_ENABLED||'false',MONGO_JEV_ENRICHMENT:values.MONGO_JEV_ENRICHMENT||'false',MONGO_SOURCE_ID:values.MONGO_SOURCE_ID||'musuroom-production'};
+ const env={...values,NODE_ENV:'production',HOST:'0.0.0.0',PORT:'8080',PUBLIC_ORIGIN:new URL(origin).origin,API_WRITE_TOKEN:'',DATABASE_PROVIDER:atlasFirst?'mongodb':values.DATABASE_PROVIDER||'mongodb',DATABASE_PATH:values.DATABASE_PATH||'data/musuroom.sqlite',STORAGE_PROVIDER:atlasFirst?'mongodb':values.STORAGE_PROVIDER||'mongodb',AI_PROVIDER:values.AI_PROVIDER||'disabled',JEV_ENABLED:values.JEV_ENABLED||'false',MONGO_ENABLED:values.MONGO_ENABLED||'false',MONGO_JEV_ENRICHMENT:values.MONGO_JEV_ENRICHMENT||'false',MONGO_SOURCE_ID:values.MONGO_SOURCE_ID||'musuroom-production'};
  if(env.DATABASE_PROVIDER!=='postgres'){env.DATABASE_URL='';env.DATABASE_CA_CERT='';}
  if(env.STORAGE_PROVIDER!=='supabase'){env.SUPABASE_URL='';env.SUPABASE_SERVICE_ROLE_KEY='';}
  const config=loadConfig(env);

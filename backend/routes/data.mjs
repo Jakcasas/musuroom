@@ -1,3 +1,4 @@
+import { operation } from '../db/operation.mjs';
 import { Router } from 'express';
 import { dataJobs,projectDocument,dataStatus } from '../services/data-projections.mjs';
 import { knowledgeDecisionRequest,createKnowledgeClassifier } from '../services/knowledge-decisions.mjs';
@@ -18,7 +19,7 @@ export function dataRouter(db,security,config,fetchImpl) {
  const document=async req=>{
   const id=req.body?.article_id;
   if(typeof id!=='string'||!/^[a-z0-9-]{1,100}$/.test(id))return null;
-  const job=await db.prepare('SELECT * FROM data_sync_jobs WHERE job_key=? AND resource_type=?').get('knowledge:'+id,'knowledge');
+  const job=await operation(db,'jobs.get',()=>db.prepare('SELECT * FROM data_sync_jobs WHERE job_key=? AND resource_type=?')).get('knowledge:'+id,'knowledge');
   if(!job)return null;
   const item=await projectDocument(db,job,config.mongoSource);return item.active?item:null;
  };

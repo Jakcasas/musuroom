@@ -1,8 +1,9 @@
-import { DatabaseSync } from 'node:sqlite';
+import { createRequire } from 'node:module';
 import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { articles } from '../../dist/knowledge-data.js';
 export function openDatabase(path) {
+  const { DatabaseSync }=createRequire(import.meta.url)('node:sqlite');
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path, { timeout: 5000 });
   try {

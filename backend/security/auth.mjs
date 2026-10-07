@@ -1,3 +1,4 @@
+import { operation } from '../db/operation.mjs';
 import { randomBytes, randomUUID, scrypt, createHash, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 const derive = promisify(scrypt);
@@ -9,19 +10,27 @@ export async function createAccount(db, { name, role = 'JUDGE', days = 7 }) {
   const id = randomUUID(); const secret = randomBytes(24).toString('base64url'); const salt = randomBytes(16).toString('hex');
   const hash = (await derive(secret, salt, 64)).toString('hex');
   const expires = Date.now() + days * 86400000;
-  await db.prepare('INSERT INTO judge_accounts(id,display_name,role,secret_salt,secret_hash,expires_at) VALUES(?,?,?,?,?,?)').run(id, name.trim(), role, salt, hash, expires);
+  await operation(db,'accounts.insert',()=>db.prepare('INSERT INTO judge_accounts(id,display_name,role,secret_salt,secret_hash,expires_at) VALUES(?,?,?,?,?,?)')).run(id, name.trim(), role, salt, hash, expires);
   return { account_id: id, display_name: name.trim(), role, access_code: `${id}.${secret}`, expires_at: new Date(expires).toISOString() };
 }
 export async function rotateJudgeAccessCode(db,accountId,code) {
   if(typeof code!=='string'||code.length<12||code.length>100||code!==code.trim()||/[\u0000-\u001f\u007f]/.test(code))throw new Error('Judge code must contain 12–100 characters without outer whitespace or control characters.');
   const salt=randomBytes(16).toString('hex'),hash=(await derive(code,salt,64)).toString('hex');
+  if(db.dialect==='mongodb')return db.transaction(async()=>{
+    const account=await db.operation('accounts.activeJudge').get(accountId,Date.now());
+    if(!account)throw new Error('An active JUDGE account is required.');
+    await db.operation('accounts.rotate').run(salt,hash,accountId);
+    await db.operation('sessions.deleteAccount').run(accountId);
+    await db.operation('audit.insert').run(accountId,'JUDGE_CODE_ROTATED');
+    return{account_id:account.id,display_name:account.display_name,role:'JUDGE',access_code:code,expires_at:new Date(account.expires_at).toISOString()};
+  });
   await db.exec('BEGIN IMMEDIATE');
   try {
-    const account=await db.prepare("SELECT id,display_name,role,expires_at FROM judge_accounts WHERE id=? AND role='JUDGE' AND enabled=1 AND expires_at>?"+(db.dialect==='postgres'?' FOR UPDATE':'')).get(accountId,Date.now());
+    const account=await operation(db,'accounts.activeJudge',()=>db.prepare("SELECT id,display_name,role,expires_at FROM judge_accounts WHERE id=? AND role='JUDGE' AND enabled=1 AND expires_at>?"+(db.dialect==='postgres'?' FOR UPDATE':''))).get(accountId,Date.now());
     if(!account)throw new Error('An active JUDGE account is required.');
-    await db.prepare("UPDATE judge_accounts SET secret_salt=?,secret_hash=? WHERE id=? AND role='JUDGE'").run(salt,hash,accountId);
-    await db.prepare('DELETE FROM auth_sessions WHERE account_id=?').run(accountId);
-    await db.prepare('INSERT INTO access_audit(account_id,action) VALUES(?,?)').run(accountId,'JUDGE_CODE_ROTATED');
+    await operation(db,'accounts.rotate',()=>db.prepare("UPDATE judge_accounts SET secret_salt=?,secret_hash=? WHERE id=? AND role='JUDGE'")).run(salt,hash,accountId);
+    await operation(db,'sessions.deleteAccount',()=>db.prepare('DELETE FROM auth_sessions WHERE account_id=?')).run(accountId);
+    await operation(db,'audit.insert',()=>db.prepare('INSERT INTO access_audit(account_id,action) VALUES(?,?)')).run(accountId,'JUDGE_CODE_ROTATED');
     await db.exec('COMMIT');
     return {account_id:account.id,display_name:account.display_name,role:'JUDGE',access_code:code,expires_at:new Date(account.expires_at).toISOString()};
   } catch(error) {await db.exec('ROLLBACK');throw error;}
@@ -33,30 +42,37 @@ export async function bootstrapAccessAccounts(db,config) {
     { id: '22222222-2222-4222-8222-222222222222', name: 'Quản trị Musuroom', role: 'ADMIN', code: config.adminBootstrapCode, expires }
   ].filter(account => account.code);
   for (const account of accounts) {
+    const current=await operation(db,'accounts.get',()=>db.prepare('SELECT * FROM judge_accounts WHERE id=?')).get(account.id);
+    // Do not reset expiry, re-enable revoked accounts, or invalidate sessions on
+    // each deployment. Only an explicitly changed secret rotates credentials.
+    if(current){
+      const expected=(await derive(account.code,current.secret_salt,64)).toString('hex');
+      if(equal(expected,current.secret_hash))continue;
+    }
     const salt = randomBytes(16).toString('hex');
     const hash = (await derive(account.code, salt, 64)).toString('hex');
-    await db.prepare(`INSERT INTO judge_accounts(id,display_name,role,secret_salt,secret_hash,expires_at,enabled)
+    await operation(db,'accounts.bootstrap',()=>db.prepare(`INSERT INTO judge_accounts(id,display_name,role,secret_salt,secret_hash,expires_at,enabled)
       VALUES(?,?,?,?,?,?,1)
-      ON CONFLICT(id) DO UPDATE SET display_name=excluded.display_name,role=excluded.role,secret_salt=excluded.secret_salt,secret_hash=excluded.secret_hash,expires_at=excluded.expires_at,enabled=1`).run(account.id, account.name, account.role, salt, hash, account.expires);
+      ON CONFLICT(id) DO UPDATE SET display_name=excluded.display_name,role=excluded.role,secret_salt=excluded.secret_salt,secret_hash=excluded.secret_hash,expires_at=excluded.expires_at,enabled=1`)).run(account.id, account.name, account.role, salt, hash, account.expires);
   }
   return accounts.length;
 }
 export function createSecurity(db, config, now = Date.now) {
   const failures = new Map(); let activeLogins = 0; let cleanedAt=now();
   const name = config.production ? '__Host-musuroom_session' : cookieName;
-  const audit = async (id, action, resource = null) => db.prepare('INSERT INTO access_audit(account_id,action,resource_id) VALUES(?,?,?)').run(id, action, resource);
+  const audit = async (id, action, resource = null) => operation(db,'audit.insert',()=>db.prepare('INSERT INTO access_audit(account_id,action,resource_id) VALUES(?,?,?)')).run(id, action, resource);
   function rawToken(req) {
     const value = (req.headers.cookie || '').split(';').map(x => x.trim()).find(x => x.startsWith(name + '='))?.slice(name.length + 1);
     return value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : null;
   }
   async function getSession(req) {
     const token = rawToken(req); if (!token) return null;
-    const row = await db.prepare('SELECT s.*,a.display_name,a.role,a.enabled,a.expires_at AS account_expiry FROM auth_sessions s JOIN judge_accounts a ON a.id=s.account_id WHERE s.token_hash=?').get(digest(token));
+    const row = await operation(db,'sessions.get',()=>db.prepare('SELECT s.*,a.display_name,a.role,a.enabled,a.expires_at AS account_expiry FROM auth_sessions s JOIN judge_accounts a ON a.id=s.account_id WHERE s.token_hash=?')).get(digest(token));
     if (!row) return null;
     if (!row.enabled || row.account_expiry <= now() || row.expires_at <= now() || row.last_seen + config.authIdleMs <= now()) {
-      await db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').run(row.token_hash); return null;
+      await operation(db,'sessions.delete',()=>db.prepare('DELETE FROM auth_sessions WHERE token_hash=?')).run(row.token_hash); return null;
     }
-    await db.prepare('UPDATE auth_sessions SET last_seen=? WHERE token_hash=?').run(now(), row.token_hash);
+    await operation(db,'sessions.touch',()=>db.prepare('UPDATE auth_sessions SET last_seen=? WHERE token_hash=?')).run(now(), row.token_hash);
     return row;
   }
   const cookie = token => `${name}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${Math.floor(config.authSessionMs / 1000)}${config.production?'; Secure':''}`;
@@ -86,7 +102,7 @@ export function createSecurity(db, config, now = Date.now) {
     activeLogins++;
     let valid = false; let account;
     try {
-      if(match)account = await db.prepare('SELECT * FROM judge_accounts WHERE id=?').get(match[1]);
+      if(match)account = await operation(db,'accounts.get',()=>db.prepare('SELECT * FROM judge_accounts WHERE id=?')).get(match[1]);
       else if(defaultCode) {
         const candidates = [
           config.defaultJudgeAccountId && { id: config.defaultJudgeAccountId, role: 'JUDGE' },
@@ -94,7 +110,7 @@ export function createSecurity(db, config, now = Date.now) {
           config.adminBootstrapCode && { id: '22222222-2222-4222-8222-222222222222', role: 'ADMIN' }
         ].filter(Boolean);
         for(const entry of candidates){
-          const candidate = await db.prepare('SELECT * FROM judge_accounts WHERE id=?').get(entry.id);
+          const candidate = await operation(db,'accounts.get',()=>db.prepare('SELECT * FROM judge_accounts WHERE id=?')).get(entry.id);
           const computed = (await derive(defaultCode, candidate?.secret_salt || '00000000000000000000000000000000', 64)).toString('hex');
           if(candidate?.role === entry.role && candidate.enabled && candidate.expires_at > now() && equal(computed, candidate.secret_hash)){account=candidate;valid=true;break;}
         }
@@ -108,12 +124,12 @@ export function createSecurity(db, config, now = Date.now) {
       return res.status(401).json({ error: 'invalid_or_expired_access_code' });
     }
     failures.delete(bucket);
-    const previous = rawToken(req); if (previous) await db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').run(digest(previous));
-    await db.prepare('DELETE FROM auth_sessions WHERE expires_at<=? OR last_seen<=?').run(now(), now() - config.authIdleMs);
+    const previous = rawToken(req); if (previous) await operation(db,'sessions.delete',()=>db.prepare('DELETE FROM auth_sessions WHERE token_hash=?')).run(digest(previous));
+    await operation(db,'sessions.prune',()=>db.prepare('DELETE FROM auth_sessions WHERE expires_at<=? OR last_seen<=?')).run(now(), now() - config.authIdleMs);
     const token = randomBytes(32).toString('base64url'); const csrf = randomBytes(24).toString('base64url');
     const expiry = Math.min(now() + config.authSessionMs, account.expires_at);
     // Recheck the credential snapshot so rotation/revocation during scrypt cannot create a stale session.
-    const inserted=await db.prepare('INSERT INTO auth_sessions(token_hash,account_id,csrf_token,created_at,expires_at,last_seen) SELECT ?,id,?,?,?,? FROM judge_accounts WHERE id=? AND secret_hash=? AND enabled=1 AND expires_at=? AND role=?').run(digest(token),csrf,now(),expiry,now(),account.id,account.secret_hash,account.expires_at,account.role);
+    const inserted=await operation(db,'sessions.insert',()=>db.prepare('INSERT INTO auth_sessions(token_hash,account_id,csrf_token,created_at,expires_at,last_seen) SELECT ?,id,?,?,?,? FROM judge_accounts WHERE id=? AND secret_hash=? AND enabled=1 AND expires_at=? AND role=?')).run(digest(token),csrf,now(),expiry,now(),account.id,account.secret_hash,account.expires_at,account.role);
     if(!inserted.changes){await audit(account.id,'LOGIN_FAILED');return res.status(401).json({error:'invalid_or_expired_access_code'});}
     await audit(account.id, 'LOGIN_OK'); res.set('Set-Cookie', cookie(token));
     res.json(publicSession({ account_id: account.id, display_name: account.display_name, role: account.role, expires_at: expiry, csrf_token: csrf }));
@@ -124,7 +140,7 @@ export function createSecurity(db, config, now = Date.now) {
     res.json(publicSession(found));
   }
   async function logout(req, res) {
-    const token = rawToken(req); if (token) await db.prepare('DELETE FROM auth_sessions WHERE token_hash=?').run(digest(token));
+    const token = rawToken(req); if (token) await operation(db,'sessions.delete',()=>db.prepare('DELETE FROM auth_sessions WHERE token_hash=?')).run(digest(token));
     await audit(req.principal.account_id, 'LOGOUT'); clearCookie(res); res.status(204).end();
   }
   return { login, session, logout, audit, requireAdmin: requireRoles(['ADMIN']), requireReviewer: requireRoles(['JUDGE','ADMIN']) };

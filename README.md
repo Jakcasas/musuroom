@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.10.0-264736)
+![Version](https://img.shields.io/badge/version-1.11.0-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -13,11 +13,13 @@ Website nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát c�
 
 Triển khai từ `main` vào **Musuroom 1 → musuroom-web → production**, cổng `8080`, healthcheck `/healthz`. Hai thông báo Railway mang tên `perpetual-tranquility` và `mcp.musuroom.com` trên commit cũ thuộc cùng một dịch vụ tạo thêm thiếu biến production; dịch vụ rỗng đã được gỡ. [Đích triển khai và cách xử lý lỗi](docs/RAILWAY_RECOVERY.md).
 
-## Bản 1.10.0 — Atlas-first runtime
+## Bản 1.11.0 — MongoDB Atlas cho dữ liệu ứng dụng
 
-Trang chủ thoáng hơn với màu kem/xanh nấm, điều hướng gọn và ba lối vào chính. Phiếu khảo sát có chỉ báo hoàn thành 5 tiêu chí; cổng giám khảo bổ sung hiện/ẩn mã truy cập. Thẻ hồ sơ, bảng và kho tri thức có kiểu trình bày thống nhất, giữ Roboto. [Thiết kế và phạm vi cập nhật](docs/DESIGN_DESKTOP.md).
+Railway dùng `DATABASE_PROVIDER=mongodb` và `STORAGE_PROVIDER=mongodb`. Khảo sát, đăng ký mẫu, tài khoản/phiên đăng nhập, hồ sơ nghiên cứu, điểm và hàng chờ đối chiếu được lưu trực tiếp thành BSON/JSON trong Atlas. Tệp hồ sơ riêng tư lưu bằng GridFS. Dữ liệu không phụ thuộc ổ đĩa tạm của container.
 
-Bản 1.10.0 chuyển cấu hình cloud sang hướng Atlas-first: production không còn bắt buộc PostgreSQL/Supabase trước khi deploy, MongoDB Atlas giữ kho JSON xử lý và Supabase/Postgres trở thành tích hợp kế thừa. Cổng giám khảo có thể bootstrap bằng mã server-only trong Railway Variables, lưu hash scrypt vào database runtime và không đưa mã vào Git/frontend. Preflight cloud kiểm tra SQLite/Atlas/local storage theo cấu hình thực tế, nên lỗi Supabase cũ không còn chặn upload khi dự án đang dùng Atlas.
+Unique index chống gửi trùng; transaction giữ phiếu khảo sát và hàng đợi đồng bộ nhất quán. Chấm điểm kiểm tra phiên bản hồ sơ trong transaction. Schema kiểm tra kiểu dữ liệu; các truy vấn lọc và phân trang có index. API vector 384 chiều chạy được trên MongoDB, lọc cùng model và phiên bản nguồn; đây là cosine search chính xác, chưa phải Atlas Vector Search có index ANN cho hàng triệu tài liệu.
+
+PostgreSQL/Supabase được giữ trong công cụ kiểm thử và tương thích dữ liệu cũ; gói `pg` nằm trong devDependencies, không được cài trong image production. SQLite chỉ dành cho phát triển trên máy. [Cấu hình, kiểm thử và quy trình chuyển đổi](docs/MONGODB_PRIMARY.md).
 
 ## Vận hành từ bản 1.8.5
 
@@ -25,19 +27,19 @@ Vận hành Railway ở Singapore với một replica, healthcheck database `/he
 
 ### Các luồng của bản 1.8.4
 
-Bốn luồng Jev gồm kiểm tra đầu vào, sắp xếp nguồn, phân loại 1–5 bài/lô và lưu đề xuất để đối chiếu. Bản này bổ sung nhận diện bí mật tiếng Việt/ký tự ẩn, giới hạn request sắp xếp nguồn 18 KB và đưa kết quả có hai nhãn gần nhau vào hàng chờ. Giao diện nêu rõ số đề xuất từ Jev và từ luật cục bộ; lý do cần xem lại được lưu cùng đề xuất trong Supabase. [Chi tiết các luồng](docs/JEV_WORKFLOWS.md).
+Bốn luồng Jev gồm kiểm tra đầu vào, sắp xếp nguồn, phân loại 1–5 bài/lô và lưu đề xuất để đối chiếu. Bản này bổ sung nhận diện bí mật tiếng Việt/ký tự ẩn, giới hạn request sắp xếp nguồn 18 KB và đưa kết quả có hai nhãn gần nhau vào hàng chờ. Giao diện nêu rõ số đề xuất từ Jev và từ luật cục bộ; lý do cần xem lại được lưu cùng đề xuất trong Atlas. [Chi tiết các luồng](docs/JEV_WORKFLOWS.md).
 
 Hỗ trợ mã do người vận hành chọn cho một tài khoản Giám khảo mặc định, lưu dưới dạng scrypt trong database. Đổi mã thu hồi phiên cũ, giữ nguyên quyền và thời hạn; đăng nhập kiểm tra lại trạng thái tài khoản trước khi tạo phiên. [Quản lý mã truy cập](docs/JUDGE_PORTAL.md).
 
 Hồ sơ nghiên cứu chọn minh chứng trực tiếp từ tài liệu đã tải lên. Giám khảo đọc thông tin mẫu trước khi chấm; bảng tổng hợp tách điểm của phiên bản hiện tại và phiếu cần đối chiếu lại. API chặn lưu nếu hồ sơ thay đổi, database kiểm tra thang điểm và tổng theo trọng số. [Hướng dẫn vận hành](docs/UPGRADE_2026.md).
 
-Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo hiển thị trạng thái dịch vụ, lý do dùng dự phòng và nút kiểm tra câu minh họa dành cho ADMIN. `pnpm jev:check --cloud` thử cấu hình riêng tư. `pnpm jev:diagnose --cloud` tách kiểm tra kết nối, danh sách công cụ và quyền suy luận. `pnpm mcp:install-jev` thêm server Jev vào Codex mà không lưu key trong config. [Cài MCP và xử lý lỗi key/model](docs/JEV_MCP_SETUP.md). Quyền suy luận của key hiện lưu vẫn bị Jev từ chối trong lần thử ngày 05.10.2026.
+Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo hiển thị trạng thái dịch vụ, lý do dùng dự phòng và nút kiểm tra câu minh họa dành cho ADMIN. `pnpm jev:check --cloud` thử cấu hình riêng tư. `pnpm jev:diagnose --cloud` tách kiểm tra kết nối, danh sách công cụ và quyền suy luận. `pnpm mcp:install-jev` thêm server Jev vào Codex mà không lưu key trong config. [Cài MCP và xử lý lỗi key/model](docs/JEV_MCP_SETUP.md). Quyền suy luận của key hiện lưu vẫn bị Jev từ chối trong lần thử ngày 07.10.2026.
 
 - Hồ sơ hũ mẫu, mã lô, nguồn nguyên liệu và QR giữ nguyên khi cập nhật thông tin.
 - Chấm điểm theo bộ tiêu chí dự thảo, trọng số tổng 100%, xử lý xung đột phiên bản.
 - Radar 5 trục tương tác; báo cáo A4 qua nút **In báo cáo / Lưu PDF**.
 - Khảo sát ngoại tuyến sau lần mở online đầu tiên; người thử chọn lưu phiếu và chủ động gửi lại, giữ khóa chống gửi trùng.
-- Điều khoản có phiên bản, trích dẫn và giới hạn áp dụng; nguồn công bố tham gia kho tri thức. API pgvector 384 chiều dành cho ADMIN.
+- Điều khoản có phiên bản, trích dẫn và giới hạn áp dụng; nguồn công bố tham gia kho tri thức. API vector 384 chiều dành cho ADMIN.
 - Zod kiểm tra đầu vào; circuit breaker giảm gọi Jev khi lỗi; API ADMIN chẩn đoán Atlas từ máy chủ.
 
 **Dữ liệu cần bổ sung:** chưa có hồ sơ TCVN, lô/hũ thật hoặc bộ tiêu chí FID chính thức. Không nạp mẫu minh họa vào production. Chức năng vector cần embedding từ cùng model; chưa tự tạo embedding. Jev/Atlas cloud phải được kiểm tra riêng, không suy ra đang hoạt động chỉ vì đã lưu key. Xem [đối chiếu toàn bộ upgrade.docx và giới hạn](docs/UPGRADE_2026.md).
@@ -61,10 +63,10 @@ Docker local: `docker compose up --build -d`; chỉ công bố cổng trên 127.
 ```mermaid
 flowchart LR
   Web[Web / PWA / QR] --> API[Express + xác thực + Zod]
-  API --> SQL[(SQLite runtime / PostgreSQL legacy)]
-  API --> Files[Local private files / Supabase legacy]
-  SQL --> Queue[Hàng đợi có revision]
-  Queue --> Atlas[(MongoDB Atlas JSON)]
+  API --> Atlas[(MongoDB Atlas: dữ liệu nghiệp vụ)]
+  API --> Files[Atlas GridFS: hồ sơ riêng tư]
+  Atlas --> Queue[Hàng đợi có revision]
+  Queue --> JSON[JSON tổng hợp trong Atlas]
   API --> Gate[Đồng ý gửi + giới hạn + circuit breaker]
   Gate --> Jev[JevAI chính thức]
   API --> Sources[Kho tri thức + điều khoản công bố]
@@ -91,7 +93,7 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `PORT` | `8766` | Cổng HTTP |
 | `NODE_ENV` | `development` | development hoặc production |
 | `DATABASE_PATH` | `./data/musuroom.sqlite` | Tệp SQLite local |
-| `DATABASE_PROVIDER` | `sqlite` | sqlite mặc định; postgres là legacy |
+| `DATABASE_PROVIDER` | `sqlite` khi local | Railway dùng `mongodb`; postgres chỉ dành cho công cụ legacy |
 | `DATABASE_URL` | `` | URL PostgreSQL riêng tư nếu dùng legacy |
 | `DATABASE_CA_CERT` | `` | CA PostgreSQL nếu dùng legacy |
 | `PUBLIC_ORIGIN` | `` | HTTPS gốc của ứng dụng dùng tạo QR |
@@ -129,7 +131,7 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `MONGO_JEV_MAX_PER_RUN` | `10` | Số yêu cầu phân loại tối đa mỗi đợt |
 | `JEV_TRANSPORT` | `mcp` | mcp hoặc rest của www.jevai.org |
 
-Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá nhân vào Git/ZIP/frontend. Atlas chứa JSON projection được cho phép; SQL runtime giữ dữ liệu giao dịch phục vụ API. PostgreSQL/Supabase vẫn được hỗ trợ khi cần legacy, nhưng Railway bản mới có thể chạy không phụ thuộc vào chúng.
+Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá nhân vào Git/ZIP/frontend. Atlas giữ dữ liệu nghiệp vụ và JSON projection. Tài liệu riêng tư nằm trong GridFS. Railway không dùng PostgreSQL/Supabase hoặc SQLite; mã legacy chỉ phục vụ phát triển và đối chiếu dữ liệu cũ.
 
 ## Tri thức và hỗ trợ phân tích
 

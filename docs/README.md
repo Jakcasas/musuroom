@@ -32,3 +32,7 @@ docs/                  Hướng dẫn và snapshot TypeSafe
 ```
 
 `.env`, `data/`, database thực tế và các mã truy cập được tạo riêng trên máy chạy ứng dụng. Những tệp này không nằm trong repository.
+
+## Database hiện tại
+
+[MongoDB Atlas primary + GridFS — 1.11.0](MONGODB_PRIMARY.md): cấu hình, kiểm thử thật, chuyển dữ liệu và triển khai Railway.

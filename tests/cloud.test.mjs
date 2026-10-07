@@ -29,7 +29,8 @@ test('Supabase Preview replays committed migrations on an empty database without
 test('Production fails closed without HTTPS and validates selected data/storage integrations',()=>{
  for(const extra of [{DATABASE_PROVIDER:'sqlite'},{PUBLIC_ORIGIN:''},{PUBLIC_ORIGIN:'http://example.test'},{PUBLIC_ORIGIN:'https://user:secret@example.test'},{PUBLIC_ORIGIN:'https://example.test/path'},{SUPABASE_SERVICE_ROLE_KEY:''}])assert.throws(()=>loadConfig({...production,...extra}));
  assert.doesNotThrow(()=>loadConfig({...production,STORAGE_PROVIDER:'local'}));
- assert.doesNotThrow(()=>loadConfig({NODE_ENV:'production',PUBLIC_ORIGIN:'https://musuroom.example',DATABASE_PROVIDER:'sqlite',STORAGE_PROVIDER:'local',MONGO_ENABLED:'true',MONGODB_URI:'mongodb+srv://user:secret@cluster.mongodb.net'}));
+ assert.doesNotThrow(()=>loadConfig({NODE_ENV:'production',PUBLIC_ORIGIN:'https://musuroom.example',DATABASE_PROVIDER:'mongodb',STORAGE_PROVIDER:'mongodb',MONGO_ENABLED:'true',MONGODB_URI:'mongodb+srv://user:secret@cluster.mongodb.net'}));
+ assert.throws(()=>loadConfig({NODE_ENV:'production',PUBLIC_ORIGIN:'https://musuroom.example',DATABASE_PROVIDER:'sqlite',MONGO_ENABLED:'true',MONGODB_URI:'mongodb+srv://user:secret@cluster.mongodb.net'}));
  assert.equal(loadConfig(production).host,'0.0.0.0');
 });
 test('Real PostgreSQL migration + API: HTTPS sessions, concurrent retries, sensory metrics, private leads, evidence-backed samples',async t=>{

@@ -1,3 +1,4 @@
+import { operation } from '../db/operation.mjs';
 import { openMongoStore } from './mongo-store.mjs';
 import { createKnowledgeClassifier } from './knowledge-decisions.mjs';
 import { syncData,startDataSync } from './data-sync.mjs';
@@ -15,7 +16,7 @@ export function startDataWorker(db,config,fetchImpl) {
   }catch(error){
    if(store){await store.close().catch(()=>{});store=null;}
    const code=['atlas_authentication_failed','atlas_permission_denied','atlas_network_unavailable','atlas_tls_failed'].includes(error.code)?error.code:'connection_unavailable';
-   await db.prepare("UPDATE data_sync_state SET last_error_code=? WHERE id='mongo'").run(code);
+   await operation(db,'sync.failure',()=>db.prepare("UPDATE data_sync_state SET last_error_code=? WHERE id='mongo'")).run(code);
   }
  },config.mongoSyncMs);
  return async()=>{await stop();await store?.close();};

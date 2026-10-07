@@ -1,10 +1,10 @@
 {
   "name": "musuroom",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
-  "description": "Musuroom 1: Express, Atlas JSON projection, optional legacy PostgreSQL/Supabase and Jev",
+  "description": "Musuroom: Express, MongoDB Atlas primary data and GridFS, JevAI decision workflows",
   "scripts": {
     "start": "node server.mjs",
     "dev": "node --watch server.mjs",
@@ -27,7 +27,8 @@
     "schema:postgres": "node scripts/build-postgres-schema.mjs",
     "check": "node scripts/check-project.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
-    "db:check-history": "node scripts/check-migration-history.mjs"
+    "db:check-history": "node scripts/check-migration-history.mjs",
+    "test:atlas": "node scripts/test-atlas.mjs"
   },
   "engines": {
     "node": ">=24"
@@ -35,7 +36,6 @@
   "dependencies": {
     "express": "5.2.1",
     "mongodb": "7.7.0",
-    "pg": "8.23.0",
     "qrcode": "1.5.4",
     "zod": "4.6.5"
   },
@@ -43,6 +43,7 @@
     "@electric-sql/pglite": "0.5.8",
     "@railway/cli": "5.63.1",
     "jsqr": "1.4.0",
-    "pngjs": "7.0.0"
+    "pngjs": "7.0.0",
+    "pg": "8.23.0"
   }
 }

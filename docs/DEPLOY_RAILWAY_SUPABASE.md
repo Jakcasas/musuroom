@@ -1,3 +1,7 @@
+# Tài liệu triển khai kế thừa
+
+**Từ bản 1.11.0:** Railway dùng MongoDB Atlas trực tiếp và GridFS; làm theo [MONGODB_PRIMARY.md](MONGODB_PRIMARY.md). Các bước Supabase/PostgreSQL bên dưới là lịch sử vận hành, không áp dụng cho bản production hiện tại. Bản 1.10.0 dùng SQLite trong container đã được thay thế để giữ dữ liệu qua redeploy.
+
 # Triển khai Musuroom 1 — Railway + Atlas
 
 ## Đích triển khai hiện tại

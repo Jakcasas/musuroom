@@ -2,6 +2,7 @@ import { MongoClient } from 'mongodb';
 import validator from './mongo-schema.json' with {type:'json'};
 export function mongoFailureCode(error) {
  const codes=[error?.code,...[...(error?.reason?.servers?.values?.()||[])].map(server=>server.error?.code)];
+ if(codes.includes(8000)&&/database name.*too long/i.test(error?.message||''))return 'atlas_database_name_invalid';
  if(codes.some(code=>[18,8000].includes(code)))return 'atlas_authentication_failed';
  if(codes.includes(13))return 'atlas_permission_denied';
  if(codes.some(code=>['CERT_HAS_EXPIRED','UNABLE_TO_VERIFY_LEAF_SIGNATURE','ERR_TLS_CERT_ALTNAME_INVALID'].includes(code)))return 'atlas_tls_failed';
