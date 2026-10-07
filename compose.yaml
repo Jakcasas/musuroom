@@ -1,7 +1,7 @@
 services:
   musuroom:
     build: .
-    # Development binds only to this machine. Production remains Railway + Supabase.
+    # Development binds only to this machine. Production runs on Railway with MongoDB Atlas.
     ports: ["127.0.0.1:8766:8766"]
     environment:
       NODE_ENV: development

@@ -1,4 +1,4 @@
-import { normalize } from '../../dist/core.js';
+import { normalize } from '../../shared/core.js';
 // Heuristics reduce exposure; authentication and authorization remain deterministic.
 export function guardInput(value) {
  const raw=String(value??'').normalize('NFKC').replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g,'');

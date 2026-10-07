@@ -18,7 +18,7 @@ import { researchRouter } from './routes/research.mjs';
 import { vectorRouter } from './routes/vectors.mjs';
 import { createKnowledgeReranker } from './services/knowledge-reranker.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
-import { calculate } from '../dist/core.js';
+import { calculate } from '../shared/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
   if(config.databaseProvider!=='sqlite' && !database)throw new Error('Open configured database before creating application');
   const db = database || openDatabase(config.databasePath);

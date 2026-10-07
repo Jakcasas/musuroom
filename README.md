@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.12.1-264736)
+![Version](https://img.shields.io/badge/version-1.12.2-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)
@@ -35,7 +35,7 @@ Hỗ trợ mã do người vận hành chọn cho một tài khoản Giám khả
 
 Hồ sơ nghiên cứu chọn minh chứng trực tiếp từ tài liệu đã tải lên. Giám khảo đọc thông tin mẫu trước khi chấm; bảng tổng hợp tách điểm của phiên bản hiện tại và phiếu cần đối chiếu lại. API chặn lưu nếu hồ sơ thay đổi, database kiểm tra thang điểm và tổng theo trọng số. [Hướng dẫn vận hành](docs/UPGRADE_2026.md).
 
-Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo hiển thị trạng thái dịch vụ, lý do dùng dự phòng và nút kiểm tra câu minh họa dành cho ADMIN. `pnpm jev:check --cloud` thử cấu hình riêng tư. `pnpm jev:diagnose --cloud` tách kiểm tra kết nối, danh sách công cụ và quyền suy luận. `pnpm mcp:install-jev` thêm server Jev vào Codex mà không lưu key trong config. [Cài MCP và xử lý lỗi key/model](docs/JEV_MCP_SETUP.md). Quyền suy luận của key hiện lưu vẫn bị Jev từ chối trong lần thử ngày 07.10.2026.
+Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo hiển thị trạng thái dịch vụ, lý do dùng dự phòng và nút kiểm tra câu minh họa dành cho ADMIN. `pnpm jev:check --cloud` thử cấu hình riêng tư. `pnpm jev:diagnose --cloud` tách kiểm tra kết nối, danh sách công cụ và quyền suy luận. `pnpm mcp:install-jev` thêm server Jev vào Codex mà không lưu key trong config. [Cài MCP và xử lý lỗi key/model](docs/JEV_MCP_SETUP.md). Quyền suy luận của key hiện lưu vẫn bị Jev từ chối trong lần thử ngày 08.10.2026.
 
 - Hồ sơ hũ mẫu, mã lô, nguồn nguyên liệu và QR giữ nguyên khi cập nhật thông tin.
 - Chấm điểm theo bộ tiêu chí dự thảo, trọng số tổng 100%, xử lý xung đột phiên bản.
@@ -47,6 +47,8 @@ Jev MCP đọc đúng cấu trúc kết quả chính thức; cổng giám khảo
 **Dữ liệu cần bổ sung:** chưa có hồ sơ TCVN, lô/hũ thật hoặc bộ tiêu chí FID chính thức. Không nạp mẫu minh họa vào production. Chức năng vector cần embedding từ cùng model; chưa tự tạo embedding. Jev/Atlas cloud phải được kiểm tra riêng, không suy ra đang hoạt động chỉ vì đã lưu key. Xem [đối chiếu toàn bộ upgrade.docx và giới hạn](docs/UPGRADE_2026.md).
 
 ## Chạy trên máy
+
+Mã dùng chung nằm trong `shared/`. Lệnh `pnpm start`, `pnpm check` và `pnpm test` tự tạo bản dành cho trình duyệt trong `dist/`; nếu chạy `node server.mjs` trực tiếp sau khi clone, chạy `pnpm build:shared` trước. Biome kiểm tra các module đang chuẩn hóa bằng `pnpm lint`; `pnpm format` định dạng các module đó. CI chạy lint trên cả Linux và Windows, còn kiểm tra dependency được tách thành job riêng.
 
 ```sh
 git clone https://github.com/Jakcasas/musuroom.git
@@ -131,7 +133,7 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `MONGO_SYNC_BATCH_SIZE` | `25` | Bản ghi mỗi đợt đồng bộ |
 | `MONGO_SYNC_INTERVAL_MS` | `60000` | Khoảng nghỉ worker, ms |
 | `MONGO_JEV_MAX_PER_RUN` | `10` | Số yêu cầu phân loại tối đa mỗi đợt |
-| `JEV_TRANSPORT` | `mcp` | mcp hoặc rest của www.jevai.org |
+| `JEV_TRANSPORT` | `rest` | rest hoặc mcp của www.jevai.org |
 
 Không đưa `.env`, key, URI database, mã giám khảo hoặc dữ liệu cá nhân vào Git/ZIP/frontend. Atlas giữ dữ liệu nghiệp vụ và JSON projection. Tài liệu riêng tư nằm trong GridFS. Railway không dùng PostgreSQL/Supabase hoặc SQLite; mã legacy chỉ phục vụ phát triển và đối chiếu dữ liệu cũ.
 

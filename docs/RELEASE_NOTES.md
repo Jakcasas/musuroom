@@ -1,3 +1,11 @@
+# Musuroom 1.12.2 — 08.10.2026
+
+- Chặn cấu hình mã bootstrap JUDGE và ADMIN trùng nhau; giữ giới hạn `sample_code` 50 ký tự đã có.
+- Đồng bộ `JEV_TRANSPORT=rest` giữa mã, `.env.example` và README; Jev MCP vẫn có thể chọn tường minh. Quyền suy luận của key hiện tại vẫn do Jev từ chối.
+- Trang chủ và ảnh WebP được lưu cho chế độ ngoại tuyến; tách `shared/` khỏi `dist/` và tạo bản trình duyệt khi build.
+- Xóa PNG 2,6 MB không dùng; thêm `sample:add`, Biome lint/format phạm vi module đã chuẩn hóa, job audit độc lập và danh sách ignore hệ điều hành/IDE.
+- Giữ manifest QR với URL production đang dùng vì image Railway phục vụ trực tiếp file này. Khi thay domain, chạy `pnpm qr:generate` và kiểm tra QR trước khi phát hành.
+
 # Musuroom 1.12.1 — 08.10.2026
 
 - Chẩn đoán MCP từ cổng quản trị: phân biệt HTTP authentication, quyền suy luận, quota, gateway và phản hồi không phải JSON; không xuất lỗi thô/secret.

@@ -1,19 +1,20 @@
 {
   "name": "musuroom",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "description": "Musuroom: Express, MongoDB Atlas primary data and GridFS, JevAI decision workflows",
   "scripts": {
-    "start": "node server.mjs",
-    "dev": "node --watch server.mjs",
+    "start": "node scripts/build-shared.mjs && node server.mjs",
+    "dev": "node scripts/build-shared.mjs && node --watch server.mjs",
     "setup": "node scripts/setup.mjs",
     "db:migrate": "node scripts/database.mjs",
     "access:create": "node scripts/create-access.mjs",
     "access:revoke": "node scripts/revoke-access.mjs",
     "access:change-judge": "node scripts/change-judge-code.mjs",
     "dossier:add": "node scripts/add-document.mjs",
+    "sample:add": "node scripts/add-sample.mjs",
     "docs:search": "node scripts/search-typesafe.mjs",
     "jev:check": "node scripts/check-jev.mjs",
     "jev:diagnose": "node scripts/diagnose-jev.mjs",
@@ -27,8 +28,11 @@
     "data:label": "node scripts/label-atlas.mjs",
     "schema:decisions": "node scripts/decision-schemas.mjs",
     "schema:postgres": "node scripts/build-postgres-schema.mjs",
-    "check": "node scripts/check-project.mjs",
-    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "build:shared": "node scripts/build-shared.mjs",
+    "lint": "biome check",
+    "format": "biome check --write",
+    "check": "node scripts/build-shared.mjs && node scripts/check-project.mjs",
+    "test": "node scripts/build-shared.mjs && node --test --test-isolation=none tests/*.test.mjs",
     "db:check-history": "node scripts/check-migration-history.mjs",
     "test:atlas": "node scripts/test-atlas.mjs"
   },
@@ -42,10 +46,11 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@electric-sql/pglite": "0.5.8",
     "@railway/cli": "5.63.1",
     "jsqr": "1.4.0",
-    "pngjs": "7.0.0",
-    "pg": "8.23.0"
+    "pg": "8.23.0",
+    "pngjs": "7.0.0"
   }
 }

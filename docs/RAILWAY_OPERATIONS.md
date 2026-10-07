@@ -17,7 +17,7 @@
 | Draining | 35 giây | Cho process xử lý SIGTERM trước SIGKILL |
 | Backend shutdown | 30 giây | Chừa 5 giây trước deadline Railway |
 
-Watch paths: `/backend/**`, `/dist/**`, `/supabase/**`, `/server.mjs`, `/Dockerfile`, `/.dockerignore`, `/package.json`, `/pnpm-lock.yaml`, `/railway.json`. Commit chỉ sửa README/docs/tests không tự build container mới; CI GitHub vẫn chạy. Khi chủ động cần triển khai cùng commit, dùng Deploy Latest Commit trong Railway.
+Watch paths: `/backend/**`, `/shared/**`, `/dist/**`, `/server.mjs`, `/Dockerfile`, `/.dockerignore`, `/package.json`, `/pnpm-lock.yaml`, `/railway.json`. Commit chỉ sửa README/docs/tests không tự build container mới; CI GitHub vẫn chạy. Khi chủ động cần triển khai cùng commit, dùng Deploy Latest Commit trong Railway.
 
 Thiết lập đã được ghi trên dịch vụ Railway. `railway.json` giữ cấu hình tương ứng cho dịch vụ legacy hỗ trợ Config as Code. Dịch vụ mới không tự áp dụng file legacy; phải kiểm tra Settings và snapshot deployment thực tế sau khi nối GitHub. Railway đã công bố chuyển sang [Infrastructure as Code](https://docs.railway.com/infrastructure-as-code); file legacy ngừng được đọc từ 01.12.2026. Khi chuyển sang `.railway/railway.ts`, dùng import với `preserve()` cho secret, xem plan và chỉ apply các thay đổi đã kiểm chứng.
 
