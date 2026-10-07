@@ -1,3 +1,14 @@
+# Musuroom 1.11.0 — 07.10.2026
+
+- MongoDB là nơi lưu dữ liệu chính trên Railway; GridFS giữ tài liệu qua các lần triển khai.
+- Index chống trùng khảo sát/đăng ký, transaction bảo vệ outbox, phiên đăng nhập và phiên bản chấm điểm.
+- JSON schema; truy vấn aggregate cho cảm quan; vector 384 chiều trên MongoDB.
+- Bootstrap giữ hash/thời hạn nếu mã không đổi; phiên bị thu hồi khi đổi mã.
+- Production chặn cấu hình SQLite; dependency pg chỉ còn trong bộ công cụ phát triển.
+- QR được tạo trước upload, manifest ổn định; kiểm tra website và QR sau deploy.
+- Chẩn đoán phân biệt giới hạn tên database Atlas với lỗi xác thực.
+- Jev MCP bắt tay và tải công cụ được, nhưng lần thử 07.10.2026 vẫn từ chối quyền suy luận.
+
 # 1.10.0 — 06.10.2026
 
 - Chuyển cấu hình Railway sang Atlas-first: `MONGO_ENABLED=true` sẽ dùng SQLite runtime và MongoDB Atlas cho JSON projection, không còn bắt buộc PostgreSQL/Supabase trước khi deploy.

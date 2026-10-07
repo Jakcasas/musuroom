@@ -1,3 +1,4 @@
+import { operation } from '../db/operation.mjs';
 import { Router } from 'express';
 import { extname } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -6,7 +7,7 @@ import { jevConnectionStatus } from '../services/jev-client.mjs';
 import { documentStorage } from '../services/document-storage.mjs';
 import { rateLimit } from '../security/rate-limit.mjs';
 export function judgeRouter(db, security, config, fetchImpl) {
-  const router = Router(); const classify = createJevClassifier(config, fetchImpl);const storage=documentStorage(config,fetchImpl);
+  const router = Router(); const classify = createJevClassifier(config, fetchImpl);const storage=documentStorage(config,fetchImpl,db);
   router.post('/auth/login', security.login);
   router.post('/judge/verify', security.login);
   router.get('/auth/session', security.session);
@@ -18,12 +19,12 @@ export function judgeRouter(db, security, config, fetchImpl) {
     res.json({connection:jevConnectionStatus(config),verification:{mode:result.mode,reason:result.reason||null,requires_review:result.requires_review},notice:'Chỉ gửi câu minh họa cố định, không gửi hồ sơ hoặc dữ liệu của người thử. Kiểm tra có thể dùng một lượt Jev.'});
   });
   router.get('/judge/dossier', security.requireReviewer, async (req,res) => {
-    const documents = await db.prepare('SELECT id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at FROM quality_documents ORDER BY created_at DESC,id').all();
+    const documents = await operation(db,'documents.list',()=>db.prepare('SELECT id,title,doc_type,mime,size_bytes,sha256,evidence_status,created_at FROM quality_documents ORDER BY created_at DESC,id')).all();
     res.json({ project: { brand: 'Musuroom', title: 'Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm', stage: 'Nghiên cứu và hoàn thiện', note: 'Hồ sơ chỉ thể hiện tài liệu đã được người vận hành cung cấp. Chưa công bố công thức hoặc chứng nhận khi chưa có minh chứng.' }, documents: documents.map(d=>({...d,download_url:`/api/v1/judge/documents/${d.id}`})), jev_enabled: config.jevEnabled });
   });
-  router.get('/judge/groups', security.requireReviewer, async (req,res) => res.json({ items: await db.prepare('SELECT session_code,sample_code,count(*) AS count,max(created_at) AS latest_at FROM sensory_evaluations GROUP BY session_code,sample_code ORDER BY latest_at DESC').all() }));
+  router.get('/judge/groups', security.requireReviewer, async (req,res) => res.json({ items: await operation(db,'sensory.groups',()=>db.prepare('SELECT session_code,sample_code,count(*) AS count,max(created_at) AS latest_at FROM sensory_evaluations GROUP BY session_code,sample_code ORDER BY latest_at DESC')).all() }));
   router.get('/judge/documents/:id', security.requireReviewer, async (req,res) => {
-    const doc = await db.prepare('SELECT * FROM quality_documents WHERE id=?').get(req.params.id);
+    const doc = await operation(db,'documents.get',()=>db.prepare('SELECT * FROM quality_documents WHERE id=?')).get(req.params.id);
     if (!doc) return res.status(404).json({ error:'document_not_found' });
     if (!/^[0-9a-f-]{36}\.(pdf|txt|csv|docx|xlsx|png|jpg|webp|mp4)$/.test(doc.file_name)) return res.status(403).json({ error:'invalid_document_path' });
     try {

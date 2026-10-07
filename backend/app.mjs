@@ -1,3 +1,4 @@
+import { operation } from './db/operation.mjs';
 import express from 'express';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
@@ -19,7 +20,7 @@ import { createKnowledgeReranker } from './services/knowledge-reranker.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
 import { calculate } from '../dist/core.js';
 export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
-  if(config.databaseProvider==='postgres' && !database)throw new Error('Open configured Postgres database before creating application');
+  if(config.databaseProvider!=='sqlite' && !database)throw new Error('Open configured database before creating application');
   const db = database || openDatabase(config.databasePath);
   const bootstrapPromise = bootstrapAccessAccounts(db, config);
   const app = express();
@@ -62,7 +63,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   });
   app.use(express.json({ limit: '16kb', strict: true }));
   app.get('/healthz', async (req, res) => {
-    try{await db.prepare('SELECT 1').get();res.json({...releaseInfo,database:'ok'});}
+    try{await operation(db,'health',()=>db.prepare('SELECT 1')).get();res.json({...releaseInfo,database:'ok',database_provider:db.dialect||'sqlite'});}
     catch{res.status(503).json({...releaseInfo,database:'unavailable'});}
   });
   app.get('/api/status', async (req, res) => res.json({ ...releaseInfo, aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));

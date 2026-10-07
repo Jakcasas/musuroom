@@ -14,9 +14,6 @@ importers:
       mongodb:
         specifier: 7.7.0
         version: 7.7.0
-      pg:
-        specifier: 8.23.0
-        version: 8.23.0
       qrcode:
         specifier: 1.5.4
         version: 1.5.4
@@ -33,6 +30,9 @@ importers:
       jsqr:
         specifier: 1.4.0
         version: 1.4.0
+      pg:
+        specifier: 8.23.0
+        version: 8.23.0
       pngjs:
         specifier: 7.0.0
         version: 7.0.0

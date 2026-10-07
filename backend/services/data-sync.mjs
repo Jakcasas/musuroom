@@ -1,12 +1,13 @@
+import { operation } from '../db/operation.mjs';
 import { randomUUID } from 'node:crypto';
 import { dataJobs,projectDocument } from './data-projections.mjs';
 const leaseMs=300000;
 export async function syncData({db,config,store,classify,localOnly=false,now=Date.now}) {
  const owner=randomUUID(),start=now();
- const claim=await db.prepare("UPDATE data_sync_state SET lock_owner=?,lease_until=? WHERE id='mongo' AND lease_until<=?").run(owner,start+leaseMs,start);
+ const claim=await operation(db,'sync.claim',()=>db.prepare("UPDATE data_sync_state SET lock_owner=?,lease_until=? WHERE id='mongo' AND lease_until<=?")).run(owner,start+leaseMs,start);
  if(!claim.changes)return{mode:'busy',synced:0};
  let synced=0,requests=0,errorCode=null,failedBatch=[];
- const renew=async()=>{const result=await db.prepare("UPDATE data_sync_state SET lease_until=? WHERE id='mongo' AND lock_owner=? AND lease_until>?").run(now()+leaseMs,owner,now());if(!result.changes)throw new Error('lease_lost');};
+ const renew=async()=>{const result=await operation(db,'sync.renew',()=>db.prepare("UPDATE data_sync_state SET lease_until=? WHERE id='mongo' AND lock_owner=? AND lease_until>?")).run(now()+leaseMs,owner,now());if(!result.changes)throw new Error('lease_lost');};
  try{
   const jobs=await dataJobs(db,{limit:config.mongoBatchSize,pending:true});
   for(let offset=0;offset<jobs.length;offset+=10){
@@ -17,12 +18,12 @@ export async function syncData({db,config,store,classify,localOnly=false,now=Dat
     documents.push(document);
    }
    await renew();await store.write(documents);await renew();
-   for(const job of batch){await db.prepare('UPDATE data_sync_jobs SET synced_revision=?,attempts=0,last_error_code=NULL WHERE job_key=? AND synced_revision<?').run(job.revision,job.job_key,job.revision);synced++;}
+   for(const job of batch){await operation(db,'sync.done',()=>db.prepare('UPDATE data_sync_jobs SET synced_revision=?,attempts=0,last_error_code=NULL WHERE job_key=? AND synced_revision<?')).run(job.revision,job.job_key,job.revision);synced++;}
    failedBatch=[];
   }
   return{mode:'synced',synced,jev_requests:localOnly?0:requests,...(localOnly?{local_classifications:requests}:{})};
- }catch(error){errorCode=error.message==='lease_lost'?'lease_lost':'sync_failed';for(const job of failedBatch)await db.prepare('UPDATE data_sync_jobs SET attempts=attempts+1,last_error_code=? WHERE job_key=? AND synced_revision<revision').run(errorCode,job.job_key);return{mode:'unavailable',reason:errorCode,synced};}
- finally{await db.prepare("UPDATE data_sync_state SET lock_owner='',lease_until=0,last_completed_at=?,last_error_code=?,last_synced_count=? WHERE id='mongo' AND lock_owner=?").run(new Date(now()).toISOString(),errorCode,synced,owner);}
+ }catch(error){errorCode=error.message==='lease_lost'?'lease_lost':'sync_failed';for(const job of failedBatch)await operation(db,'sync.error',()=>db.prepare('UPDATE data_sync_jobs SET attempts=attempts+1,last_error_code=? WHERE job_key=? AND synced_revision<revision')).run(errorCode,job.job_key);return{mode:'unavailable',reason:errorCode,synced};}
+ finally{await operation(db,'sync.release',()=>db.prepare("UPDATE data_sync_state SET lock_owner='',lease_until=0,last_completed_at=?,last_error_code=?,last_synced_count=? WHERE id='mongo' AND lock_owner=?")).run(new Date(now()).toISOString(),errorCode,synced,owner);}
 }
 export function startDataSync(run,intervalMs) {
  let stopped=false,active=null,timer;

@@ -11,14 +11,14 @@ export function loadConfig(env = process.env) {
   const host = env.HOST || (production ? '0.0.0.0' : '127.0.0.1');
   if ((!production && host !== '127.0.0.1' && !(env.CONTAINER_LOCAL==='true'&&host==='0.0.0.0')) || (production && !['0.0.0.0','127.0.0.1'].includes(host))) throw new Error('Invalid HOST for deployment mode');
   const databaseProvider = env.DATABASE_PROVIDER || 'sqlite';
-  if(!['sqlite','postgres'].includes(databaseProvider))throw new Error('Invalid DATABASE_PROVIDER');
+  if(!['sqlite','postgres','mongodb'].includes(databaseProvider))throw new Error('Invalid DATABASE_PROVIDER');
   const publicOrigin = env.PUBLIC_ORIGIN || '';
   if(publicOrigin){const u=url(publicOrigin,'PUBLIC_ORIGIN');if(u.protocol!=='https:' || u.username || u.password || u.pathname!=='/' || u.search || u.hash)throw new Error('PUBLIC_ORIGIN must be an HTTPS origin');}
   const databaseUrl = env.DATABASE_URL || '';
   if(databaseProvider==='postgres') { const connection=url(databaseUrl,'DATABASE_URL'); if(!['postgres:','postgresql:'].includes(connection.protocol)||!connection.hostname||!connection.username||!connection.password)throw new Error('Postgres requires a complete DATABASE_URL'); if(connection.port==='6543')throw new Error('Use the Session pooler on 5432 or a direct connection; transaction pooling cannot hold the migration lock.'); }
   if(databaseProvider==='postgres' && databaseUrl.includes('[YOUR-PASSWORD]'))throw new Error('Fill the actual database password in the private environment file');
   const storageProvider = env.STORAGE_PROVIDER || 'local';
-  if(!['local','supabase'].includes(storageProvider))throw new Error('Invalid STORAGE_PROVIDER');
+  if(!['local','supabase','mongodb'].includes(storageProvider))throw new Error('Invalid STORAGE_PROVIDER');
   const supabaseUrl=env.SUPABASE_URL || ''; const storageKey=env.SUPABASE_SERVICE_ROLE_KEY || '';
   if(storageProvider==='supabase' && (!/^https:\/\/[^/]+\.supabase\.co$/.test(supabaseUrl) || !storageKey))throw new Error('Supabase Storage requires URL and server-only key');
   const storageBucket=env.SUPABASE_STORAGE_BUCKET || 'musuroom-dossier';
@@ -50,13 +50,15 @@ export function loadConfig(env = process.env) {
   for(const key of ['MONGO_ENABLED','MONGO_JEV_ENRICHMENT'])if(env[key]&&!['true','false'].includes(env[key]))throw new Error('Invalid '+key);
   const mongoEnabled=env.MONGO_ENABLED==='true', mongoUri=env.MONGODB_URI||'', mongoEnrichment=env.MONGO_JEV_ENRICHMENT==='true';
   const mongoDatabase=env.MONGODB_DATABASE||'musuroom', mongoSource=env.MONGO_SOURCE_ID||(production?'musuroom-production':'musuroom-local');
-  if(!/^[A-Za-z][A-Za-z0-9_-]{0,62}$/.test(mongoDatabase)||!/^[A-Za-z][A-Za-z0-9_-]{0,62}$/.test(mongoSource))throw new Error('Invalid MongoDB database/source name');
+  if(!/^[A-Za-z][A-Za-z0-9_-]{0,37}$/.test(mongoDatabase)||!/^[A-Za-z][A-Za-z0-9_-]{0,62}$/.test(mongoSource))throw new Error('Invalid MongoDB database/source name (database maximum 38 ASCII characters)');
   if(mongoEnabled){const u=url(mongoUri,'MONGODB_URI');if(!['mongodb:','mongodb+srv:'].includes(u.protocol)||!u.hostname||u.hash)throw new Error('Invalid MONGODB_URI'); if(production&&(u.protocol!=='mongodb+srv:'||!u.hostname.endsWith('.mongodb.net')||!u.username||!u.password))throw new Error('Production requires an authenticated Atlas SRV URI');for(const[key,value]of u.searchParams)if((['tls','ssl'].includes(key.toLowerCase())&&value==='false')||(['tlsinsecure','tlsallowinvalidcertificates','tlsallowinvalidhostnames'].includes(key.toLowerCase())&&value==='true'))throw new Error('MongoDB TLS verification cannot be disabled');}
   if(mongoEnrichment&&(!mongoEnabled||!jevEnabled))throw new Error('MongoDB enrichment requires MongoDB and Jev configuration');
   const mongoControls={mongoEnabled,mongoUri,mongoDatabase,mongoSource,mongoEnrichment,mongoBatchSize:integer('MONGO_SYNC_BATCH_SIZE',25,1,100),mongoSyncMs:integer('MONGO_SYNC_INTERVAL_MS',60000,10000,3600000),mongoJevMax:integer('MONGO_JEV_MAX_PER_RUN',10,1,20),jevMinConfidence:Number(env.JEV_MIN_CONFIDENCE||0.65)};
   if(!Number.isFinite(mongoControls.jevMinConfidence)||mongoControls.jevMinConfidence<0||mongoControls.jevMinConfidence>1)throw new Error('Invalid JEV_MIN_CONFIDENCE');
   mongoControls.jevTransport=jevTransport;
   if(production && !publicOrigin)throw new Error('Production requires HTTPS PUBLIC_ORIGIN');
-  if(production && databaseProvider==='sqlite' && !mongoEnabled)throw new Error('Production SQLite mode requires MongoDB Atlas for JSON projection');
+  if((databaseProvider==='mongodb'||storageProvider==='mongodb')&&!mongoEnabled)throw new Error('MongoDB primary/storage requires MONGO_ENABLED and MONGODB_URI');
+  if(production && databaseProvider==='sqlite')throw new Error('SQLite is for local development only; use MongoDB for durable production data');
+  if(production && databaseProvider==='mongodb' && storageProvider!=='mongodb')throw new Error('MongoDB production requires MongoDB document storage');
   return Object.freeze({ ...aiControls, ...mongoControls, defaultJudgeAccountId, judgeBootstrapCode, adminBootstrapCode, production, publicOrigin:publicOrigin.replace(/\/$/,''), databaseProvider, databaseUrl, databaseCa:env.DATABASE_CA_CERT || '', storageProvider,supabaseUrl,storageKey,storageBucket, host, port: integer('PORT', 8766, 1, 65535), databasePath: env.DATABASE_PATH === ':memory:' ? ':memory:' : resolve(projectRoot, env.DATABASE_PATH || 'data/musuroom.sqlite'), writeToken, provider, apiKey, model, timeout: integer('AI_TIMEOUT_MS', 20000, 1000, 60000), maxTokens: integer('AI_MAX_TOKENS', 700, 100, 2000), chatLimit: integer('CHAT_REQUESTS_PER_MINUTE', 10, 1, 60), authSessionMs: integer('AUTH_SESSION_MINUTES', 120, 15, 480)*60000, authIdleMs: integer('AUTH_IDLE_MINUTES', 20, 5, 120)*60000, authLoginLimit: integer('AUTH_LOGIN_LIMIT', 8, 3, 20), jevEnabled, jevKey, jevModel, documentRoot: resolve(projectRoot, 'data/dossier') });
 }

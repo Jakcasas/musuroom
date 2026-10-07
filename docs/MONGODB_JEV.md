@@ -1,12 +1,12 @@
 # Kho dữ liệu JSON và hỗ trợ phân loại Jev
 
-Musuroom 1, mã nguồn **1.10.0**. Railway có thể chạy theo hướng Atlas-first: SQLite runtime phục vụ API giao dịch, Atlas lưu JSON projection để truy vấn/xử lý dữ liệu, còn PostgreSQL/Supabase là tích hợp legacy khi cần. URI/key/mã đăng nhập lưu riêng ngoài Git. JevAI vẫn cần key từ `www.jevai.org/agent/keys`; khi quyền model bị từ chối, hệ thống dùng phân loại cục bộ và ghi rõ trạng thái.
+Musuroom 1, mã nguồn **1.11.0**. Railway dùng MongoDB Atlas làm database chính cho toàn bộ API và GridFS cho hồ sơ riêng tư. Kho JSON projection và các luồng Jev tiếp tục hoạt động trong Atlas. [Hướng dẫn vận hành hiện tại](MONGODB_PRIMARY.md).
 
 ## Luồng xử lý
 
 ```mermaid
 flowchart LR
-  Web[Khảo sát và quản trị] --> SQL[(SQLite runtime / PostgreSQL legacy)]
+  Web[Khảo sát và quản trị] --> SQL[(MongoDB Atlas primary)]
   SQL --> Queue[Hàng đợi revision]
   Queue --> Project[Chọn trường dữ liệu và tổng hợp điểm]
   Project --> JSON[JSON có nguồn, hash và phiên bản]

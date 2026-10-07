@@ -1,3 +1,4 @@
+import { operation } from '../backend/db/operation.mjs';
 import { existsSync, readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
 import { resolve, extname } from 'node:path';
 import { loadEnvFile } from 'node:process';
@@ -16,12 +17,12 @@ if (!types[extension] || !statSync(sourcePath).isFile() || statSync(sourcePath).
 const bytes=readFileSync(sourcePath); if (!bytes.length) throw new Error('Empty document');
 const hash=createHash('sha256').update(bytes).digest('hex'); const config=loadConfig(); const db=await openConfiguredDatabase(config);
 try {
-  const previous=await db.prepare('SELECT id FROM quality_documents WHERE sha256=?').get(hash);
+  const previous=await operation(db,'documents.hash',()=>db.prepare('SELECT id FROM quality_documents WHERE sha256=?')).get(hash);
   if (previous) console.log('Document already registered:',previous.id);
   else {
     const id=randomUUID(); const name=id+extension;
-    await documentStorage(config).write(name,bytes,types[extension]);
-    await db.prepare('INSERT INTO quality_documents(id,title,doc_type,file_name,mime,size_bytes,sha256,evidence_status) VALUES(?,?,?,?,?,?,?,?)').run(id,title,type,name,types[extension],bytes.length,hash,status);
+    await documentStorage(config,undefined,db).write(name,bytes,types[extension]);
+    await operation(db,'documents.insert',()=>db.prepare('INSERT INTO quality_documents(id,title,doc_type,file_name,mime,size_bytes,sha256,evidence_status) VALUES(?,?,?,?,?,?,?,?)')).run(id,title,type,name,types[extension],bytes.length,hash,status);
     console.log('Private document registered:',id);
   }
 } finally {await db.close();}
