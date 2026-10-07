@@ -5,7 +5,7 @@ import { mongoFailureCode } from '../services/mongo-store.mjs';
 import { nativeOperations } from './mongo-operations.mjs';
 import { validators } from './mongo-schema.mjs';
 
-export const primaryCollections = ['sources','knowledge_articles','batches','sensory_evaluations','sample_requests','judge_accounts','auth_sessions','quality_documents','product_samples','access_audit','research_records','research_scores','knowledge_decision_reviews','data_sync_jobs','data_sync_state','research_vectors'];
+export const primaryCollections = ['sources','knowledge_articles','batches','sensory_evaluations','sample_requests','judge_accounts','auth_sessions','quality_documents','product_samples','access_audit','research_records','research_scores','knowledge_decision_reviews','data_sync_jobs','data_sync_state','research_vectors','label_runs','decision_events'];
 const jsonFields = ['tags','metrics','nutrition','data','scores','decision'];
 export function toDocument(row) {
   const copy = {...row};
@@ -85,6 +85,10 @@ async function initializeCollections(db) {
   await index('auth_sessions',{expires_at:1});
   await index('knowledge_articles',{source_id:1,id:1});
   await index('data_sync_jobs',{resource_type:1,job_key:1});
+  await index('label_runs',{source:1},{unique:true,partialFilterExpression:{status:{$in:['queued','running']}},name:'one_active_label_run'});
+  await index('label_runs',{source:1,status:1,next_attempt_at:1,created_at:1});
+  await index('label_runs',{source:1,id:1});
+  await index('decision_events',{source:1,run_id:1,id:1});
   await db.collection('data_sync_state').updateOne({id:'mongo'},{$setOnInsert:{id:'mongo',lock_owner:'',lease_until:0,last_completed_at:null,last_error_code:null,last_synced_count:0}},{upsert:true});
 }
 async function seed(db) {

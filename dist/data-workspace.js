@@ -1,5 +1,6 @@
 import { element,request,feedback,date } from './portal-ui.js';
 import { reviewWorkspace } from './review-workspace.js';
+import {labelRunWorkspace} from './label-run-workspace.js';
 export function dataWorkspace(onError) {
  const $=id=>document.getElementById(id),labels={ingredients:'Nguyên liệu',flavor:'Hương vị',safety:'Ổn định & an toàn thực phẩm',methods:'Phương pháp nghiên cứu',other:'Chưa rõ chủ đề'};
  let session=null,version=0,items=[],cursor=null,after='',history=[],busy=false,loading=false,jevEnabled=false;
@@ -9,6 +10,7 @@ export function dataWorkspace(onError) {
  selectionStatus.setAttribute('role','status');selectionStatus.setAttribute('aria-live','polite');$('data-classify').parentElement.after(selectionStatus,tools);
  $('data-consent').parentElement.lastChild.textContent=' Tôi đồng ý gửi nội dung bài đã chọn, hoặc những bài đánh dấu trong lô, đến JevAI để gợi ý chủ đề.';
  const reviews=reviewWorkspace($('data-decision').parentElement,{getSession:()=>session,isBusy:()=>busy||loading,setBusy,onError,labels});
+ const labelRuns=labelRunWorkspace($('data-panel'),{getSession:()=>session,isBusy:()=>busy||loading,onError});
  const current=v=>session&&version===v;
  function setBusy(value){busy=value;sync();}
  function sync(){
@@ -21,7 +23,7 @@ export function dataWorkspace(onError) {
   batchButton.textContent=`Phân loại bài đã chọn (${selected.size}) →`;selectionStatus.textContent=`Chọn 1–5 bài trong bảng để phân loại theo lô · ${selected.size} / 5 đã chọn.`;
   for(const [id,input]of selectionInputs)input.disabled=blocked||(!selected.has(id)&&selected.size>=5);reviews.sync();
  }
- function clear(){session=null;version++;busy=false;loading=false;items=[];cursor=null;after='';history=[];selected.clear();selectionInputs.clear();jevEnabled=false;reviews.clear();$('data-panel').hidden=true;for(const id of ['data-rows','data-status','data-json','data-decision','data-article'])$(id).replaceChildren();$('data-consent').checked=false;sync();}
+ function clear(){session=null;version++;busy=false;loading=false;items=[];cursor=null;after='';history=[];selected.clear();selectionInputs.clear();jevEnabled=false;reviews.clear();labelRuns.clear();$('data-panel').hidden=true;for(const id of ['data-rows','data-status','data-json','data-decision','data-article'])$(id).replaceChildren();$('data-consent').checked=false;sync();}
  function selectionChanged(){$('data-consent').checked=false;$('data-json').textContent='Danh sách đã thay đổi. Xem yêu cầu của lô trước khi phân loại.';$('data-decision').textContent='';sync();}
  async function load(nextAfter=after,nextHistory=history){
   if(!session||busy)return;const v=++version;loading=true;sync();
@@ -59,5 +61,5 @@ export function dataWorkspace(onError) {
  $('data-download').addEventListener('click',()=>{if(!session||!items.length||busy||loading)return;const url=URL.createObjectURL(new Blob([JSON.stringify({source:items[0].source,items,next_cursor:cursor},null,2)],{type:'application/json'})),link=element('a');link.href=url;link.download=`musuroom-json-page-${history.length+1}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
  $('data-preview').addEventListener('click',()=>perform('jev-preview',{article_id:$('data-article').value},data=>{$('data-json').textContent=JSON.stringify(data.request,null,2);}));
  $('data-classify').addEventListener('click',()=>perform('classify',{article_id:$('data-article').value,allow_remote:$('data-consent').checked},async data=>{feedback($('data-decision'),data.mode==='jev'?`${labels[data.topic]} · Độ tin cậy mô hình ${(data.confidence*100).toFixed(1)}% · ${data.requires_review?'Cần xem lại':'Đề xuất để đối chiếu nguồn'}.`: `${labels[data.topic]} · Luật từ khóa cục bộ. ${data.message}`);await reviews.load();}));
- return {clear,async show(auth){clear();if(auth.user.role==='ADMIN'){session=auth;$('data-panel').hidden=false;await load('');}}};
+ return {clear,async show(auth){clear();if(auth.user.role==='ADMIN'){session=auth;$('data-panel').hidden=false;await load('');await labelRuns.load();}}};
 }

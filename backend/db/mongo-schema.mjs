@@ -1,9 +1,15 @@
+import {mongoDecisionValidator} from '../services/decision-contracts.mjs';
 const string={bsonType:'string'};
 const integer=(minimum,maximum)=>({bsonType:['int','long','double'],minimum,...(maximum===undefined?{}:{maximum}),multipleOf:1});
 const choice=(...values)=>({enum:values});
 const schema=(required,properties)=>({$jsonSchema:{bsonType:'object',required:required.split(','),properties}});
 const rating=integer(1,9);
 export const validators={
+  decision_events:mongoDecisionValidator(),
+  label_runs:schema('id,source,status,allow_remote,limit,cursor,scanned,saved,stale,jev,local,needs_review,jev_requests,attempts,lease_until,next_attempt_at',{
+    id:string,source:string,status:choice('queued','running','completed','blocked','failed','cancelled'),allow_remote:{bsonType:'bool'},limit:integer(1,10000),cursor:string,
+    scanned:integer(0),saved:integer(0),stale:integer(0),jev:integer(0),local:integer(0),needs_review:integer(0),jev_requests:integer(0),attempts:integer(0),lease_until:integer(0),next_attempt_at:integer(0)
+  }),
   sensory_evaluations:schema('id,session_code,sample_code,tester_type,color_score,aroma_score,umami_taste_score,aftertaste_score,overall_acceptance,comments,created_at',{
     id:string,session_code:string,sample_code:string,tester_type:choice('JUDGE','STUDENT','CONSUMER','OTHER'),color_score:rating,aroma_score:rating,umami_taste_score:rating,aftertaste_score:rating,overall_acceptance:rating,comments:{bsonType:'string',maxLength:1000}
   }),

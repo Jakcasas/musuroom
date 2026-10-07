@@ -1,3 +1,11 @@
+# Musuroom 1.12.0 — 08.10.2026
+
+- JSON Schema và validator BSON cho state, tác vụ và nhật ký quyết định.
+- Hàng đợi Atlas có lease/checkpoint, truy vấn cursor, tối đa 5 bài/lô và 10.000 bản ghi/tác vụ.
+- Ghi nguồn/revision/hash, phân biệt Jev/cục bộ; lưu cùng transaction với hàng chờ đối chiếu.
+- Dừng khi key/model bị từ chối; retry lỗi tạm tối đa 3 lần, tiếp tục/hủy từ cổng quản trị.
+- Công cụ CLI `data:label`, xem schema và nhật ký JSON trong website.
+
 # Musuroom 1.11.0 — 07.10.2026
 
 - MongoDB là nơi lưu dữ liệu chính trên Railway; GridFS giữ tài liệu qua các lần triển khai.

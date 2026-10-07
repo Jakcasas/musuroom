@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 1000000
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 1000000
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 1000000
+    },
+    "limitation": {
+      "type": "string",
+      "maxLength": 1000000
+    }
+  },
+  "required": [
+    "title",
+    "summary",
+    "body",
+    "limitation"
+  ],
+  "additionalProperties": false
+}

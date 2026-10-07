@@ -2,8 +2,10 @@ import { createJevEvaluator,validChoice } from './jev-client.mjs';
 import { knowledgeTopic } from './knowledge-decisions.mjs';
 import { localKnowledgeClassification } from './local-classifier.mjs';
 import { guardedKnowledge,confidenceGate } from './decision-policy.mjs';
+import {validKnowledgeState} from './decision-contracts.mjs';
 export function knowledgeBatchPreview(documents,model='typesafe-ai/jev') {
  if(!Array.isArray(documents)||!documents.length||documents.length>5||documents.some(d=>d?.type!=='knowledge'||!d.active||!d.data))throw new Error('Batch must contain 1–5 public knowledge documents');
+ if(documents.some(document=>!validKnowledgeState(document).success))throw new Error('Invalid public knowledge JSON');
  const guarded=documents.map(guardedKnowledge),eligible=guarded.map((entry,index)=>({entry,index})).filter(({entry})=>entry.guard.allow_remote);
  const cut=(value,length)=>Array.from(value).slice(0,length).join('');
  const request={model,state:{documents:eligible.map(({entry,index})=>({index,...Object.fromEntries(['title','summary','body','limitation'].map(key=>[key,cut(entry.document.data[key],key==='body'?1000:350)]))}))},questions:Object.fromEntries(eligible.map(({index})=>['item_'+index,{...knowledgeTopic,instructions:knowledgeTopic.instructions+` Evaluate ONLY the document whose index is ${index} in state.documents.`}]))};

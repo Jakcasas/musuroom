@@ -78,7 +78,9 @@ test('Data API enforces role/CSRF, validates cursors and previews a single sourc
  const call=(path,session,body)=>fetch(base+'/api/v1/'+path,{method:body?'POST':'GET',headers:{...(session?{Cookie:session.cookie,'X-CSRF-Token':session.csrf}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  const login=async account=>{const res=await call('judge/verify',null,{access_code:account.access_code});return{cookie:res.headers.get('set-cookie').split(';')[0],csrf:(await res.json()).csrf_token};};
  assert.equal((await call('admin/data/status')).status,401);const reader=await login(judge);assert.equal((await call('admin/data/documents',reader)).status,403);
+ assert.equal((await call('admin/data/schemas',reader)).status,403);assert.equal((await call('admin/data/label-runs',reader)).status,403);
  const operator=await login(admin);const page=await(await call('admin/data/documents?limit=2',operator)).json();assert.equal(page.items.length,2);assert.ok(page.next_cursor);assert.equal((await call('admin/data/documents?after=x&after=y',operator)).status,400);
+ assert.equal((await call('admin/data/schemas',operator)).status,200);assert.equal((await call('admin/data/label-runs',operator)).status,409);
  assert.equal((await call('admin/data/jev-preview',{...operator,csrf:''},{article_id:'umami'})).status,403);
  const preview=await(await call('admin/data/jev-preview',operator,{article_id:'umami'})).json();assert.equal(preview.request.state.title,db.prepare("SELECT title FROM knowledge_articles WHERE id='umami'").get().title);assert.equal((await call('admin/data/classify',operator,{article_id:'umami'})).status,422);
  assert.equal((await(await call('admin/data/classify',operator,{article_id:'umami',allow_remote:true})).json()).reason,'jev_disabled');
