@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { parseEnv } from 'node:util';
+import {containsPrivateMaterial} from './secret-scan.mjs';
 
 // Check the Git history without ever printing private values or matched content.
 const secrets = [];
@@ -36,8 +37,10 @@ for (const object of objects) {
   const content = bytes.subarray(end + 1, end + 1 + size);
   offset = end + size + 2;
   if (type !== 'blob') continue;
-  if (secrets.some(secret => secret.length > 12 && content.includes(Buffer.from(secret)))) hits.push(object.path);
+  if (containsPrivateMaterial(content,secrets)) hits.push(object.path);
   if (/^(data\/|node_modules\/|\.env$|cloud\.env$)/.test(object.path)) hits.push(object.path);
 }
-console.log(JSON.stringify({ historyObjects: objects.length, blockedPaths: [...new Set(hits)] }));
+const tracked=git(['ls-files','-z']).split('\0').filter(Boolean);
+for(const path of tracked){if(existsSync(path)&&containsPrivateMaterial(readFileSync(path),secrets))hits.push(path);}
+console.log(JSON.stringify({ historyObjects: objects.length,trackedFiles:tracked.length,blockedPaths: [...new Set(hits)] }));
 if (hits.length) process.exitCode = 1;

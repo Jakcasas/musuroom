@@ -4,6 +4,7 @@ import { extname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { createJevClassifier } from '../services/jev.mjs';
 import { jevConnectionStatus } from '../services/jev-client.mjs';
+import {diagnoseJev} from '../services/jev-diagnostics.mjs';
 import { documentStorage } from '../services/document-storage.mjs';
 import { rateLimit } from '../security/rate-limit.mjs';
 export function judgeRouter(db, security, config, fetchImpl) {
@@ -13,7 +14,12 @@ export function judgeRouter(db, security, config, fetchImpl) {
   router.get('/auth/session', security.session);
   router.post('/auth/logout', security.requireReviewer, security.logout);
   router.get('/judge/jev/status',security.requireReviewer,(req,res)=>res.json(jevConnectionStatus(config)));
-  router.post('/admin/jev/check',security.requireAdmin,rateLimit(2,'jev_diagnostic_rate_limit'),async(req,res)=>{
+  const diagnosticLimit=rateLimit(2,'jev_diagnostic_rate_limit');
+  router.post('/admin/jev/diagnose',security.requireAdmin,diagnosticLimit,async(req,res)=>{
+    if(req.body?.allow_remote!==true)return res.status(422).json({error:'explicit_remote_consent_required'});
+    res.set('Cache-Control','no-store').json(await diagnoseJev(config,fetchImpl));
+  });
+  router.post('/admin/jev/check',security.requireAdmin,diagnosticLimit,async(req,res)=>{
     if(req.body?.allow_remote!==true)return res.status(422).json({error:'explicit_remote_consent_required'});
     const result=await classify('Nhận xét minh họa kiểm tra kết nối Musuroom: mùi nấm thơm.',true);
     res.json({connection:jevConnectionStatus(config),verification:{mode:result.mode,reason:result.reason||null,requires_review:result.requires_review},notice:'Chỉ gửi câu minh họa cố định, không gửi hồ sơ hoặc dữ liệu của người thử. Kiểm tra có thể dùng một lượt Jev.'});
