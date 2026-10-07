@@ -20,6 +20,9 @@ async function api(t, overrides = {}) {
 test('Config validates port, local binding, token and AI configuration', () => {
   for (const extra of [{ PORT: '0' }, { PORT: 'not-a-port' }, { HOST: '0.0.0.0' }, { AI_PROVIDER: 'unknown' }, { AI_PROVIDER: 'openrouter' }, { API_WRITE_TOKEN: 'short' }]) assert.throws(() => config(extra));
   assert.equal(config().provider, 'disabled');
+  assert.equal(config().jevTransport, 'rest');
+  assert.throws(() => config({ JUDGE_BOOTSTRAP_CODE: 'same-access-code-2026', ADMIN_BOOTSTRAP_CODE: 'same-access-code-2026' }), /must differ/);
+  assert.equal(config({ JUDGE_BOOTSTRAP_CODE: 'judge-access-code-2026', ADMIN_BOOTSTRAP_CODE: 'admin-access-code-2026' }).adminBootstrapCode, 'admin-access-code-2026');
 });
 test('Migrations and seeds are idempotent; database enforces foreign keys', () => {
   const db = openDatabase(':memory:');

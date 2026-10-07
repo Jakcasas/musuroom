@@ -1,7 +1,7 @@
 import pg from 'pg';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { articles } from '../../dist/knowledge-data.js';
+import { articles } from '../../shared/knowledge-data.js';
 pg.types.setTypeParser(20,value=>{const number=Number(value);if(!Number.isSafeInteger(number))throw new Error('Integer outside supported range');return number;});
 // Parameters are used only with fixed application SQL, never supplied SQL fragments.
 export function postgresAdapter(client){

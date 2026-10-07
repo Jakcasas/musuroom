@@ -5,8 +5,12 @@
 !server.mjs
 !backend
 !backend/**
+!shared
+!shared/**
 !dist
 !dist/**
+!scripts
+!scripts/build-shared.mjs
 !supabase
 !supabase/**
 supabase/.temp

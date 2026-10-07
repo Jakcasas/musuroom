@@ -12,3 +12,9 @@ cloud.env
 supabase/.temp/
 supabase/.branches/
 .openai/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+dist/core.js
+dist/knowledge-data.js

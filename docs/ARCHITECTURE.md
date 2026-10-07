@@ -38,7 +38,8 @@ backend/
   services/assistant.mjs   Truy xuất tài liệu và AI tùy chọn
   security/auth.mjs        Mã scrypt, cookie phiên và phân quyền
   routes/judge.mjs         Hồ sơ riêng tư và Jev có đồng ý
-dist/                      Website và tài nguyên static
+shared/                    Logic tính toán và dữ liệu tri thức dùng chung
+dist/                      Website và tài nguyên static; core.js/knowledge-data.js tạo từ shared/
 scripts/                   Tạo .env, migrate/seed database
 tests/                     Kiểm tra logic, HTTP, database và AI mock
 data/                      SQLite runtime, không đưa vào Git

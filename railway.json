@@ -5,6 +5,7 @@
     "dockerfilePath": "Dockerfile",
     "watchPatterns": [
       "/backend/**",
+      "/shared/**",
       "/dist/**",
       "/server.mjs",
       "/Dockerfile",

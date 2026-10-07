@@ -1,4 +1,4 @@
-import { normalize } from '../../dist/core.js';
+import { normalize } from '../../shared/core.js';
 import { createModelGateway } from './model-gateway.mjs';
 import { assistantContext } from './assistant-context.mjs';
 const stopWords = new Set('la gi cua va cho toi minh ban ve co the nao tai sao mot nhung duoc khong bao nhieu hay voi tu xin hoi'.split(' '));

@@ -1,6 +1,6 @@
 import { MongoClient, GridFSBucket } from 'mongodb';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { articles } from '../../dist/knowledge-data.js';
+import { articles } from '../../shared/knowledge-data.js';
 import { mongoFailureCode } from '../services/mongo-store.mjs';
 import { nativeOperations } from './mongo-operations.mjs';
 import { validators } from './mongo-schema.mjs';

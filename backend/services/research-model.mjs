@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { normalize } from '../../dist/core.js';
+import { normalize } from '../../shared/core.js';
 const text=(max)=>z.string().trim().min(1).max(max);
 const evidence=z.string().uuid().nullable().default(null);
 export const schemas={
