@@ -18,7 +18,7 @@ const grid = document.querySelector('#articles');
 const form = document.querySelector('#search-form');
 const count = document.querySelector('#result-count');
 const status = document.createElement('p'); status.className = 'library-data-status';
-status.textContent = databaseOnline ? 'Kho tri thức đang đọc từ database Musuroom.' : 'Đang dùng bản dữ liệu đi kèm website; chưa kết nối được database.';
+status.textContent = databaseOnline ? 'Đang hiển thị kho tri thức mới nhất từ Musuroom.' : 'Đang đọc bản lưu đi kèm website. Một số nội dung mới có thể chưa xuất hiện.';
 document.querySelector('.library-note').prepend(status);
 const node = (tag, text, className) => { const e = document.createElement(tag); if (text) e.textContent = text; if (className) e.className = className; return e; };
 const consentLabel=node('label','','check-label'),consent=node('input');consent.type='checkbox';consentLabel.append(consent,document.createTextNode(' Tôi đồng ý gửi từ khóa và tối đa 5 bài đang tìm được đến JevAI để sắp xếp mức liên quan.'));

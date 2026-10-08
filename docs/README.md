@@ -7,7 +7,7 @@
 | Dùng 4 luồng Jev, phân loại theo lô và đối chiếu đề xuất | [Jev trong Musuroom](JEV_WORKFLOWS.md) |
 | JSON Schema, tác vụ Atlas có checkpoint và nhật ký Jev | [JSON và xử lý theo lô](JSON_JEV_PIPELINE.md) |
 | Chạy website và xem các trang | [README dự án](../README.md) |
-| Xem các lỗi đã sửa và cải tiến đến bản 1.12.2 | [Ghi chú phát hành](RELEASE_NOTES.md) |
+| Xem các lỗi đã sửa và cải tiến của Musuroom ver 1 | [Ghi chú phát hành](RELEASE_NOTES.md) |
 | Xem repository và trạng thái Supabase | [GitHub + Supabase](GITHUB_SUPABASE.md) |
 | Sửa Supabase Preview và kiểm tra lịch sử migration | [Lịch sử migration](SUPABASE_MIGRATIONS.md) |
 | Deploy Railway và in QR | [Triển khai cloud](DEPLOY_RAILWAY_SUPABASE.md) |
