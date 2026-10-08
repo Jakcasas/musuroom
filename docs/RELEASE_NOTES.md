@@ -1,3 +1,11 @@
+# Musuroom ver 1 — 08.10.2026 (mã nguồn 1.13.0)
+
+- Đồng bộ tên trên website, API, manifest cài đặt và bản QR để in; tên phát hành lấy từ `package.json`.
+- Sửa lỗi tiếng Việt trong manifest, mở trang chủ khi chạy ứng dụng đã cài, hiển thị nhãn ver 1 và đánh dấu trang đang đọc.
+- Thông báo khi mất mạng và khi có mạng trở lại, không tự tải lại hoặc gửi lại biểu mẫu.
+- Hồ sơ công khai có nút thử lại, giới hạn chờ 15 giây và ngăn gửi nhiều yêu cầu đồng thời.
+- Diễn đạt trạng thái kho tri thức theo nội dung người đọc cần; tải bộ nhớ ngoại tuyến sau khi trang chính tải xong.
+
 # Musuroom 1.12.2 — 08.10.2026
 
 - Chặn cấu hình mã bootstrap JUDGE và ADMIN trùng nhau; giữ giới hạn `sample_code` 50 ký tự đã có.

@@ -1,1 +1,31 @@
-{"name": "Musuroom â€” Tráº£i nghiá»‡m máº«u", "short_name": "Musuroom", "lang": "vi", "start_url": "/trai-nghiem.html", "scope": "/", "display": "standalone", "background_color": "#f7f7ed", "theme_color": "#10271e", "icons": [{"src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}, {"src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"}, {"src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}]}
+{
+  "name": "Musuroom ver 1",
+  "short_name": "Musuroom",
+  "lang": "vi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f7ed",
+  "theme_color": "#10271e",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "description": "Nghiên cứu bột gia vị từ phụ phẩm nấm ăn: khảo sát, kho tri thức và hồ sơ mẫu thử."
+}

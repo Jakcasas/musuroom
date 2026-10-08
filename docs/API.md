@@ -1,4 +1,4 @@
-# REST API — Musuroom 1 (mã nguồn 1.12.2)
+# REST API — Musuroom ver 1 (mã nguồn 1.13.0)
 
 POST `/api/v1/admin/jev/diagnose`: chỉ ADMIN, cookie/CSRF và `{"allow_remote":true}`. Trả từng bước MCP, `inference_verified`, `failure_layer`, `next_action`, `retryable`, `checked_at`; không có key hoặc body lỗi thô. Cùng giới hạn 2 lần/phút với `/admin/jev/check`. Chỉ gửi câu minh họa, không gửi dữ liệu MongoDB.
 

@@ -2,6 +2,7 @@ import { operation } from '../db/operation.mjs';
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { codePattern } from '../services/sensory-metrics.mjs';
+import { releaseInfo } from '../version.mjs';
 export const isMeasurementEvidence = doc => doc?.evidence_status === 'FINAL' && ['COA','REPORT'].includes(doc.doc_type);
 export function validateSample(body){
  const errors={};const result={};
@@ -20,7 +21,7 @@ export function validateSample(body){
 export function projectRouter(db,security,config){
  const router=Router();
  const list=async()=> (await operation(db,'products.public',()=>db.prepare("SELECT p.id,p.sample_code,p.label,p.origin,p.process_notes,p.metrics_json,p.nutrition_json,p.measured_at,p.evidence_document_id FROM product_samples p JOIN quality_documents d ON d.id=p.evidence_document_id WHERE p.publication_status='PUBLIC' AND d.evidence_status='FINAL' AND d.doc_type IN ('COA','REPORT') ORDER BY p.measured_at DESC,p.sample_code")).all()).map(row=>{const{metrics_json,nutrition_json,...metadata}=row;return{...metadata,metrics:JSON.parse(metrics_json),nutrition:JSON.parse(nutrition_json),nutrition_basis:'per 100 g',evidence_access:'authenticated_judge_portal'};});
- router.get('/project/overview',(req,res)=>res.json({brand:'Musuroom',release:'Musuroom 1',title:'Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm',stage:'Nghiên cứu và hoàn thiện',scope:'Phần cắt tỉa của nấm ăn còn phù hợp làm thực phẩm; không dùng giá thể, nấm hỏng hoặc nguyên liệu không rõ nguồn.',deployment:config.production?'cloud':'local',survey_url:'/trai-nghiem.html',judge_url:'/giam-khao.html'}));
+ router.get('/project/overview',(req,res)=>res.json({brand:'Musuroom',release:releaseInfo.release,title:'Phát triển bột gia vị từ phụ phẩm nấm ăn để giảm lãng phí thực phẩm',stage:'Nghiên cứu và hoàn thiện',scope:'Phần cắt tỉa của nấm ăn còn phù hợp làm thực phẩm; không dùng giá thể, nấm hỏng hoặc nguyên liệu không rõ nguồn.',deployment:config.production?'cloud':'local',survey_url:'/trai-nghiem.html',judge_url:'/giam-khao.html'}));
  router.get('/product/batches',async(req,res)=>{const items=await list();res.json({items,count:items.length,notice:'Chỉ hiển thị mẫu có dữ liệu đo, minh chứng và đã được người vận hành cho phép công bố. Mẻ tính ước tính được quản lý riêng.'});});
  router.get('/product/nutrition',async(req,res)=>{const items=(await list()).filter(x=>Object.keys(x.nutrition).length);res.json({items,available:items.length>0,comparison_available:false,notice:'Chưa có số liệu đối chứng để so sánh với gia vị khác. Dữ liệu dinh dưỡng chỉ được công bố theo mẫu đo có tài liệu minh chứng.'});});
  router.post('/admin/product-samples',security.requireAdmin,async(req,res)=>{

@@ -1,8 +1,8 @@
-# Musuroom 1 · Research workspace
+# Musuroom ver 1 · Không gian nghiên cứu
 
 [![Checks](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakcasas/musuroom/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/Node.js-24%2B-43853d)
-![Version](https://img.shields.io/badge/version-1.12.2-264736)
+![Version](https://img.shields.io/badge/Musuroom-ver%201-264736)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Musuroom — Research. Taste. Trace.](docs/social-preview.png)

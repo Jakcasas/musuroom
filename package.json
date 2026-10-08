@@ -1,6 +1,7 @@
 {
   "name": "musuroom",
-  "version": "1.12.2",
+  "displayName": "Musuroom ver 1",
+  "version": "1.13.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",

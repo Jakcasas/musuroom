@@ -1,4 +1,29 @@
 // Progressive enhancements only; server validation and native form controls remain authoritative.
+const currentPage = location.pathname === '/' ? '/index.html' : location.pathname;
+for (const link of document.querySelectorAll('nav a[href]')) {
+  const target = new URL(link.href, location.href);
+  if (target.origin === location.origin && target.pathname === currentPage && !target.hash) {
+    link.setAttribute('aria-current', 'page');
+  }
+}
+const connectionNotice = document.createElement('div');
+connectionNotice.className = 'connection-notice';
+connectionNotice.setAttribute('role', 'status');
+connectionNotice.setAttribute('aria-live', 'polite');
+connectionNotice.hidden = true;
+document.body.append(connectionNotice);
+let connectionTimer;
+function updateConnectionNotice() {
+  clearTimeout(connectionTimer);
+  connectionNotice.hidden = false;
+  connectionNotice.textContent = navigator.onLine
+    ? 'Kết nối mạng đã trở lại. Bạn có thể thử lại thao tác đang chờ.'
+    : 'Bạn đang ngoại tuyến. Kiểm tra kết nối trước khi gửi hoặc lưu thông tin.';
+  if (navigator.onLine) connectionTimer = setTimeout(() => { connectionNotice.hidden = true; }, 8000);
+}
+window.addEventListener('offline', updateConnectionNotice);
+window.addEventListener('online', updateConnectionNotice);
+if (!navigator.onLine) updateConnectionNotice();
 const accessCode = document.querySelector('#access-code');
 if (accessCode) {
   const toggle = document.createElement('button');

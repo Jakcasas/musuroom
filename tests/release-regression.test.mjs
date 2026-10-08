@@ -80,6 +80,11 @@ test('Public measurements follow evidence status; runtime version and security h
   const response = await fetch(url+'/healthz');
   assert.equal((await response.json()).version,releaseInfo.version);
   assert.equal((await (await fetch(url+'/api/status')).json()).version,releaseInfo.version);
+  assert.equal((await (await fetch(url+'/api/v1/project/overview')).json()).release,releaseInfo.release);
+  assert.equal((await (await fetch(url+'/manifest.webmanifest')).json()).name,releaseInfo.release);
+  const qrManifest=await (await fetch(url+'/qr/manifest.json')).json();
+  assert.equal(qrManifest.release,releaseInfo.release);
+  assert.equal(qrManifest.version,releaseInfo.version);
   assert.ok(!response.headers.get('content-security-policy').includes('google'));
   assert.match(response.headers.get('permissions-policy'),/camera=\(\)/);
 });
