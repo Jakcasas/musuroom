@@ -42,7 +42,7 @@ if (library) {
       let data;
       if(!remoteReady||(aiEnabled&&!consent.checked))data=localAnswer(question);
       else try{data=await request('/api/chat', {method:'POST',body:{question,allow_remote:aiEnabled&&consent.checked}});}
-      catch(error){if(error.status&&error.status<500)throw error;data=localAnswer(question);}
+      catch(error){if(error.status&&error.status<500)throw error;data=localAnswer(question,{requestAttempted:true});}
       answer.textContent = (data.mode === 'ai' ? 'Tổng hợp có trích dẫn\n\n' : data.mode==='bundled'?'Trích đoạn từ bản đi kèm\n\n':'Trích đoạn từ kho tri thức\n\n') + data.answer;
       for (const source of data.sources) {
         const link = document.createElement('a'); link.textContent = `[${source.ref}] ${source.title} (${source.year})`; link.href = `tri-thuc.html?doc=${encodeURIComponent(source.id)}`; sources.append(link);

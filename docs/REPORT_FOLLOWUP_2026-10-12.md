@@ -1,6 +1,14 @@
 # Đối chiếu báo cáo đánh giá website — 12.10.2026
 
-Nguồn yêu cầu: `Danh_gia_website_Musuroom_2026-10-12.docx`. Bản mã nguồn 1.14.0, tên hiển thị **Musuroom ver 1**.
+Nguồn yêu cầu: `Danh_gia_website_Musuroom_2026-10-12.docx`. Bản mã nguồn 1.14.1, tên hiển thị **Musuroom ver 1**.
+
+## Bổ sung ở bản 1.14.1
+
+- Lỗi lưu bản nháp (hết dung lượng hoặc bị trình duyệt chặn) không ngăn gửi khảo sát. Nếu gửi thất bại, thông báo chỉ xác nhận đã lưu khi thao tác lưu thực sự thành công.
+- Khi máy chủ đã nhận phiếu, lỗi xóa bản nháp không bị báo nhầm thành lỗi gửi. Phiếu được khóa để tránh gửi lặp; “Phiếu mới” vẫn hoạt động khi bộ nhớ trình duyệt bị chặn.
+- QR chứa mã đợt/mẫu khác bản nháp sẽ được ưu tiên giữ nguyên. Người dùng có nút khôi phục rõ ràng; khôi phục cả vai trò người tham gia và góp ý.
+- Trợ lý phân biệt tra cứu hoàn toàn trong trình duyệt với tra cứu dự phòng sau khi đã gửi yêu cầu lên máy chủ. Không tuyên bố câu hỏi chưa được gửi trong trường hợp phản hồi bị lỗi.
+- Kiểm thử trên Edge với database tạm: chặn `setItem`, chặn `removeItem`, QR khác bản nháp, khôi phục vai trò/góp ý và phản hồi chat 503 đều đạt. Không đưa phiếu kiểm thử vào production.
 
 ## Các thay đổi đã thực hiện
 
