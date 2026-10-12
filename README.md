@@ -100,8 +100,9 @@ Sao chép bằng `pnpm setup`; nguồn mẫu là [.env.example](.env.example). B
 | `DATABASE_PROVIDER` | `sqlite` khi local | Railway dùng `mongodb`; postgres chỉ dành cho công cụ legacy |
 | `DATABASE_URL` | `` | URL PostgreSQL riêng tư nếu dùng legacy |
 | `DATABASE_CA_CERT` | `` | CA PostgreSQL nếu dùng legacy |
-| `PUBLIC_ORIGIN` | `` | HTTPS gốc của ứng dụng dùng tạo QR |
-| `STORAGE_PROVIDER` | `local` | local hoặc supabase |
+| `PUBLIC_ORIGIN` | `` | HTTPS gốc của ứng dụng dùng tạo QR và sitemap |
+| `PUBLIC_CONTACT_EMAIL` | `` | Email công khai nhận góp ý / yêu cầu xóa đăng ký |
+| `STORAGE_PROVIDER` | `local` | Railway dùng mongodb/GridFS; supabase là legacy |
 | `SUPABASE_URL` | `` | URL project Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | `` | Khóa server; không đưa vào frontend |
 | `SUPABASE_STORAGE_BUCKET` | `musuroom-dossier` | Bucket hồ sơ riêng tư |
@@ -165,3 +166,11 @@ Lệnh cuối cần cấu hình cloud riêng tư. Kiểm thử dùng database t�
 [CONTRIBUTING](CONTRIBUTING.md) · [MIT](LICENSE) · [Thông báo tài nguyên bên thứ ba](NOTICE.md) · [Release notes](docs/RELEASE_NOTES.md).
 
 Các nguồn và trích đoạn tiêu chuẩn giữ quyền của chủ sở hữu. Nội dung nghiên cứu chưa thay thế thử nghiệm sản phẩm, kiểm nghiệm hoặc hồ sơ chứng nhận. Uptime 99,9% và chất lượng AI là mục tiêu cần đo; không được coi là kết quả đã đạt.
+
+## Cập nhật từ đánh giá website — 12.10.2026
+
+Bản 1.14.0 giữ tên **Musuroom ver 1**. Kho tri thức hiển thị ngay bản đi kèm, cho biết dữ liệu đang đọc và có nút tải lại. Trợ lý dùng chung thuật toán tra cứu trên máy chủ/trình duyệt; chỉ tổng hợp qua OpenRouter khi người đọc đồng ý. Các trang công khai thống nhất điều hướng và liên kết quyền riêng tư.
+
+Lỗi database trả 503 với thông báo riêng; log chỉ ghi mã chẩn đoán an toàn và các lần chuyển trạng thái. Production kiểm tra database mỗi 60 giây, không chạy chồng lượt. Cấu hình cảnh báo ngoài hệ thống theo `/healthz` và log `database_health` để nhận thông báo khi gián đoạn; Railway báo deployment SUCCESS không xác nhận database luôn hoạt động.
+
+[Đối chiếu các điểm đã xử lý và việc còn cần dữ liệu thật](docs/REPORT_FOLLOWUP_2026-10-12.md).

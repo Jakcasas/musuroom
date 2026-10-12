@@ -1,5 +1,5 @@
-const CACHE='musuroom-public-1.13.0';
-const FILES=['/','/index.html','/trai-nghiem.html','/tri-thuc.html','/fonts.css','/styles.css','/desktop.css','/desktop-ui.js','/portal.css','/app.js','/assistant-ui.js','/experience.js','/portal-ui.js','/form-state.js','/core.js','/offline-draft.js','/pwa.js','/knowledge.js','/knowledge-data.js','/assets/favicon.svg','/assets/mushroom-seasoning.webp','/manifest.webmanifest','/assets/icon-192.png','/assets/icon-512.png'];
+const CACHE='musuroom-public-1.14.0';
+const FILES=['/','/index.html','/trai-nghiem.html','/tri-thuc.html','/fonts.css','/styles.css','/desktop.css','/desktop-ui.js','/portal.css','/app.js','/assistant-ui.js','/browser-retrieval.js','/privacy-contact.js','/quyen-rieng-tu.html','/experience.js','/portal-ui.js','/form-state.js','/core.js','/retrieval.js','/offline-draft.js','/pwa.js','/knowledge.js','/knowledge-data.js','/assets/favicon.svg','/assets/mushroom-seasoning.webp','/manifest.webmanifest','/assets/icon-192.png','/assets/icon-512.png'];
 FILES.push(...["/assets/fonts/roboto-italic-latin-ext.woff2","/assets/fonts/roboto-italic-latin.woff2","/assets/fonts/roboto-italic-vietnamese.woff2","/assets/fonts/roboto-normal-latin-ext.woff2","/assets/fonts/roboto-normal-latin.woff2","/assets/fonts/roboto-normal-vietnamese.woff2"]);
 const allowed=new Set(FILES);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));

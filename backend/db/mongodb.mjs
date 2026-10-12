@@ -21,7 +21,7 @@ export function toRow(doc) {
   return row;
 }
 export async function openMongoDatabase(config) {
-  const client=new MongoClient(config.mongoUri,{appName:'musuroom-primary',maxPoolSize:10,minPoolSize:0,serverSelectionTimeoutMS:10000,connectTimeoutMS:10000,waitQueueTimeoutMS:10000,socketTimeoutMS:20000,tls:true,retryWrites:true});
+  const client=new MongoClient(config.mongoUri,{appName:'musuroom-primary',maxPoolSize:10,minPoolSize:0,serverSelectionTimeoutMS:5000,connectTimeoutMS:5000,waitQueueTimeoutMS:5000,socketTimeoutMS:10000,timeoutMS:10000,tls:true,retryWrites:true});
   try {
     await client.connect();
     const database=client.db(config.mongoDatabase,{writeConcern:{w:'majority'}});
@@ -39,7 +39,7 @@ export async function openMongoDatabase(config) {
       },
       files:new GridFSBucket(database,{bucketName:'dossier'}),
       close:()=>client.close(),
-      async ping(){await database.command({ping:1});return true;}
+      async ping(){await database.command({ping:1},{timeoutMS:5000});return true;}
     };
     await initializeCollections(store);
     const operations=nativeOperations(store);

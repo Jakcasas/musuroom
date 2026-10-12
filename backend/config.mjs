@@ -26,6 +26,12 @@ export function loadConfig(env = process.env) {
   if (!['sqlite', 'postgres', 'mongodb'].includes(databaseProvider))
     throw new Error('Invalid DATABASE_PROVIDER');
   const publicOrigin = env.PUBLIC_ORIGIN || '';
+  const publicContactEmail = (env.PUBLIC_CONTACT_EMAIL || '').trim();
+  if (
+    publicContactEmail &&
+    !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(publicContactEmail)
+  )
+    throw new Error('Invalid PUBLIC_CONTACT_EMAIL');
   if (publicOrigin) {
     const u = url(publicOrigin, 'PUBLIC_ORIGIN');
     if (
@@ -198,6 +204,7 @@ export function loadConfig(env = process.env) {
     judgeBootstrapCode,
     adminBootstrapCode,
     production,
+    publicContactEmail,
     publicOrigin: publicOrigin.replace(/\/$/, ''),
     databaseProvider,
     databaseUrl,

@@ -98,6 +98,16 @@ test('Public QR uses current release, aborts stale/unhealthy deployments and rec
  const root=await mkdtemp(resolve(tmpdir(),'musuroom-qr-'));t.after(async()=>{assert.ok(root.startsWith(resolve(tmpdir())+sep));await rm(root,{recursive:true,force:true});});
  await writeFile(resolve(root,'manifest.json'),'unchanged');
  await assert.rejects(generateQr('https://musuroom.example',root,{fetchImpl:async()=>Response.json({...releaseInfo,version:'1.4.0',database:'ok'})}));assert.equal(await readFile(resolve(root,'manifest.json'),'utf8'),'unchanged');
- await generateQr('https://musuroom.example',root,{fetchImpl:async url=>String(url).endsWith('/healthz')?Response.json({...releaseInfo,database:'ok'}):new Response('Musuroom',{headers:{'Content-Type':'text/html'}})});
+ const goodResponse=async url=>{
+  const path=new URL(url).pathname;
+  if(path==='/healthz')return Response.json({...releaseInfo,database:'ok'});
+  if(path==='/api/status')return Response.json({...releaseInfo,aiEnabled:false});
+  if(path==='/api/knowledge'||path==='/api/v1/product/batches')return Response.json({items:[]});
+  if(path==='/api/v1/judge/dossier')return Response.json({error:'authentication_required'},{status:401});
+  return new Response('Musuroom',{headers:{'Content-Type':'text/html'}});
+ };
+ await assert.rejects(generateQr('https://musuroom.example',root,{fetchImpl:async url=>new URL(url).pathname==='/api/knowledge'?Response.json({error:'database_unavailable'},{status:503}):goodResponse(url)}),/data API check failed/);
+ assert.equal(await readFile(resolve(root,'manifest.json'),'utf8'),'unchanged');
+ await generateQr('https://musuroom.example',root,{fetchImpl:goodResponse});
  const manifest=JSON.parse(await readFile(resolve(root,'manifest.json'),'utf8'));assert.equal(manifest.version,releaseInfo.version);assert.equal(manifest.access_codes_included,false);assert.equal(manifest.links.judge,'https://musuroom.example/giam-khao.html');
 });

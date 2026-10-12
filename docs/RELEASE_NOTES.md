@@ -1,3 +1,11 @@
+# Musuroom ver 1 — 12.10.2026 (mã nguồn 1.14.0)
+
+- Lỗi database 503, Retry-After và log chẩn đoán an toàn; kiểm tra sức khỏe định kỳ, giới hạn thời gian chờ Atlas.
+- Kho tri thức đọc ngay bản đi kèm, hiển thị nguồn dữ liệu / thời điểm tải và nút tải lại, giữ dữ liệu đã tải khi làm mới thất bại.
+- Trợ lý tra cứu cục bộ khi mất kết nối; dùng chung thuật toán với backend. API tổng hợp yêu cầu `allow_remote: true`.
+- Điều hướng thống nhất, đổi nhãn Điều khoản thành Tiêu chuẩn & nguồn đối chiếu, thêm trang quyền riêng tư và email liên hệ có cấu hình.
+- robots/sitemap từ PUBLIC_ORIGIN, noindex cổng riêng/API; quyền truy cập vẫn do xác thực.
+
 # Musuroom ver 1 — 08.10.2026 (mã nguồn 1.13.0)
 
 - Đồng bộ tên trên website, API, manifest cài đặt và bản QR để in; tên phát hành lấy từ `package.json`.

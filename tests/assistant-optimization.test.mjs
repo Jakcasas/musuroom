@@ -86,7 +86,7 @@ test('Chat and authenticated insights share concurrency; unauthorized requests d
   }
   const filter = { session_code: 'OPT-ROUND', sample_code: 'OPT-MUSH' };
   assert.equal((await post('/api/v1/sensory/insights', filter)).status, 401);
-  const chat = post('/api/chat', { question: 'Umami là gì?' });
+  const chat = post('/api/chat', { question: 'Umami là gì?', allow_remote:true });
   await ready;
   const insights = await (await post('/api/v1/sensory/insights', filter, true)).json();
   assert.equal(insights.reason, 'ai_busy');

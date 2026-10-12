@@ -18,25 +18,29 @@ import { researchRouter } from './routes/research.mjs';
 import { vectorRouter } from './routes/vectors.mjs';
 import { createKnowledgeReranker } from './services/knowledge-reranker.mjs';
 import { rateLimit } from './security/rate-limit.mjs';
-import { calculate } from '../shared/core.js';
-export function createApplication({ config = loadConfig(), database, fetchImpl } = {}) {
+import { calculate, searchArticles } from '../shared/core.js';
+import { randomUUID } from 'node:crypto';
+import { databaseFailure, createHealthReporter, startHealthMonitor } from './services/service-health.mjs';
+import { publicPages, publicPageRenderer } from './services/public-pages.mjs';
+export function createApplication({ config = loadConfig(), database, fetchImpl, log = entry => console.error(JSON.stringify(entry)) } = {}) {
   if(config.databaseProvider!=='sqlite' && !database)throw new Error('Open configured database before creating application');
   const db = database || openDatabase(config.databasePath);
   const bootstrapPromise = bootstrapAccessAccounts(db, config);
   const app = express();
   app.disable('x-powered-by');
   if(config.production)app.set('trust proxy',1);
-  app.use(async (req, res, next) => {
-    try { await bootstrapPromise; next(); }
-    catch { res.status(503).json({ error: 'access_bootstrap_failed' }); }
-  });
+  void bootstrapPromise.catch(() => {});
   const knowledge = knowledgeRepository(db);
   const batches = batchRepository(db);
   const complete = createModelGateway(config, fetchImpl);
   const answer = createAssistant(config, knowledge, fetchImpl, complete);
+  const retrievalAnswer = createAssistant({...config,provider:'disabled'},knowledge,fetchImpl,complete);
   const rerank = createKnowledgeReranker(config,fetchImpl);
   app.locals.db = db;
   app.locals.bootstrapPromise = bootstrapPromise;
+  app.locals.production = config.production;
+  app.locals.reportHealth = createHealthReporter(log);
+  app.locals.checkHealth = async () => {await bootstrapPromise;return operation(db,'health',()=>db.prepare('SELECT 1')).get();};
   const security = createSecurity(db,config);
   app.use((req, res, next) => {
     res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store', 'X-Frame-Options':'DENY', 'Permissions-Policy':'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'" });
@@ -55,7 +59,12 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
       try { const origin = new URL(req.headers.origin); if (origin.origin !== (config.production?config.publicOrigin:`http://${req.headers.host}`)) return res.status(403).json({ error: 'cross_origin_forbidden' }); }
       catch { return res.status(403).json({ error: 'invalid_origin' }); }
     }
+    if (/^\/api\//.test(req.path) || /\/(?:giam-khao|quan-tri|bao-cao|truy-xuat|pitch)\.html$/.test(req.path)) res.set('X-Robots-Tag','noindex, nofollow');
     next();
+  });
+  app.use('/api', async (req,res,next) => {
+    if(req.path==='/public/contact')return next();
+    try{await bootstrapPromise;next();}catch(error){next(error);}
   });
   app.use('/api', (req, res, next) => {
     if (['POST', 'PUT', 'PATCH'].includes(req.method) && !req.is('application/json')) return res.status(415).json({ error: 'json_required' });
@@ -63,8 +72,16 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   });
   app.use(express.json({ limit: '16kb', strict: true }));
   app.get('/healthz', async (req, res) => {
-    try{await operation(db,'health',()=>db.prepare('SELECT 1')).get();res.json({...releaseInfo,database:'ok',database_provider:db.dialect||'sqlite'});}
-    catch{res.status(503).json({...releaseInfo,database:'unavailable'});}
+    try{await app.locals.checkHealth();app.locals.reportHealth();res.json({...releaseInfo,database:'ok',database_provider:db.dialect||'sqlite'});}
+    catch(error){app.locals.reportHealth(error);res.status(503).set('Retry-After','30').json({...releaseInfo,database:'unavailable'});}
+  });
+  app.get('/api/public/contact', (req,res)=>res.json({email:config.publicContactEmail||null}));
+  app.get('/robots.txt', (req,res)=>res.type('text/plain').send('User-agent: *\nDisallow: /api/\nDisallow: /giam-khao.html\nDisallow: /quan-tri.html\nDisallow: /bao-cao.html\nDisallow: /truy-xuat.html\nDisallow: /pitch.html\n'+(config.publicOrigin?'Sitemap: '+config.publicOrigin+'/sitemap.xml\n':'')));
+  app.get('/sitemap.xml', (req,res)=>{
+    if(!config.publicOrigin)return res.status(404).type('text').send('Sitemap chỉ có trên website công khai.');
+    const pages=['/','/tri-thuc.html','/trai-nghiem.html','/minh-bach.html','/dieu-khoan.html','/quyen-rieng-tu.html'];
+    const escape=value=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+    res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+pages.map(path=>'<url><loc>'+escape(config.publicOrigin+path)+'</loc></url>').join('')+'</urlset>');
   });
   app.get('/api/status', async (req, res) => res.json({ ...releaseInfo, aiEnabled: config.provider !== 'disabled', mode: config.provider === 'disabled' ? 'retrieval' : 'ai', articleCount: (await knowledge.all()).length }));
   app.post('/api/knowledge/rerank',rateLimit(5,'search_rate_limit'),async(req,res)=>{
@@ -75,7 +92,7 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.get('/api/knowledge', async (req, res) => {
     const q = req.query.q ?? ''; const category = req.query.category ?? '';
     if (typeof q !== 'string' || q.length > 200 || typeof category !== 'string' || category.length > 100) return res.status(400).json({ error: 'invalid_query' });
-    const all = await knowledge.all(); const items = await knowledge.search(q, category);
+    const all = await knowledge.all(); const items = searchArticles(all, q, category);
     res.json({ items, total: items.length, categories: [...new Set(all.map(a => a.category))] });
   });
   app.get('/api/knowledge/:id', async (req, res) => { const item = await knowledge.get(req.params.id); item ? res.json(item) : res.status(404).json({ error: 'article_not_found' }); });
@@ -100,9 +117,10 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.post('/api/chat', (req,res,next)=>{
     const question = req.body?.question;
     if (typeof question !== 'string' || question.trim().length < 2 || question.length > 1000) return res.status(422).json({ error: 'question_must_be_2_to_1000_characters' });
+    if(req.body.allow_remote!==undefined&&typeof req.body.allow_remote!=='boolean')return res.status(422).json({error:'invalid_remote_consent'});
     next();
   },rateLimit(config.chatLimit,'rate_limit_exceeded'),async(req,res)=>{
-    res.json(await answer(req.body.question.trim()));
+    res.json(await (req.body.allow_remote===true?answer:retrievalAnswer)(req.body.question.trim()));
   });
   app.use('/api/v1', judgeRouter(db,security,config,fetchImpl));
   app.use('/api/v1', projectRouter(db,security,config));
@@ -112,12 +130,21 @@ export function createApplication({ config = loadConfig(), database, fetchImpl }
   app.use('/api/v1', v1Router(db, authorize, config, fetchImpl, security.requireReviewer, complete));
   app.use('/api', (req, res) => res.status(404).json({ error: 'endpoint_not_found' }));
   app.use((req, res, next) => ['GET', 'HEAD'].includes(req.method) ? next() : res.status(405).set('Allow', 'GET, HEAD').json({ error: 'method_not_allowed' }));
+  const renderPublicPage=publicPageRenderer(resolve(projectRoot,'dist'),config.publicOrigin);
+  app.get(publicPages,(req,res)=>res.type('html').send(renderPublicPage(req.path)));
   app.use(express.static(resolve(projectRoot, 'dist'), { dotfiles: 'deny', index: 'index.html',setHeaders:(res,path)=>{if(/[/\\]assets[/\\]/.test(path))res.setHeader('Cache-Control','public, max-age=86400');} }));
   app.use((req, res) => res.status(404).type('text').send('Không tìm thấy trang'));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
+    const reason = databaseFailure(error);
+    if(reason){
+      app.locals.reportHealth(error);
+      return res.status(503).set('Retry-After','30').json({error:'database_unavailable'});
+    }
     const status = error.type === 'entity.too.large' ? 413 : error.type === 'entity.parse.failed' ? 400 : 500;
-    res.status(status).json({ error: status === 413 ? 'body_too_large' : status === 400 ? 'invalid_json' : 'internal_error' });
+    const requestId = status === 500 ? randomUUID() : undefined;
+    if(requestId)log({event:'request_failed',request_id:requestId});
+    res.status(status).json({ error: status === 413 ? 'body_too_large' : status === 400 ? 'invalid_json' : 'internal_error', ...(requestId?{request_id:requestId}:{}) });
   });
   return app;
 }
@@ -125,6 +152,7 @@ export function createApp(options) {
   const app = createApplication(options);
   const server = createServer(app);
   server.setDraining=()=>{app.locals.draining=true;};
-  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve().then(async()=>{try{await server.stopDataWorker?.();}finally{await app.locals.db.close();}}).then(resolve,reject)));
+  if(app.locals.production)server.stopHealthMonitor=startHealthMonitor(app.locals.checkHealth,app.locals.reportHealth);
+  server.databaseClosed = new Promise((resolve,reject)=>server.once('close',()=>Promise.resolve().then(async()=>{await server.stopHealthMonitor?.();try{await server.stopDataWorker?.();}finally{await app.locals.db.close();}}).then(resolve,reject)));
   return server;
 }

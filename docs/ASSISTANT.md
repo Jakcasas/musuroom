@@ -90,3 +90,7 @@ API thống kê và nhận xét đọc phân bố tổng hợp ngay tại databa
 
 **Trạng thái kiểm chứng:** luồng OpenRouter đã được kiểm tra bằng mock, gồm phản hồi hợp lệ, giới hạn đồng thời, thời gian chờ, phản hồi quá lớn và chế độ dự phòng; chưa xác minh bằng lời gọi dịch vụ thật vì chưa cấu hình key/model. Migration tổng hợp đã áp dụng lên Supabase và kiểm tra quyền gọi; các chỉ số được kiểm thử trên SQLite/PostgreSQL. `aiEnabled` chỉ phản ánh cấu hình, không chứng minh dịch vụ đang đáp ứng. Chi tiết request, phân quyền và các trường phản hồi nằm trong [tài liệu API](docs/API.md). Tích hợp phân loại góp ý bằng Jev được hướng dẫn riêng trong [cổng giám khảo](docs/JUDGE_PORTAL.md).
 
+
+## Cho phép tổng hợp (1.14.0)
+
+POST `/api/chat` mặc định tra cứu từ kho tri thức. Chỉ khi `allow_remote: true` máy chủ mới dùng provider đã cấu hình; giá trị khác boolean bị từ chối. Giao diện cho người đọc chọn đồng ý trước khi gửi tới OpenRouter. Khi chưa xác định được chế độ máy chủ hoặc mất kết nối, trợ lý tra cứu bản đi kèm trong trình duyệt và ghi rõ nguồn dữ liệu.

@@ -17,6 +17,14 @@ export async function verifyPublicApplication(base,{fetchImpl=fetch}={}){
  if(!health.ok)throw new Error('Public health check failed. No print QR generated.');
  const result=await readProviderJson(health,deadline);
  if(result.app!==releaseInfo.app||result.version!==releaseInfo.version||result.database!=='ok')throw new Error('Public application version or database check failed. No print QR generated.');
+ const probes=[['/api/status',data=>data.version===releaseInfo.version&&typeof data.aiEnabled==='boolean'],['/api/knowledge',data=>Array.isArray(data.items)],['/api/v1/product/batches',data=>Array.isArray(data.items)]];
+ for(const [path,validate] of probes){
+  const response=await fetchImpl(new URL(path,base),{redirect:'error',signal:deadline});
+  if(!response.ok){await response.body?.cancel();throw new Error('Public data API check failed. No print QR generated.');}
+  if(!validate(await readProviderJson(response,deadline)))throw new Error('Public data API response invalid. No print QR generated.');
+ }
+ const privateResponse=await fetchImpl(new URL('/api/v1/judge/dossier',base),{redirect:'error',signal:deadline});
+ await privateResponse.body?.cancel();if(privateResponse.status!==401)throw new Error('Judge access protection check failed. No print QR generated.');
  for(const url of Object.values(links)){const page=await fetchImpl(url,{redirect:'error',signal:AbortSignal.timeout(15000)});await page.body?.cancel();if(!page.ok||!page.headers.get('content-type')?.includes('text/html'))throw new Error('Public destination unavailable. No print QR generated.');}
  return links;
 }

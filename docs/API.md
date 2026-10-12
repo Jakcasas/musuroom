@@ -1,4 +1,4 @@
-# REST API — Musuroom ver 1 (mã nguồn 1.13.0)
+# REST API — Musuroom ver 1 (mã nguồn 1.14.0)
 
 POST `/api/v1/admin/jev/diagnose`: chỉ ADMIN, cookie/CSRF và `{"allow_remote":true}`. Trả từng bước MCP, `inference_verified`, `failure_layer`, `next_action`, `retryable`, `checked_at`; không có key hoặc body lỗi thô. Cùng giới hạn 2 lần/phút với `/admin/jev/check`. Chỉ gửi câu minh họa, không gửi dữ liệu MongoDB.
 
@@ -220,3 +220,9 @@ Mỗi nhóm tổng hợp có `current_sample_revision`, `current_judges`, `stale
 Các trường hồ sơ xem [schemas](../backend/services/research-model.mjs). Mã mẫu dùng 3–50 ký tự ASCII, bắt đầu bằng chữ/số. Điều khoản yêu cầu nguồn HTTPS, phiên bản, trích dẫn, giới hạn và xác nhận quyền sử dụng. File riêng tư không trở thành file công khai khi gắn minh chứng.
 
 Vector cần PostgreSQL có pgvector (SQLite trả 503). Không có vector/model tự sinh. Score similarity không phải xác suất nội dung đúng. Xem [hướng dẫn nâng cấp](UPGRADE_2026.md).
+
+## Trạng thái và quyền riêng tư (1.14.0)
+
+- Lỗi kết nối database trả HTTP 503, `error: database_unavailable` và `Retry-After: 30`; không trả driver message hoặc URI. `/healthz` trả 503 nếu database không sẵn sàng.
+- GET `/api/public/contact`: email công khai từ `PUBLIC_CONTACT_EMAIL`, hoặc `null` khi chưa cấu hình. Không yêu cầu đăng nhập.
+- GET `/robots.txt`, GET `/sitemap.xml`: sinh từ PUBLIC_ORIGIN; sitemap chỉ gồm trang công khai. API và cổng riêng có `X-Robots-Tag: noindex, nofollow`; xác thực vẫn được thực thi độc lập.
